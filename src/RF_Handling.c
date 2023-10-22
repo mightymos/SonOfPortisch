@@ -4,48 +4,54 @@
  *  Created on: 27.11.2017
  *      Author:
  */
-
 #include <SI_EFM8BB1_Register_Enums.h>
+
 #include <string.h>
 #include <stdlib.h>
+
 #include "Globals.h"
 #include "RF_Handling.h"
 #include "RF_Protocols.h"
 #include "pca_0.h"
 #include "uart.h"
 
-SI_SEGMENT_VARIABLE(RF_DATA[RF_DATA_BUFFERSIZE], uint8_t, SI_SEG_XDATA);
+__xdata uint8_t RF_DATA[RF_DATA_BUFFERSIZE];
+
 // RF_DATA_STATUS
 // Bit 7:	1 Data received, 0 nothing received
 // Bit 6-0:	Protocol identifier
-SI_SEGMENT_VARIABLE(RF_DATA_STATUS, uint8_t, SI_SEG_XDATA) = 0;
-SI_SEGMENT_VARIABLE(rf_state, rf_state_t, SI_SEG_XDATA) = RF_IDLE;
-SI_SEGMENT_VARIABLE(sniffing_mode, rf_sniffing_mode_t, SI_SEG_XDATA) = STANDARD;
+__xdata uint8_t RF_DATA_STATUS = 0;
+__xdata rf_state_t rf_state = RF_IDLE;
+__xdata rf_sniffing_mode_t sniffing_mode = STANDARD;
 
-SI_SEGMENT_VARIABLE(last_sniffing_command, uint8_t, SI_SEG_XDATA) = NONE;
+__xdata uint8_t last_sniffing_command = NONE;
 
 // PT226x variables
-SI_SEGMENT_VARIABLE(SYNC_LOW, uint16_t, SI_SEG_XDATA) = 0x00;
-SI_SEGMENT_VARIABLE(BIT_HIGH, uint16_t, SI_SEG_XDATA) = 0x00;
-SI_SEGMENT_VARIABLE(BIT_LOW, uint16_t, SI_SEG_XDATA) = 0x00;
+__xdata uint16_t SYNC_LOW = 0x00;
+__xdata uint16_t BIT_HIGH = 0x00;
+__xdata uint16_t BIT_LOW  = 0x00;
 
-SI_SEGMENT_VARIABLE(actual_byte_high_nibble, bool, SI_SEG_DATA) = false;
-SI_SEGMENT_VARIABLE(actual_byte, uint8_t, SI_SEG_XDATA) = 0;
+
+bool actual_byte_high_nibble = false;
+
+__xdata uint8_t actual_byte = 0;
 
 // status of each protocol
-SI_SEGMENT_VARIABLE(status[PROTOCOLCOUNT], PROTOCOL_STATUS, SI_SEG_IDATA);
+PROTOCOL_STATUS status[PROTOCOLCOUNT];
 
-SI_SEGMENT_VARIABLE(old_crc, uint8_t, SI_SEG_XDATA) = 0;
-SI_SEGMENT_VARIABLE(crc, uint8_t, SI_SEG_XDATA) = 0;
+
+__xdata uint8_t old_crc = 0;
+__xdata uint8_t crc = 0;
 
 // up to 8 timing buckets for RF_CODE_SNIFFING_ON_BUCKET
-SI_SEGMENT_VARIABLE(buckets[7], uint16_t, SI_SEG_XDATA);	// -1 because of the bucket_sync
+// -1 because of the bucket_sync
+__xdata uint16_t buckets[7];
 
 #if INCLUDE_BUCKET_SNIFFING == 1
-SI_SEGMENT_VARIABLE(bucket_sync, uint16_t, SI_SEG_XDATA);
-SI_SEGMENT_VARIABLE(bucket_count, uint8_t, SI_SEG_XDATA) = 0;
-SI_SEGMENT_VARIABLE(bucket_count_sync_1, uint8_t, SI_SEG_XDATA);
-SI_SEGMENT_VARIABLE(bucket_count_sync_2, uint8_t, SI_SEG_XDATA);
+__xdata uint16_t bucket_sync;
+__xdata uint8_t bucket_count = 0;
+__xdata uint8_t bucket_count_sync_1;
+__xdata uint8_t bucket_count_sync_2;
 #endif
 
 #define GET_W_POSITION(x) (((x) >> 4) & 0x0F)
@@ -58,8 +64,8 @@ SI_SEGMENT_VARIABLE(bucket_count_sync_2, uint8_t, SI_SEG_XDATA);
 #define DEC_R_POSITION(x) ((x) = ((x) - 1) | ((x) & 0xF0))
 #define CLR_R_POSITION(x) ((x) &= 0xF0)
 
-SI_SEGMENT_VARIABLE(buffer_buckets[4], uint16_t, SI_SEG_XDATA) = {0};
-SI_SEGMENT_VARIABLE(buffer_buckets_positions, uint8_t, SI_SEG_XDATA) = 0;
+__xdata uint16_t buffer_buckets[4] = {0};
+__xdata uint8_t buffer_buckets_positions = 0;
 
 //-----------------------------------------------------------------------------
 // Callbacks
@@ -110,8 +116,8 @@ bool CheckRFSyncBucket(uint16_t duration, uint16_t bucket)
 
 bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration,
 		uint16_t *pulses,
-		SI_VARIABLE_SEGMENT_POINTER(bit0, uint8_t, SI_SEG_CODE), uint8_t bit0_size,
-		SI_VARIABLE_SEGMENT_POINTER(bit1, uint8_t, SI_SEG_CODE), uint8_t bit1_size,
+		uint8_t* bit0, uint8_t bit0_size,
+		uint8_t* bit1, uint8_t bit1_size,
 		uint8_t bit_count)
 {
 	uint8_t last_bit = 0;
@@ -331,7 +337,7 @@ void buffer_in(uint16_t bucket)
 		CLR_W_POSITION(buffer_buckets_positions);
 }
 
-bool buffer_out(SI_VARIABLE_SEGMENT_POINTER(bucket, uint16_t, SI_SEG_XDATA))
+bool buffer_out(uint16_t* bucket)
 {
 	uint8_t backup_PCA0CPM0 = PCA0CPM0;
 
@@ -456,8 +462,8 @@ bool SendSingleBucket(bool high_low, uint16_t bucket_time)
 //-----------------------------------------------------------------------------
 #if INCLUDE_BUCKET_SNIFFING == 1
 void SendRFBuckets(
-		SI_VARIABLE_SEGMENT_POINTER(buckets, uint16_t, SI_SEG_XDATA),
-		SI_VARIABLE_SEGMENT_POINTER(rfdata, uint8_t, SI_SEG_XDATA), uint8_t data_len)
+		uint16_t* buckets,
+		uint8_t* rfdata, uint8_t data_len)
 {
 	// start transmit of the buckets with a high bucket
 	bool high_low = true;
@@ -482,12 +488,12 @@ void SendRFBuckets(
 
 void SendBuckets(
 		uint16_t *pulses,
-		SI_VARIABLE_SEGMENT_POINTER(start, uint8_t, SI_SEG_CODE), uint8_t start_size,
-		SI_VARIABLE_SEGMENT_POINTER(bit0, uint8_t, SI_SEG_CODE), uint8_t bit0_size,
-		SI_VARIABLE_SEGMENT_POINTER(bit1, uint8_t, SI_SEG_CODE), uint8_t bit1_size,
-		SI_VARIABLE_SEGMENT_POINTER(end, uint8_t, SI_SEG_CODE), uint8_t end_size,
+		uint8_t* start, uint8_t start_size,
+		uint8_t* bit0, uint8_t bit0_size,
+		uint8_t* bit1, uint8_t bit1_size,
+		uint8_t* end, uint8_t end_size,
 		uint8_t bit_count,
-		SI_VARIABLE_SEGMENT_POINTER(rfdata, uint8_t, SI_SEG_XDATA))
+		uint8_t* rfdata)
 {
 	uint8_t i, a;
 	uint8_t actual_byte = 0;
@@ -531,7 +537,7 @@ void SendBuckets(
 	rf_state = RF_FINISHED;
 }
 
-void SendBucketsByIndex(uint8_t index, SI_VARIABLE_SEGMENT_POINTER(rfdata, uint8_t, SI_SEG_XDATA))
+void SendBucketsByIndex(uint8_t index, uint8_t* rfdata)
 {
 	SendBuckets(
 			PROTOCOL_DATA[index].buckets.dat,

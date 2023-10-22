@@ -8,6 +8,9 @@
 #ifndef INC_GLOBALS_H_
 #define INC_GLOBALS_H_
 
+#include <stdbool.h>
+#include <stdint.h>
+
 // USER CONSTANTS
 #define LED_ON	1
 #define LED_OFF	0
@@ -63,10 +66,20 @@
 #define BUCKET_STATE(x) (bool)(((x) & 0x08) >> 3)
 
 // USER PROTOTYPES
-SI_SBIT(LED, SFR_P1, 0);		// LED
-SI_SBIT(T_DATA, SFR_P0, 0);		// T_DATA
-SI_SBIT(R_DATA, SFR_P1, 3);		// R_DATA
-SI_SBIT(BUZZER, SFR_P1, 6);		// BUZZER
+//SI_SBIT(LED,    SFR_P1, 0);		// LED
+//SI_SBIT(T_DATA, SFR_P0, 0);		// T_DATA
+//SI_SBIT(R_DATA, SFR_P1, 3);		// R_DATA
+//SI_SBIT(BUZZER, SFR_P1, 6);		// BUZZER
+__sbit __at (0x90) LED;
+__sbit __at (0x80) T_DATA;
+__sbit __at (0x93) R_DATA;
+__sbit __at (0x96) BUZZER;
+
+//#define LED    P1_0
+//#define T_DATA P0_0
+//#define R_DATA P1_3
+//#define BUZZER P1_6
+
 
 extern void InitTimer2_us(uint16_t interval, uint16_t timeout);
 extern void InitTimer3_us(uint16_t interval, uint16_t timeout);
@@ -79,4 +92,4 @@ extern void StopTimer3(void);
 extern bool IsTimer2Finished(void);
 extern bool IsTimer3Finished(void);
 
-#endif /* INC_GLOBALS_H_ */
+#endif // INC_GLOBALS_H_

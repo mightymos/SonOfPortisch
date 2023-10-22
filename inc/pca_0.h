@@ -174,7 +174,7 @@ typedef enum
  * Valid enums can be fond in the Interrupt Flag Enums group.
  *
  ******************************************************************************/
-uint8_t PCA0_getIntFlags();
+uint8_t PCA0_getIntFlags(void);
 
 /***************************************************************************//**
  * @brief
@@ -235,7 +235,7 @@ void PCA0_writeChannel(PCA0_Channel_t channel, uint16_t value);
  * @return
  * Current value of the PCA counter.
  ******************************************************************************/
-uint16_t PCA0_readCounter();
+uint16_t PCA0_readCounter(void);
 
 /***************************************************************************//**
  * @brief
@@ -252,14 +252,14 @@ void PCA0_writeCounter(uint16_t value);
  * Start the PCA Counter.
  *
  ******************************************************************************/
-void PCA0_run();
+void PCA0_run(void);
 
 /***************************************************************************//**
  * @brief
  * Stop the PCA Counter.
  *
  ******************************************************************************/
-void PCA0_halt();
+void PCA0_halt(void);
 
 /** @} (end addtogroup pca0_runtime PCA0 Runtime API) */
 
@@ -470,7 +470,7 @@ void PCA0_initChannel(PCA0_Channel_t channel,
  *
  * This function restores the entire PCA INCLUDING ALL CHANNELS to default values.
  ******************************************************************************/
-void PCA0_reset();
+void PCA0_reset(void);
 
 /***************************************************************************//**
  * @brief
@@ -525,7 +525,7 @@ void PCA0_resetChannel(PCA0_Channel_t channel);
  * This function is called from an ISR and should be as short as possible.
  *
  ******************************************************************************/
-extern void PCA0_overflowCb();
+extern void PCA0_overflowCb(void);
 
 /***************************************************************************//**
  * @brief
@@ -538,7 +538,7 @@ extern void PCA0_overflowCb();
  * This function is called from an ISR and should be as short as possible
  *
  ******************************************************************************/
-extern void PCA0_intermediateOverflowCb();
+extern void PCA0_intermediateOverflowCb(void);
 
 /***************************************************************************//**
  * @brief
@@ -551,7 +551,7 @@ extern void PCA0_intermediateOverflowCb();
  * This function is called from an ISR and should be as short as possible.
  *
  ******************************************************************************/
-extern void PCA0_channel0EventCb();
+extern void PCA0_channel0EventCb(void);
 
 /***************************************************************************//**
  * @brief
@@ -564,7 +564,7 @@ extern void PCA0_channel0EventCb();
  * This function is called from an ISR and should be as short as possible.
  *
  ******************************************************************************/
-extern void PCA0_channel1EventCb();
+extern void PCA0_channel1EventCb(void);
 
 /***************************************************************************//**
  * @brief
@@ -577,7 +577,7 @@ extern void PCA0_channel1EventCb();
  * This function is called from an ISR and should be as short as possible.
  *
  ******************************************************************************/
-extern void PCA0_channel2EventCb();
+extern void PCA0_channel2EventCb(void);
 
 /**************************************************************************//**
  * @def void PCA0_channel3EventCb()

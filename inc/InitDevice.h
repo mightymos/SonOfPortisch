@@ -8,14 +8,9 @@
 #ifndef __INIT_DEVICE_H__
 #define __INIT_DEVICE_H__
 
-// USER CONSTANTS
-// USER PROTOTYPES
 
-// $[Mode Transition Prototypes]
 extern void enter_DefaultMode_from_RESET(void);
-// [Mode Transition Prototypes]$
 
-// $[Config(Per-Module Mode)Transition Prototypes]
 extern void WDT_0_enter_DefaultMode_from_RESET(void);
 extern void PORTS_0_enter_DefaultMode_from_RESET(void);
 extern void PORTS_1_enter_DefaultMode_from_RESET(void);
@@ -29,7 +24,6 @@ extern void PCA_0_enter_DefaultMode_from_RESET(void);
 extern void PCACH_0_enter_DefaultMode_from_RESET(void);
 extern void UART_0_enter_DefaultMode_from_RESET(void);
 extern void INTERRUPT_0_enter_DefaultMode_from_RESET(void);
-// [Config(Per-Module Mode)Transition Prototypes]$
 
 #endif
 

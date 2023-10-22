@@ -67,8 +67,8 @@ typedef enum
 //-----------------------------------------------------------------------------
 // Global Variables
 //-----------------------------------------------------------------------------
-extern SI_SEGMENT_VARIABLE(uart_state, uart_state_t, SI_SEG_XDATA);
-extern SI_SEGMENT_VARIABLE(uart_command, uart_command_t, SI_SEG_XDATA);
+extern __xdata uart_state_t uart_state;
+extern __xdata uart_command_t uart_command;
 
 extern unsigned int uart_getc(void);
 extern void uart_put_command(uint8_t command);
@@ -78,4 +78,4 @@ extern void uart_put_RF_Data_Standard(uint8_t Command);
 extern void uart_put_RF_buckets(uint8_t Command);
 #endif
 
-#endif /* INC_UART_H_ */
+#endif // INC_UART_H_

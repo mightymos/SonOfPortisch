@@ -10,22 +10,20 @@
 
 #include "RF_Config.h"
 
-extern bool buffer_out(SI_VARIABLE_SEGMENT_POINTER(bucket, uint16_t, SI_SEG_XDATA));
+extern bool buffer_out(uint16_t* bucket);
 extern void HandleRFBucket(uint16_t duration, bool high_low);
 extern uint8_t PCA0_DoSniffing(uint8_t active_command);
 extern void PCA0_StopSniffing(void);
-extern void SendRFBuckets(
-		SI_VARIABLE_SEGMENT_POINTER(buckets, uint16_t, SI_SEG_XDATA),
-		SI_VARIABLE_SEGMENT_POINTER(rfdata, uint8_t, SI_SEG_XDATA), uint8_t data_len);
+extern void SendRFBuckets(uint16_t* buckets, uint8_t* rfdata, uint8_t data_len);
 extern void SendBuckets(
 		uint16_t *pulses,
-		SI_VARIABLE_SEGMENT_POINTER(start, uint8_t, SI_SEG_CODE), uint8_t start_size,
-		SI_VARIABLE_SEGMENT_POINTER(bit0, uint8_t, SI_SEG_CODE), uint8_t bit0_size,
-		SI_VARIABLE_SEGMENT_POINTER(bit1, uint8_t, SI_SEG_CODE), uint8_t bit1_size,
-		SI_VARIABLE_SEGMENT_POINTER(end, uint8_t, SI_SEG_CODE), uint8_t end_size,
+		uint8_t* start, uint8_t start_size,
+		uint8_t* bit0, uint8_t bit0_size,
+		uint8_t* bit1, uint8_t bit1_size,
+		uint8_t* end, uint8_t end_size,
 		uint8_t bit_count,
-		SI_VARIABLE_SEGMENT_POINTER(rfdata, uint8_t, SI_SEG_XDATA));
-extern void SendBucketsByIndex(uint8_t index, SI_VARIABLE_SEGMENT_POINTER(rfdata, uint8_t, SI_SEG_XDATA));
+		uint8_t* rfdata);
+extern void SendBucketsByIndex(uint8_t index, uint8_t* rfdata);
 extern void Bucket_Received(uint16_t duration, bool high_low);
 
 // 112 byte == 896 bits, so a RF signal with maximum of 896 bits is possible
@@ -57,27 +55,27 @@ typedef enum
 
 #define RF_DATA_RECEIVED_MASK	0x80
 
-extern SI_SEGMENT_VARIABLE(RF_DATA[RF_DATA_BUFFERSIZE], uint8_t, SI_SEG_XDATA);
+extern __xdata uint8_t RF_DATA[RF_DATA_BUFFERSIZE];
 // RF_DATA_STATUS
 // Bit 7:	1 Data received, 0 nothing received
 // Bit 6-0:	Protocol identifier
-extern SI_SEGMENT_VARIABLE(RF_DATA_STATUS, uint8_t, SI_SEG_XDATA);
-extern SI_SEGMENT_VARIABLE(rf_state, rf_state_t, SI_SEG_XDATA);
-extern SI_SEGMENT_VARIABLE(sniffing_mode, rf_sniffing_mode_t, SI_SEG_XDATA);
+extern __xdata uint8_t RF_DATA_STATUS;
+extern __xdata rf_state_t rf_state;
+extern __xdata rf_sniffing_mode_t sniffing_mode;
 
-extern SI_SEGMENT_VARIABLE(last_sniffing_command, uint8_t, SI_SEG_XDATA);
+extern __xdata uint8_t last_sniffing_command;
 
-extern SI_SEGMENT_VARIABLE(SYNC_LOW, uint16_t, SI_SEG_XDATA);
-extern SI_SEGMENT_VARIABLE(BIT_HIGH, uint16_t, SI_SEG_XDATA);
-extern SI_SEGMENT_VARIABLE(BIT_LOW, uint16_t, SI_SEG_XDATA);
+extern __xdata uint16_t SYNC_LOW;
+extern __xdata uint16_t BIT_HIGH;
+extern __xdata uint16_t BIT_LOW;
 
-extern SI_SEGMENT_VARIABLE(actual_byte, uint8_t, SI_SEG_XDATA);
+extern __xdata uint8_t actual_byte;
 
-extern SI_SEGMENT_VARIABLE(buckets[7], uint16_t, SI_SEG_XDATA);
+extern __xdata uint16_t buckets[7];
 
 #if INCLUDE_BUCKET_SNIFFING == 1
-extern SI_SEGMENT_VARIABLE(bucket_sync, uint16_t, SI_SEG_XDATA);
-extern SI_SEGMENT_VARIABLE(bucket_count, uint8_t, SI_SEG_XDATA);
+extern __xdata uint16_t bucket_sync;
+extern __xdata uint8_t bucket_count;
 #endif
 
-#endif /* INC_RF_HANDLING_H_ */
+#endif // INC_RF_HANDLING_H_

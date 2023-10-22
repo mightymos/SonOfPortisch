@@ -7,6 +7,7 @@
 #ifndef __UART_0_H__
 #define __UART_0_H__
 
+//#include <EFM8BB1.h>
 
 #include "efm8_config.h"
 #include "SI_EFM8BB1_Register_Enums.h"

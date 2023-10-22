@@ -6,21 +6,17 @@
 // or they will be overwritten!
 //=========================================================
 
-// USER INCLUDES
 #include <SI_EFM8BB1_Register_Enums.h>
+
 #include "InitDevice.h"
 
-// USER PROTOTYPES
-// USER FUNCTIONS
 
-// $[Library Includes]
-// [Library Includes]$
 
 //==============================================================================
 // enter_DefaultMode_from_RESET
 //==============================================================================
-extern void enter_DefaultMode_from_RESET(void) {
-	// $[Config Calls]
+void enter_DefaultMode_from_RESET(void)
+{
 	WDT_0_enter_DefaultMode_from_RESET();
 	PORTS_0_enter_DefaultMode_from_RESET();
 	PORTS_1_enter_DefaultMode_from_RESET();
@@ -34,8 +30,6 @@ extern void enter_DefaultMode_from_RESET(void) {
 	PCACH_0_enter_DefaultMode_from_RESET();
 	UART_0_enter_DefaultMode_from_RESET();
 	INTERRUPT_0_enter_DefaultMode_from_RESET();
-	// [Config Calls]$
-
 }
 
 //================================================================================

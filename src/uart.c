@@ -5,8 +5,9 @@
  *      Author:
  */
 
-#include <SI_EFM8BB1_Register_Enums.h>
+//#include <SI_EFM8BB1_Register_Enums.h>
 #include <string.h>
+
 #include "Globals.h"
 #include "uart_0.h"
 #include "uart.h"
@@ -16,17 +17,20 @@
 //-----------------------------------------------------------------------------
 // Global Variables
 //-----------------------------------------------------------------------------
-SI_SEGMENT_VARIABLE(UART_RX_Buffer[UART_RX_BUFFER_SIZE], uint8_t, SI_SEG_XDATA);
-SI_SEGMENT_VARIABLE(UART_TX_Buffer[UART_TX_BUFFER_SIZE], uint8_t, SI_SEG_DATA);
-SI_SEGMENT_VARIABLE(UART_RX_Buffer_Position, static volatile uint8_t,  SI_SEG_XDATA)=0;
-SI_SEGMENT_VARIABLE(UART_TX_Buffer_Position, static volatile uint8_t,  SI_SEG_XDATA)=0;
-SI_SEGMENT_VARIABLE(UART_Buffer_Read_Position, static volatile uint8_t,  SI_SEG_XDATA)=0;
-SI_SEGMENT_VARIABLE(UART_Buffer_Write_Position, static volatile uint8_t,  SI_SEG_XDATA)=0;
-SI_SEGMENT_VARIABLE(UART_Buffer_Write_Len, static volatile uint8_t,  SI_SEG_XDATA)=0;
-SI_SEGMENT_VARIABLE(lastRxError, static volatile uint8_t,  SI_SEG_XDATA)=0;
-SI_SEGMENT_VARIABLE(TX_Finished, bool, SI_SEG_DATA) = false;
-SI_SEGMENT_VARIABLE(uart_state, uart_state_t, SI_SEG_XDATA) = IDLE;
-SI_SEGMENT_VARIABLE(uart_command, uart_command_t, SI_SEG_XDATA) = NONE;
+__xdata uint8_t UART_RX_Buffer[UART_RX_BUFFER_SIZE];
+__xdata uint8_t UART_TX_Buffer[UART_TX_BUFFER_SIZE];
+
+__xdata static volatile uint8_t UART_RX_Buffer_Position = 0;
+__xdata static volatile uint8_t UART_TX_Buffer_Position = 0;
+__xdata static volatile uint8_t UART_Buffer_Read_Position = 0;
+__xdata static volatile uint8_t UART_Buffer_Write_Position = 0;
+__xdata static volatile uint8_t UART_Buffer_Write_Len = 0;
+__xdata static volatile uint8_t lastRxError = 0;
+
+bool TX_Finished = false;
+
+__xdata uart_state_t uart_state = IDLE;
+__xdata uart_command_t uart_command = NONE;
 
 //-----------------------------------------------------------------------------
 // UART ISR Callbacks
@@ -42,7 +46,7 @@ void UART0_transmitCompleteCb()
 //=========================================================
 // Interrupt API
 //=========================================================
-SI_INTERRUPT(UART0_ISR, UART0_IRQn)
+void UART0_ISR(void) __interrupt (4)
 {
 	//Buffer and clear flags immediately so we don't miss an interrupt while processing
 	uint8_t flags = SCON0 & (UART0_RX_IF | UART0_TX_IF);
