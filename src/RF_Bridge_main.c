@@ -63,6 +63,23 @@ void finish_command(uint8_t command)
 	PCA0_DoSniffing(last_sniffing_command);
 }
 
+void serial_test(void)
+{
+    uint16_t index;
+
+    // silly delay
+    for (index = 0; index < 60000; index++)
+    {
+    }
+    
+    LED = !LED;
+    
+    printf_tiny("loop\r\n");
+    //uart_put_command(0x4a);
+    
+    //UART0_initTxPolling();
+}
+
 //-----------------------------------------------------------------------------
 // main() Routine
 // ----------------------------------------------------------------------------
@@ -70,8 +87,9 @@ int main (void)
 {
     __xdata rf_sniffing_mode_t last_sniffing_mode;
     __xdata uint8_t tr_repeats;
-    __xdata uint16_t index;
     __xdata uint16_t bucket;
+    
+    __xdata uint16_t index;
     
 
 	// Call hardware initialization routine
@@ -106,22 +124,9 @@ int main (void)
 
 	BUZZER = BUZZER_OFF;
     
-    while(true)
-    {
-        // silly delay
-        for (index = 0; index < 60000; index++)
-        {
-        }
-        
-        LED = !LED;
-        
-        printf_tiny("loop\r\n");
-        
-        UART0_initTxPolling();
-        //uart_put_command(0x4a);
-    }
+
     
-    //printf_tiny("startup...\r\n");
+    printf_tiny("startup...\r\n");
 
 	while (1)
 	{
@@ -135,9 +140,25 @@ int main (void)
 		// check if something got received by UART
 		// read only data from uart if idle
 		if (ReadUARTData)
+        {
 			rxdata = uart_getc();
-		else
+		} else {
 			rxdata = UART_NO_DATA;
+        }
+        
+        
+#if 1
+        // check if serial transmit buffer is empty
+        if(!is_uart_tx_buffer_empty())
+        {
+            if (is_uart_tx_finished())
+            {
+                // if not empty, set TI, which triggers interrupt to actually transmit
+                UART0_initTxPolling();
+            }
+        }
+        
+#endif
 
 		if (rxdata == UART_NO_DATA)
 		{

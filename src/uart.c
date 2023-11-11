@@ -27,7 +27,7 @@ __xdata static volatile uint8_t UART_Buffer_Write_Position = 0;
 __xdata static volatile uint8_t UART_Buffer_Write_Len = 0;
 __xdata static volatile uint8_t lastRxError = 0;
 
-bool TX_Finished = false;
+bool static volatile TX_Finished = true;
 
 __xdata uart_state_t uart_state = IDLE;
 __xdata uart_command_t uart_command = NONE;
@@ -56,7 +56,7 @@ void UART0_ISR(void) __interrupt (4)
 	SCON0 &= ~flags;
 
 	// receiving byte
-	if ((flags &  SCON0_RI__SET))
+	if ((flags & SCON0_RI__SET))
 	{
         // store received data in buffer
     	UART_RX_Buffer[UART_RX_Buffer_Position] = UART0_read();
@@ -64,7 +64,9 @@ void UART0_ISR(void) __interrupt (4)
 
         // set to beginning of buffer if end is reached
         if ( UART_RX_Buffer_Position == UART_RX_BUFFER_SIZE )
+        {
 	    	UART_RX_Buffer_Position = 0;
+        }
 	}
 
 	// transmit byte
@@ -75,20 +77,22 @@ void UART0_ISR(void) __interrupt (4)
 			UART0_write(UART_TX_Buffer[UART_Buffer_Write_Position]);
 			UART_Buffer_Write_Position++;
 			UART_Buffer_Write_Len--;
-		}
-		else
+            
+            TX_Finished = false;
+		} else {
 			TX_Finished = true;
+        }
 
 		if (UART_Buffer_Write_Position == UART_TX_BUFFER_SIZE)
+        {
 			UART_Buffer_Write_Position = 0;
+        }
 	}
 }
 
 void UART0_init(UART0_RxEnable_t rxen, UART0_Width_t width, UART0_Multiproc_t mce)
 {
-    SCON0 &= ~(SCON0_SMODE__BMASK
-               | SCON0_MCE__BMASK
-               | SCON0_REN__BMASK);
+    SCON0 &= ~(SCON0_SMODE__BMASK | SCON0_MCE__BMASK | SCON0_REN__BMASK);
     SCON0 = mce | rxen | width;
 }
 
@@ -108,28 +112,46 @@ uint8_t UART0_read(void)
 }
 
 #if 0
-int putchar (int c)
-{
-    // assumes UART is initialized
-    while (!TI);
-    TI = 0;
-    SBUF = c;
-    return c;
-}
+
+    int putchar (int c)
+    {
+        // assumes UART is initialized
+        while (!TI);
+        TI = 0;
+        SBUF = c;
+        return c;
+    }
 
 #else
 
-int putchar (int c)
-{
-    // basically a wrapper
-    uart_putc(c);
-}
+    int putchar (int c)
+    {
+        // basically a wrapper
+        uart_putc(c);
+    }
 
 #endif
 
-void uart_wait_until_TX_finished(void)
+//void uart_wait_until_TX_finished(void)
+//{
+//	while(!TX_Finished);
+//}
+
+bool is_uart_tx_finished(void)
 {
-	while(!TX_Finished);
+    return TX_Finished;
+}
+
+bool is_uart_tx_buffer_empty(void)
+{
+    bool isBufferEmpty = true;
+    
+    if ( UART_Buffer_Write_Len > 0 )
+    {
+        isBufferEmpty = false;
+    }
+    
+    return isBufferEmpty;
 }
 
 
@@ -143,8 +165,10 @@ unsigned int uart_getc(void)
 {
 	unsigned int rxdata;
 
-    if ( UART_Buffer_Read_Position == UART_RX_Buffer_Position ) {
-        return UART_NO_DATA;   /* no data available */
+    if ( UART_Buffer_Read_Position == UART_RX_Buffer_Position )
+    {
+        // no data available
+        return UART_NO_DATA;
     }
 
     // get data from receive buffer
@@ -152,10 +176,14 @@ unsigned int uart_getc(void)
     UART_Buffer_Read_Position++;
 
     if (UART_Buffer_Read_Position == UART_RX_BUFFER_SIZE)
+    {
     	UART_Buffer_Read_Position = 0;
+    }
 
     rxdata |= (lastRxError << 8);
+    
     lastRxError = 0;
+    
     return rxdata;
 }
 
@@ -170,7 +198,9 @@ void uart_putc(uint8_t txdata)
 	TX_Finished = false;
 
 	if (UART_TX_Buffer_Position == UART_TX_BUFFER_SIZE)
+    {
 		UART_TX_Buffer_Position = 0;
+    }
 
 	UART_TX_Buffer[UART_TX_Buffer_Position] = txdata;
 	UART_TX_Buffer_Position++;
@@ -182,7 +212,6 @@ void uart_put_command(uint8_t command)
 	uart_putc(RF_CODE_START);
 	uart_putc(command);
 	uart_putc(RF_CODE_STOP);
-	UART0_initTxPolling();
 }
 
 void uart_put_RF_Data_Advanced(uint8_t Command, uint8_t protocol_index)
@@ -214,9 +243,9 @@ void uart_put_RF_Data_Advanced(uint8_t Command, uint8_t protocol_index)
 		uart_putc(RF_DATA[i]);
 		i++;
 	}
+    
 	uart_putc(RF_CODE_STOP);
 
-	UART0_initTxPolling();
 }
 
 void uart_put_RF_Data_Standard(uint8_t Command)
@@ -244,9 +273,8 @@ void uart_put_RF_Data_Standard(uint8_t Command)
 		uart_putc(RF_DATA[i]);
 		i++;
 	}
+    
 	uart_putc(RF_CODE_STOP);
-
-	UART0_initTxPolling();
 }
 
 #if INCLUDE_BUCKET_SNIFFING == 1
@@ -296,6 +324,5 @@ void uart_put_RF_buckets(uint8_t Command)
 
 	uart_putc(RF_CODE_STOP);
 
-	UART0_initTxPolling();
 }
 #endif

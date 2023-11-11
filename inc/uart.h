@@ -111,6 +111,10 @@ uint8_t UART0_read(void);
 
 void uart_putc(uint8_t txdata);
 
+bool is_uart_tx_finished(void);
+bool is_uart_tx_buffer_empty(void);
+
+
 extern unsigned int uart_getc(void);
 extern void uart_put_command(uint8_t command);
 extern void uart_put_RF_Data_Advanced(uint8_t Command, uint8_t protocol_index);
