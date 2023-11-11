@@ -116,6 +116,8 @@ int main (void)
         LED = !LED;
         
         printf_tiny("loop\r\n");
+        
+        UART0_initTxPolling();
         //uart_put_command(0x4a);
     }
     
