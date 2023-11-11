@@ -8,7 +8,7 @@
 
 #include "assert.h"
 
-uint8_t PCA0_getIntFlags()
+uint8_t PCA0_getIntFlags(void)
 {
   uint8_t val;
   val = PCA0CN0 & (PCA0_OVERFLOW_IF
@@ -84,7 +84,7 @@ void PCA0_writeChannel(PCA0_Channel_t channel, uint16_t value)
   }
 }
 
-uint16_t PCA0_readCounter()
+uint16_t PCA0_readCounter(void)
 {
   //PCA0L must be read first for accurate results. If PCA0
   //  is returned then PCA0H will be read first (compiler specific).
@@ -96,12 +96,12 @@ void PCA0_writeCounter(uint16_t value)
   PCA0 = value;
 }
 
-void PCA0_run()
+void PCA0_run(void)
 {
   PCA0CN0_CR = 1;
 }
 
-void PCA0_halt()
+void PCA0_halt(void)
 {
   PCA0CN0_CR = 0;
 }
@@ -185,7 +185,7 @@ void PCA0_initChannel(PCA0_Channel_t channel,
   }
 }
 
-void PCA0_reset()
+void PCA0_reset(void)
 {
   //Reset channels
   uint8_t i;

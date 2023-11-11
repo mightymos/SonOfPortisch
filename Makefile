@@ -86,7 +86,6 @@ SRCS := \
 	src/RF_Bridge_main.c \
     src/RF_Handling.c \
     src/uart.c \
-    src/uart_0.c \
     src/wdt_0.c
 
 CONSOLE_BAUDRATE := 19200

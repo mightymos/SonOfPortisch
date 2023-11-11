@@ -5,11 +5,11 @@
  *      Author:
  */
 
-//#include <SI_EFM8BB1_Register_Enums.h>
+#include <SI_EFM8BB1_Register_Enums.h>
 #include <string.h>
 
 #include "Globals.h"
-#include "uart_0.h"
+//#include "uart_0.h"
 #include "uart.h"
 #include "RF_Handling.h"
 #include "RF_Protocols.h"
@@ -35,27 +35,30 @@ __xdata uart_command_t uart_command = NONE;
 //-----------------------------------------------------------------------------
 // UART ISR Callbacks
 //-----------------------------------------------------------------------------
-void UART0_receiveCompleteCb()
+void UART0_receiveCompleteCb(void)
 {
 }
 
-void UART0_transmitCompleteCb()
+void UART0_transmitCompleteCb(void)
 {
 }
 
-//=========================================================
-// Interrupt API
-//=========================================================
+
 void UART0_ISR(void) __interrupt (4)
 {
-	//Buffer and clear flags immediately so we don't miss an interrupt while processing
+    // UART0 TX Interrupt
+    #define UART0_TX_IF SCON0_TI__BMASK
+    // UART0 RX Interrupt
+    #define UART0_RX_IF SCON0_RI__BMASK
+
+	// buffer and clear flags immediately so we don't miss an interrupt while processing
 	uint8_t flags = SCON0 & (UART0_RX_IF | UART0_TX_IF);
 	SCON0 &= ~flags;
 
 	// receiving byte
 	if ((flags &  SCON0_RI__SET))
 	{
-        /* store received data in buffer */
+        // store received data in buffer
     	UART_RX_Buffer[UART_RX_Buffer_Position] = UART0_read();
         UART_RX_Buffer_Position++;
 
@@ -81,10 +84,34 @@ void UART0_ISR(void) __interrupt (4)
 	}
 }
 
+void UART0_init(UART0_RxEnable_t rxen, UART0_Width_t width, UART0_Multiproc_t mce)
+{
+    SCON0 &= ~(SCON0_SMODE__BMASK
+               | SCON0_MCE__BMASK
+               | SCON0_REN__BMASK);
+    SCON0 = mce | rxen | width;
+}
+
+void UART0_initTxPolling(void)
+{
+  SCON0_TI = 1;
+}
+
+void UART0_write(uint8_t value)
+{
+	SBUF0 = value;
+}
+
+uint8_t UART0_read(void)
+{
+  return SBUF0;
+}
+
 void uart_wait_until_TX_finished(void)
 {
 	while(!TX_Finished);
 }
+
 
 /*************************************************************************
 Function: uart_getc()
@@ -100,7 +127,7 @@ unsigned int uart_getc(void)
         return UART_NO_DATA;   /* no data available */
     }
 
-    /* get data from receive buffer */
+    // get data from receive buffer
     rxdata = UART_RX_Buffer[UART_Buffer_Read_Position];
     UART_Buffer_Read_Position++;
 

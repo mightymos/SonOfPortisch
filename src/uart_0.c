@@ -6,7 +6,7 @@
 
 #include "uart_0.h"
 
-uint8_t UART0_getIntFlags()
+uint8_t UART0_getIntFlags(void)
 {
   return SCON0 & (UART0_TX_IF | UART0_RX_IF);
 }
@@ -16,7 +16,7 @@ void UART0_clearIntFlag(uint8_t flag)
   SCON0 &= ~(flag);
 }
 
-void UART0_initTxPolling()
+void UART0_initTxPolling(void)
 {
   SCON0_TI = 1;
 }
@@ -30,6 +30,8 @@ uint8_t UART0_read(void)
 {
   return SBUF0;
 }
+
+
 void UART0_writeWithExtraBit(uint16_t value)
 {
 	SCON0_TB8 = value >> 8;
@@ -49,7 +51,7 @@ void UART0_init(UART0_RxEnable_t rxen, UART0_Width_t width, UART0_Multiproc_t mc
     SCON0 = mce | rxen | width;
 }
 
-void UART0_reset()
+void UART0_reset(void)
 {
 	SCON0 = SCON0_SMODE__8_BIT
 			| SCON0_MCE__MULTI_DISABLED
@@ -66,10 +68,10 @@ void UART0_reset()
 #if EFM8PDL_UART0_USE_BUFFER == 1
 
 /**
- * Internal variable fort tracking buffer transfers. transferLenth[UART0_TX_TRANSFER] = bytes remaining in transfer.
+ * Internal variable for tracking buffer transfers. transferLenth[UART0_TX_TRANSFER] = bytes remaining in transfer.
  */
-SI_SEGMENT_VARIABLE(txRemaining, static uint8_t,  SI_SEG_XDATA)=0;
-SI_SEGMENT_VARIABLE(rxRemaining, static uint8_t,  SI_SEG_XDATA)=0;
+__xdata static uint8_t txRemaining = 0;
+__xdata static uint8_t rxRemaining = 0;
 SI_SEGMENT_VARIABLE_SEGMENT_POINTER(txBuffer,    static uint8_t, EFM8PDL_UART0_TX_BUFTYPE, SI_SEG_XDATA);
 SI_SEGMENT_VARIABLE_SEGMENT_POINTER(rxBuffer,    static uint8_t, EFM8PDL_UART0_RX_BUFTYPE, SI_SEG_XDATA);
 
@@ -105,10 +107,7 @@ SI_INTERRUPT(UART0_ISR, UART0_IRQn)
   }
 }
 
-void UART0_writeBuffer(SI_VARIABLE_SEGMENT_POINTER(buffer,
-                                                uint8_t,
-                                                EFM8PDL_UART0_TX_BUFTYPE),
-                       uint8_t length)
+void UART0_writeBuffer(SI_VARIABLE_SEGMENT_POINTER(buffer, uint8_t, EFM8PDL_UART0_TX_BUFTYPE), uint8_t length)
 {
   //Init internal data
   txBuffer = buffer+1;
@@ -118,32 +117,29 @@ void UART0_writeBuffer(SI_VARIABLE_SEGMENT_POINTER(buffer,
   SBUF0 = *buffer;
 }
 
-void UART0_readBuffer(SI_VARIABLE_SEGMENT_POINTER(buffer,
-		                                       uint8_t,
-		                                       EFM8PDL_UART0_RX_BUFTYPE),
-		              uint8_t length)
+void UART0_readBuffer(SI_VARIABLE_SEGMENT_POINTER(buffer, uint8_t, EFM8PDL_UART0_RX_BUFTYPE), uint8_t length)
 {
   //Init internal data
   rxBuffer = buffer;
   rxRemaining = length;
 }
 
-void UART0_abortWrite()
+void UART0_abortWrite(void)
 {
   txRemaining = 0;
 }
 
-void UART0_abortRead()
+void UART0_abortRead(void)
 {
   rxRemaining = 0;
 }
 
-uint8_t UART0_txBytesRemaining()
+uint8_t UART0_txBytesRemaining(void)
 {
   return txRemaining;
 }
 
-uint8_t UART0_rxBytesRemaining()
+uint8_t UART0_rxBytesRemaining(void)
 {
   return rxRemaining;
 }
@@ -161,13 +157,13 @@ char putchar(char c){
   return c;
 }
 
-char _getkey(){
+char _getkey(void){
   while(!SCON0_RI);
   SCON0_RI = 0;
   return SBUF0;
 }
 
-#elif defined __ICC8051__
+#elif (defined __ICC8051__ || __SDCC_mcs51 )
 
 int putchar(int c){
   while(!SCON0_TI);
@@ -184,7 +180,7 @@ int getchar(void){
 
 #endif
 
-void UART0_initStdio()
+void UART0_initStdio(void)
 {
   SCON0 |= SCON0_REN__RECEIVE_ENABLED | SCON0_TI__SET;
 }

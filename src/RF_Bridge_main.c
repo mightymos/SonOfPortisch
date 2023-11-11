@@ -10,23 +10,27 @@
 
 //#include <EFM8BB1.h>
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdint.h>
 
 #include "Globals.h"
 #include "InitDevice.h"
-
-#include "uart_0.h"
-#include "pca_0.h"
-#include "wdt_0.h"
-
-#include "uart.h"
-
 #include "RF_Handling.h"
 #include "RF_Protocols.h"
+#include "uart.h"
+
+#include "pca_0.h"
+//#include "uart_0.h"
+#include "wdt_0.h"
+
 
 bool ReadUARTData = true;
 
+// sdcc manual section 3.8.1 general information
+void UART0_ISR(void) __interrupt (4);
+
+//SI_INTERRUPT(PCA0_ISR, PCA0_IRQn);
 
 //-----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -37,7 +41,13 @@ bool ReadUARTData = true;
 //-----------------------------------------------------------------------------
 unsigned char __sdcc_external_startup(void)
 {
-
+    // pg. 218, sec. 20.3 disable watchdog timer
+    IE_EA = 0;
+    WDTCN = 0xDE;
+    WDTCN = 0xAD;
+    
+    //IE_EA = 1; re-enable interrupts
+    
     return 0;
 }
 
@@ -60,7 +70,7 @@ int main (void)
 {
     __xdata rf_sniffing_mode_t last_sniffing_mode;
     __xdata uint8_t tr_repeats;
-    __xdata uint16_t l;
+    __xdata uint16_t index;
     __xdata uint16_t bucket;
     
 
@@ -68,30 +78,48 @@ int main (void)
 	enter_DefaultMode_from_RESET();
 
 	// enter default state
-	LED = LED_OFF;
+	LED = LED_ON;
 	BUZZER = BUZZER_OFF;
 	T_DATA = TDATA_OFF;
 
 	// enable UART
 	UART0_init(UART0_RX_ENABLE, UART0_WIDTH_8, UART0_MULTIPROC_DISABLE);
+    //UART0_initStdio();
 
 	// start sniffing if enabled by default
-#if Sniffing_On == 1
-	// set desired sniffing type to PT2260
-	sniffing_mode = STANDARD;
-	PCA0_DoSniffing(RF_CODE_RFIN);
-	last_sniffing_command = RF_CODE_RFIN;
-#else
-	PCA0_StopSniffing();
-#endif
+//#if Sniffing_On == 1
+//	// set desired sniffing type to PT2260
+//	sniffing_mode = STANDARD;
+//	PCA0_DoSniffing(RF_CODE_RFIN);
+//	last_sniffing_command = RF_CODE_RFIN;
+//#else
+//	PCA0_StopSniffing();
+//#endif
 
 	// enable global interrupts
 	IE_EA = 1;
 
-	for (l = 0; l < 10000; l++)
+	for (index = 0; index < 10000; index++)
+    {
 		BUZZER = BUZZER_ON;
+    }
 
 	BUZZER = BUZZER_OFF;
+    
+    while(true)
+    {
+        // silly delay
+        for (index = 0; index < 60000; index++)
+        {
+        }
+        
+        LED = !LED;
+        
+        //printf_tiny("loop\r\n");
+        uart_put_command(0x4a);
+    }
+    
+    //printf_tiny("startup...\r\n");
 
 	while (1)
 	{
@@ -99,12 +127,10 @@ int main (void)
 		uint8_t len;
 		uint8_t position;
 
-		/* reset Watch Dog Timer */
+		// reset Watch Dog Timer
 		WDT0_feed();
 
-		/*------------------------------------------
-		 * check if something got received by UART
-		 ------------------------------------------*/
+		// check if something got received by UART
 		// read only data from uart if idle
 		if (ReadUARTData)
 			rxdata = uart_getc();
@@ -114,15 +140,15 @@ int main (void)
 		if (rxdata == UART_NO_DATA)
 		{
 			if (uart_state == IDLE)
-				l = 0;
+				index = 0;
 			else
 			{
-				if (++l > 10000)
+				if (++index > 10000)
 					BUZZER = BUZZER_ON;
 
-				if (l > 30000)
+				if (index > 30000)
 				{
-					l = 0;
+					index = 0;
 					uart_state = IDLE;
 					uart_command = NONE;
 					BUZZER = BUZZER_OFF;
@@ -131,7 +157,7 @@ int main (void)
 		}
 		else
 		{
-			l = 0;
+			index = 0;
 
 			// state machine for UART
 			switch(uart_state)

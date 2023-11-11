@@ -70,15 +70,15 @@
 //SI_SBIT(T_DATA, SFR_P0, 0);		// T_DATA
 //SI_SBIT(R_DATA, SFR_P1, 3);		// R_DATA
 //SI_SBIT(BUZZER, SFR_P1, 6);		// BUZZER
-__sbit __at (0x90) LED;
-__sbit __at (0x80) T_DATA;
-__sbit __at (0x93) R_DATA;
-__sbit __at (0x96) BUZZER;
+//__sbit __at (0x90) LED;
+//__sbit __at (0x80) T_DATA;
+//__sbit __at (0x93) R_DATA;
+//__sbit __at (0x96) BUZZER;
 
-//#define LED    P1_0
-//#define T_DATA P0_0
-//#define R_DATA P1_3
-//#define BUZZER P1_6
+#define LED    P1_B0
+#define T_DATA P0_B0
+#define R_DATA P1_B3
+#define BUZZER P1_B6
 
 
 extern void InitTimer2_us(uint16_t interval, uint16_t timeout);

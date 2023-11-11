@@ -70,9 +70,9 @@ __xdata uint8_t buffer_buckets_positions = 0;
 //-----------------------------------------------------------------------------
 // Callbacks
 //-----------------------------------------------------------------------------
-void PCA0_overflowCb() { }
+void PCA0_overflowCb(void) { }
 
-void PCA0_intermediateOverflowCb() { }
+void PCA0_intermediateOverflowCb(void) { }
 
 uint8_t Compute_CRC8_Simple_OneByte(uint8_t byteVal)
 {
@@ -360,7 +360,7 @@ bool buffer_out(uint16_t* bucket)
 	return true;
 }
 
-void PCA0_channel0EventCb()
+void PCA0_channel0EventCb(void)
 {
 	uint16_t current_capture_value = PCA0CP0 * 10;
 	uint8_t flags = PCA0MD;
@@ -383,9 +383,9 @@ void PCA0_channel0EventCb()
 	}
 }
 
-void PCA0_channel1EventCb() { }
+void PCA0_channel1EventCb(void) { }
 
-void PCA0_channel2EventCb() { }
+void PCA0_channel2EventCb(void) { }
 
 void SetTimer0Overflow(uint8_t T0_Overflow)
 {
@@ -461,9 +461,7 @@ bool SendSingleBucket(bool high_low, uint16_t bucket_time)
 // Send generic signal based on n time bucket pairs (high/low timing)
 //-----------------------------------------------------------------------------
 #if INCLUDE_BUCKET_SNIFFING == 1
-void SendRFBuckets(
-		uint16_t* buckets,
-		uint8_t* rfdata, uint8_t data_len)
+void SendRFBuckets(uint16_t* buckets, uint8_t* rfdata, uint8_t data_len)
 {
 	// start transmit of the buckets with a high bucket
 	bool high_low = true;

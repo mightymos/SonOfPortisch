@@ -367,7 +367,7 @@ void UART0_clearIntFlag(uint8_t flag);
  * to initialize the UART.
  *
  ******************************************************************************/
-void UART0_initTxPolling();
+void UART0_initTxPolling(void);
 
 /***************************************************************************//**
  * @brief
@@ -460,7 +460,7 @@ void UART0_init(UART0_RxEnable_t rxen, UART0_Width_t width, UART0_Multiproc_t mc
  * Restore the UART to it's uninitialized (reset) state.
  *
  ******************************************************************************/
-void UART0_reset();
+void UART0_reset(void);
 
 /** @} (end uart0_init UART0 Initialization API) */
 
@@ -513,7 +513,7 @@ void UART0_readBuffer(SI_VARIABLE_SEGMENT_POINTER(buffer,
  * data will be pulled out of the TX buffer.
  *
  ******************************************************************************/
-void UART0_abortWrite();
+void UART0_abortWrite(void);
 
 /***************************************************************************//**
  * @brief
@@ -522,7 +522,7 @@ void UART0_abortWrite();
  * No more data will be written to the RX buffer.
  *
  ******************************************************************************/
-void UART0_abortRead();
+void UART0_abortRead(void);
 
 /***************************************************************************//**
  * @brief
@@ -533,7 +533,7 @@ void UART0_abortRead();
  *
  * @returns 0 if transfer is not in progress.
  ******************************************************************************/
-uint8_t UART0_txBytesRemaining();
+uint8_t UART0_txBytesRemaining(void);
 
 /***************************************************************************//**
  * @brief
@@ -543,7 +543,7 @@ uint8_t UART0_txBytesRemaining();
  * number of btyes remaining in RX buffer. 0 if no transfer is in progress.
  *
  ******************************************************************************/
-uint8_t UART0_rxBytesRemaining();
+uint8_t UART0_rxBytesRemaining(void);
 /** @} (end uart0_buffer UART0 Buffer Access API) */
 
 /**************************************************************************//**
@@ -583,7 +583,7 @@ uint8_t UART0_rxBytesRemaining();
  * This function is called from an ISR and should be as short as possible.
  *
  ******************************************************************************/
-void UART0_receiveCompleteCb();
+void UART0_receiveCompleteCb(void);
 
 /***************************************************************************//**
  * @brief
@@ -595,7 +595,7 @@ void UART0_receiveCompleteCb();
  * This function is called from an ISR and should be as short as possible.
  *
  ******************************************************************************/
-void UART0_transmitCompleteCb();
+void UART0_transmitCompleteCb(void);
 
 #endif //EFM8PDL_UART0_USE_BUFFER
 /** @} (end uart0_callbacks_buffer Buffer Access API) */
@@ -625,7 +625,7 @@ void UART0_transmitCompleteCb();
  * once durring device initialization **before** using STDIO.
  *
  ******************************************************************************/
-void UART0_initStdio();
+void UART0_initStdio(void);
 
 #endif //EFM8PDL_UART0_USE_STDIO
 /** @} (end uart0_stdio UART0 STDIO API) */
