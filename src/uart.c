@@ -107,6 +107,26 @@ uint8_t UART0_read(void)
   return SBUF0;
 }
 
+#if 0
+int putchar (int c)
+{
+    // assumes UART is initialized
+    while (!TI);
+    TI = 0;
+    SBUF = c;
+    return c;
+}
+
+#else
+
+int putchar (int c)
+{
+    // basically a wrapper
+    uart_putc(c);
+}
+
+#endif
+
 void uart_wait_until_TX_finished(void)
 {
 	while(!TX_Finished);

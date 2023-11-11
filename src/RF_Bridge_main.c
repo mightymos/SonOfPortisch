@@ -115,8 +115,8 @@ int main (void)
         
         LED = !LED;
         
-        //printf_tiny("loop\r\n");
-        uart_put_command(0x4a);
+        printf_tiny("loop\r\n");
+        //uart_put_command(0x4a);
     }
     
     //printf_tiny("startup...\r\n");

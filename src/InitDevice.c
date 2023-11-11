@@ -452,16 +452,11 @@ extern void INTERRUPT_0_enter_DefaultMode_from_RESET(void) {
 	//		| EIE1_ECP1__DISABLED | EIE1_EMAT__DISABLED | EIE1_EPCA0__ENABLED
 	//		| EIE1_ESMB0__DISABLED | EIE1_ET3__ENABLED;
     
-    //EIE1 = EIE1 | EIE1_EPCA0__ENABLED;
-    //EIE1 = EIE1 | EIE1_ET3__ENABLED;
+    EIE1 = EIE1 | EIE1_EPCA0__ENABLED;
+    EIE1 = EIE1 | EIE1_ET3__ENABLED;
     
     
-	// [EIE1 - Extended Interrupt Enable 1]$
 
-	// $[EIP1 - Extended Interrupt Priority 1]
-	// [EIP1 - Extended Interrupt Priority 1]$
-
-	// $[IE - Interrupt Enable]
 	/***********************************************************************
 	 - Enable each interrupt according to its individual mask setting
 	 - Disable external interrupt 0
@@ -477,14 +472,9 @@ extern void INTERRUPT_0_enter_DefaultMode_from_RESET(void) {
 	//		| IE_ET2__ENABLED | IE_ES0__ENABLED;
     
     IE = IE | IE_ES0__ENABLED;
-    //IE = IE | IE_ET2__ENABLED;
+    IE = IE | IE_ET2__ENABLED;
             
             
-	// [IE - Interrupt Enable]$
-
-	// $[IP - Interrupt Priority]
-	// [IP - Interrupt Priority]$
-
 }
 
 extern void TIMER16_2_enter_DefaultMode_from_RESET(void) {
@@ -494,30 +484,11 @@ extern void TIMER16_2_enter_DefaultMode_from_RESET(void) {
 	TMR2CN0_TR2_save = TMR2CN0 & TMR2CN0_TR2__BMASK;
 	// Stop Timer
 	TMR2CN0 &= ~(TMR2CN0_TR2__BMASK);
-	// [Timer Initialization]$
 
-	// $[TMR2CN0 - Timer 2 Control]
-	// [TMR2CN0 - Timer 2 Control]$
-
-	// $[TMR2H - Timer 2 High Byte]
-	// [TMR2H - Timer 2 High Byte]$
-
-	// $[TMR2L - Timer 2 Low Byte]
-	// [TMR2L - Timer 2 Low Byte]$
-
-	// $[TMR2RLH - Timer 2 Reload High Byte]
-	// [TMR2RLH - Timer 2 Reload High Byte]$
-
-	// $[TMR2RLL - Timer 2 Reload Low Byte]
-	// [TMR2RLL - Timer 2 Reload Low Byte]$
-
-	// $[TMR2CN0]
-	// [TMR2CN0]$
 
 	// $[Timer Restoration]
 	// Restore Timer Configuration
 	TMR2CN0 |= TMR2CN0_TR2_save;
-	// [Timer Restoration]$
 
 }
 

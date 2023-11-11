@@ -109,6 +109,7 @@ void UART0_initTxPolling(void);
 void UART0_write(uint8_t value);
 uint8_t UART0_read(void);
 
+void uart_putc(uint8_t txdata);
 
 extern unsigned int uart_getc(void);
 extern void uart_put_command(uint8_t command);
