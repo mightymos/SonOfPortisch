@@ -268,6 +268,7 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 					START_INC(status[0]);
 					SYNC_LOW = duration;
 
+                    //FIXME: changed to eliminate divide and multiply
 					buckets[0] = duration / 31;
 					buckets[1] = buckets[0] * 3;
 					buckets[2] = duration;
@@ -362,6 +363,7 @@ bool buffer_out(uint16_t* bucket)
 
 void PCA0_channel0EventCb(void)
 {
+    //FIXME: possible to eliminate multiplication to save code size?
 	uint16_t current_capture_value = PCA0CP0 * 10;
 	uint8_t flags = PCA0MD;
 
@@ -399,6 +401,7 @@ uint8_t PCA0_DoSniffing(uint8_t active_command)
 {
 	uint8_t ret = last_sniffing_command;
 
+    // FIXME: possible to remove to save code size?
 	memset(status, 0, sizeof(PROTOCOL_STATUS) * PROTOCOLCOUNT);
 
 	// restore timer to 100000Hz, 10µs interval

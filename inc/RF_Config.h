@@ -10,7 +10,7 @@
  *  Also a option is not including the 0xB1 bucket sniffing as this is only needed to define new protocols
  */
 
-#define INCLUDE_BUCKET_SNIFFING					1
+#define INCLUDE_BUCKET_SNIFFING					0
 
 // typical protocols, disable here!             Enable	Remarks
 #define EFM8BB1_SUPPORT_PT226X_PROTOCOL			1		// PT2260, EV1527,... original RF bridge protocol

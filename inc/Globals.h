@@ -10,8 +10,7 @@
 
 // FIXME: what does this do compared to INCLUDE_BUCKET_SNIFFING in RF_Config.h ?
 // USER CONSTANTS
-#define Sniffing_On 1
-//#define Sniffing_On 0
+#define Sniffing_On 0
 
 #define SYSCLK	24500000
 

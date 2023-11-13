@@ -15,31 +15,6 @@
 //==============================================================================
 void enter_DefaultMode_from_RESET(void)
 {
-	PORTS_0_enter_DefaultMode_from_RESET();
-	PORTS_1_enter_DefaultMode_from_RESET();
-    
-	PBCFG_0_enter_DefaultMode_from_RESET();
-	CLOCK_0_enter_DefaultMode_from_RESET();
-    
-	TIMER01_0_enter_DefaultMode_from_RESET();
-	TIMER16_2_enter_DefaultMode_from_RESET();
-	TIMER16_3_enter_DefaultMode_from_RESET();
-	TIMER_SETUP_0_enter_DefaultMode_from_RESET();
-    
-	PCA_0_enter_DefaultMode_from_RESET();
-	PCACH_0_enter_DefaultMode_from_RESET();
-    
-	INTERRUPT_0_enter_DefaultMode_from_RESET();
-}
-
-
-
-//================================================================================
-// PORTS_0_enter_DefaultMode_from_RESET
-//================================================================================
-extern void PORTS_0_enter_DefaultMode_from_RESET(void) {
-	// $[P0 - Port 0 Pin Latch]
-	// [P0 - Port 0 Pin Latch]$
 
 	// $[P0MDOUT - Port 0 Output Mode]
 	/***********************************************************************
@@ -56,10 +31,6 @@ extern void PORTS_0_enter_DefaultMode_from_RESET(void) {
 			| P0MDOUT_B2__OPEN_DRAIN | P0MDOUT_B3__OPEN_DRAIN
 			| P0MDOUT_B4__PUSH_PULL | P0MDOUT_B5__OPEN_DRAIN
 			| P0MDOUT_B6__OPEN_DRAIN | P0MDOUT_B7__OPEN_DRAIN;
-	// [P0MDOUT - Port 0 Output Mode]$
-
-	// $[P0MDIN - Port 0 Input Mode]
-	// [P0MDIN - Port 0 Input Mode]$
 
 	// $[P0SKIP - Port 0 Skip]
 	/***********************************************************************
@@ -76,14 +47,6 @@ extern void PORTS_0_enter_DefaultMode_from_RESET(void) {
 			| P0SKIP_B3__SKIPPED | P0SKIP_B4__NOT_SKIPPED
 			| P0SKIP_B5__NOT_SKIPPED | P0SKIP_B6__SKIPPED | P0SKIP_B7__SKIPPED;
 
-}
-
-//================================================================================
-// PORTS_1_enter_DefaultMode_from_RESET
-//================================================================================
-extern void PORTS_1_enter_DefaultMode_from_RESET(void) {
-	// $[P1 - Port 1 Pin Latch]
-	// [P1 - Port 1 Pin Latch]$
 
 	// $[P1MDOUT - Port 1 Output Mode]
 	/***********************************************************************
@@ -99,10 +62,6 @@ extern void PORTS_1_enter_DefaultMode_from_RESET(void) {
 			| P1MDOUT_B2__OPEN_DRAIN | P1MDOUT_B3__OPEN_DRAIN
 			| P1MDOUT_B4__OPEN_DRAIN | P1MDOUT_B5__OPEN_DRAIN
 			| P1MDOUT_B6__PUSH_PULL;
-	// [P1MDOUT - Port 1 Output Mode]$
-
-	// $[P1MDIN - Port 1 Input Mode]
-	// [P1MDIN - Port 1 Input Mode]$
 
 	// $[P1SKIP - Port 1 Skip]
 	/***********************************************************************
@@ -117,30 +76,15 @@ extern void PORTS_1_enter_DefaultMode_from_RESET(void) {
 	P1SKIP = P1SKIP_B0__SKIPPED | P1SKIP_B1__SKIPPED | P1SKIP_B2__SKIPPED
 			| P1SKIP_B3__NOT_SKIPPED | P1SKIP_B4__SKIPPED | P1SKIP_B5__SKIPPED
 			| P1SKIP_B6__SKIPPED;
-	// [P1SKIP - Port 1 Skip]$
 
-	// $[P1MASK - Port 1 Mask]
-	// [P1MASK - Port 1 Mask]$
 
-	// $[P1MAT - Port 1 Match]
-	// [P1MAT - Port 1 Match]$
-
-}
-
-//================================================================================
-// PBCFG_0_enter_DefaultMode_from_RESET
-//================================================================================
-extern void PBCFG_0_enter_DefaultMode_from_RESET(void) {
 	// $[XBR2 - Port I/O Crossbar 2]
 	/***********************************************************************
 	 - Weak Pullups enabled 
 	 - Crossbar enabled
 	 ***********************************************************************/
 	XBR2 = XBR2_WEAKPUD__PULL_UPS_ENABLED | XBR2_XBARE__ENABLED;
-	// [XBR2 - Port I/O Crossbar 2]$
 
-	// $[PRTDRV - Port Drive Strength]
-	// [PRTDRV - Port Drive Strength]$
 
 	// $[XBR0 - Port I/O Crossbar 0]
 	/***********************************************************************
@@ -156,7 +100,6 @@ extern void PBCFG_0_enter_DefaultMode_from_RESET(void) {
 	XBR0 = XBR0_URT0E__ENABLED | XBR0_SPI0E__DISABLED | XBR0_SMB0E__DISABLED
 			| XBR0_CP0E__DISABLED | XBR0_CP0AE__DISABLED | XBR0_CP1E__DISABLED
 			| XBR0_CP1AE__DISABLED | XBR0_SYSCKE__DISABLED;
-	// [XBR0 - Port I/O Crossbar 0]$
 
 	// $[XBR1 - Port I/O Crossbar 1]
 	/***********************************************************************
@@ -168,28 +111,14 @@ extern void PBCFG_0_enter_DefaultMode_from_RESET(void) {
 	 ***********************************************************************/
 	XBR1 = XBR1_PCA0ME__CEX0 | XBR1_ECIE__DISABLED | XBR1_T0E__DISABLED
 			| XBR1_T1E__DISABLED | XBR1_T2E__DISABLED;
-	// [XBR1 - Port I/O Crossbar 1]$
 
-}
 
-//================================================================================
-// CLOCK_0_enter_DefaultMode_from_RESET
-//================================================================================
-extern void CLOCK_0_enter_DefaultMode_from_RESET(void) {
-	// $[CLKSEL - Clock Select]
-	/***********************************************************************
-	 - Clock derived from the Internal High-Frequency Oscillator
-	 - SYSCLK is equal to selected clock source divided by 1
-	 ***********************************************************************/
+    //*****************************************
+	// - Clock derived from the Internal High-Frequency Oscillator
+	// - SYSCLK is equal to selected clock source divided by 1
+	//*****************************************
 	CLKSEL = CLKSEL_CLKSL__HFOSC | CLKSEL_CLKDIV__SYSCLK_DIV_1;
-	// [CLKSEL - Clock Select]$
 
-}
-
-//================================================================================
-// TIMER01_0_enter_DefaultMode_from_RESET
-//================================================================================
-extern void TIMER01_0_enter_DefaultMode_from_RESET(void) {
 
 	// save timer configuration
 	//uint8_t TCON_save;
@@ -211,12 +140,6 @@ extern void TIMER01_0_enter_DefaultMode_from_RESET(void) {
 	// restore timer configuration
 	//TCON |= (TCON_save & TCON_TR0__BMASK) | (TCON_save & TCON_TR1__BMASK);
 
-}
-
-//================================================================================
-// TIMER16_3_enter_DefaultMode_from_RESET
-//================================================================================
-extern void TIMER16_3_enter_DefaultMode_from_RESET(void) {
 
 	// Save Timer Configuration
 	//uint8_t TMR3CN0_TR3_save;
@@ -228,22 +151,16 @@ extern void TIMER16_3_enter_DefaultMode_from_RESET(void) {
 
 	// Restore Timer Configuration
 	//TMR3CN0 |= TMR3CN0_TR3_save;
-}
 
-//================================================================================
-// TIMER_SETUP_0_enter_DefaultMode_from_RESET
-//================================================================================
-extern void TIMER_SETUP_0_enter_DefaultMode_from_RESET(void) {
-
-	/***********************************************************************
-	 - System clock divided by 12
-	 - Counter/Timer 0 uses the system clock
-	 - Timer 2 high byte uses the clock defined by T2XCLK in TMR2CN0
-	 - Timer 2 low byte uses the system clock
-	 - Timer 3 high byte uses the clock defined by T3XCLK in TMR3CN0
-	 - Timer 3 low byte uses the system clock
-	 - Timer 1 uses the clock defined by the prescale field, SCA
-	 ***********************************************************************/
+	//**********************************************************************
+	// - System clock divided by 12
+	// - Counter/Timer 0 uses the system clock
+	// - Timer 2 high byte uses the clock defined by T2XCLK in TMR2CN0
+	// - Timer 2 low byte uses the system clock
+	// - Timer 3 high byte uses the clock defined by T3XCLK in TMR3CN0
+	// - Timer 3 low byte uses the system clock
+	// - Timer 1 uses the clock defined by the prescale field, SCA
+	//***********************************************************************/
 	CKCON0 = CKCON0_SCA__SYSCLK_DIV_12 | CKCON0_T0M__SYSCLK
 			| CKCON0_T2MH__EXTERNAL_CLOCK | CKCON0_T2ML__SYSCLK
 			| CKCON0_T3MH__EXTERNAL_CLOCK | CKCON0_T3ML__SYSCLK
@@ -268,12 +185,18 @@ extern void TIMER_SETUP_0_enter_DefaultMode_from_RESET(void) {
 	 - Start Timer 1 running
 	 ***********************************************************************/
 	TCON |= TCON_TR0__RUN | TCON_TR1__RUN;
-}
 
-//================================================================================
-// PCA_0_enter_DefaultMode_from_RESET
-//================================================================================
-extern void PCA_0_enter_DefaultMode_from_RESET(void) {
+	// Save Timer Configuration
+	//uint8_t TMR2CN0_TR2_save;
+	//TMR2CN0_TR2_save = TMR2CN0 & TMR2CN0_TR2__BMASK;
+    
+	// Stop Timer
+	TMR2CN0 &= ~(TMR2CN0_TR2__BMASK);
+
+
+	// Restore Timer Configuration
+	//TMR2CN0 |= TMR2CN0_TR2_save;
+
 	// $[PCA Off]
 	PCA0CN0_CR = PCA0CN0_CR__STOP;
 	// [PCA Off]$
@@ -287,26 +210,13 @@ extern void PCA_0_enter_DefaultMode_from_RESET(void) {
 	 ***********************************************************************/
 	PCA0MD = PCA0MD_CIDL__NORMAL | PCA0MD_ECF__OVF_INT_ENABLED
 			| PCA0MD_CPS__T0_OVERFLOW;
-	// [PCA0MD - PCA Mode]$
 
-	// $[PCA0CENT - PCA Center Alignment Enable]
-	// [PCA0CENT - PCA Center Alignment Enable]$
-
-	// $[PCA0CLR - PCA Comparator Clear Control]
-	// [PCA0CLR - PCA Comparator Clear Control]$
-
-	// $[PCA0L - PCA Counter/Timer Low Byte]
 	/***********************************************************************
 	 - PCA Counter/Timer Low Byte = 0xFF
 	 ***********************************************************************/
 	//PCA0L = (0xFF << PCA0L_PCA0L__SHIFT);
     PCA0L = 0xFF;
-	// [PCA0L - PCA Counter/Timer Low Byte]$
 
-	// $[PCA0H - PCA Counter/Timer High Byte]
-	// [PCA0H - PCA Counter/Timer High Byte]$
-
-	// $[PCA0POL - PCA Output Polarity]
 	/***********************************************************************
 	 - Invert polarity
 	 - Use default polarity
@@ -314,20 +224,9 @@ extern void PCA_0_enter_DefaultMode_from_RESET(void) {
 	 ***********************************************************************/
 	PCA0POL = PCA0POL_CEX0POL__INVERT | PCA0POL_CEX1POL__DEFAULT
 			| PCA0POL_CEX2POL__DEFAULT;
-	// [PCA0POL - PCA Output Polarity]$
 
-	// $[PCA0PWM - PCA PWM Configuration]
-	// [PCA0PWM - PCA PWM Configuration]$
 
-	// $[PCA On]
-	// [PCA On]$
 
-}
-
-//================================================================================
-// PCACH_0_enter_DefaultMode_from_RESET
-//================================================================================
-extern void PCACH_0_enter_DefaultMode_from_RESET(void) {
 	// $[PCA0 Settings Save]
 	// Select Capture/Compare register)
 	PCA0PWM &= ~PCA0PWM_ARSEL__BMASK;
@@ -348,27 +247,8 @@ extern void PCACH_0_enter_DefaultMode_from_RESET(void) {
 			| PCA0CPM0_MAT__DISABLED | PCA0CPM0_PWM16__8_BIT
 			| PCA0CPM0_CAPP__ENABLED | PCA0CPM0_ECOM__DISABLED
 			| PCA0CPM0_PWM__DISABLED | PCA0CPM0_TOG__DISABLED;
-	// [PCA0CPM0 - PCA Channel 0 Capture/Compare Mode]$
-
-	// $[PCA0CPL0 - PCA Channel 0 Capture Module Low Byte]
-	// [PCA0CPL0 - PCA Channel 0 Capture Module Low Byte]$
-
-	// $[PCA0CPH0 - PCA Channel 0 Capture Module High Byte]
-	// [PCA0CPH0 - PCA Channel 0 Capture Module High Byte]$
-
-	// $[Auto-reload]
-	// [Auto-reload]$
-
-	// $[PCA0 Settings Restore]
-	// [PCA0 Settings Restore]$
-
-}
 
 
-//================================================================================
-// INTERRUPT_0_enter_DefaultMode_from_RESET
-//================================================================================
-extern void INTERRUPT_0_enter_DefaultMode_from_RESET(void) {
 	// $[EIE1 - Extended Interrupt Enable 1]
 	/***********************************************************************
 	 - Disable ADC0 Conversion Complete interrupt
@@ -398,18 +278,3 @@ extern void INTERRUPT_0_enter_DefaultMode_from_RESET(void) {
 			| IE_ESPI0__DISABLED | IE_ET0__DISABLED | IE_ET1__DISABLED
 			| IE_ET2__ENABLED | IE_ES0__ENABLED;
 }
-
-extern void TIMER16_2_enter_DefaultMode_from_RESET(void) {
-
-	// Save Timer Configuration
-	//uint8_t TMR2CN0_TR2_save;
-	//TMR2CN0_TR2_save = TMR2CN0 & TMR2CN0_TR2__BMASK;
-    
-	// Stop Timer
-	TMR2CN0 &= ~(TMR2CN0_TR2__BMASK);
-
-
-	// Restore Timer Configuration
-	//TMR2CN0 |= TMR2CN0_TR2_save;
-}
-

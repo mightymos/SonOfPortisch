@@ -254,7 +254,9 @@ int main (void)
 				// check if UART_SYNC_INIT got received
 				case IDLE:
 					if ((rxdata & 0xFF) == RF_CODE_START)
+                    {
 						uart_state = SYNC_INIT;
+                    }
 					break;
 
 				// sync byte got received, read command
@@ -388,7 +390,7 @@ int main (void)
 						uart_state = IDLE;
 						ignore_uart(true);
 
-						// check if AKN should be sent
+						// check if ACK should be sent
 						switch(uart_command)
 						{
 							case RF_CODE_LEARN:
