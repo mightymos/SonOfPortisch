@@ -30,9 +30,9 @@ extern void Bucket_Received(uint16_t duration, bool high_low);
 // for bucket transmission, this depends on the number of buckets.
 // E.g. 4 buckets have a total overhead of 11, allowing 101 bits (high/low pairs)
 #if INCLUDE_BUCKET_SNIFFING == 1
-#define RF_DATA_BUFFERSIZE		112
+    #define RF_DATA_BUFFERSIZE		112
 #else
-#define RF_DATA_BUFFERSIZE		32
+    #define RF_DATA_BUFFERSIZE		32
 #endif
 
 typedef enum

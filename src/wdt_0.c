@@ -9,7 +9,7 @@
 
 void WDT0_start(void)
 {
-  WDTCN = 0xA5;
+    WDTCN = 0xA5;
 }
 
 void WDT0_stop(void)
@@ -26,9 +26,7 @@ void WDT0_feed(void)
     WDTCN = 0xA5;
 }
 
-void WDT0_init(uint8_t interval,
-               WDT0_Timebase_t  timebase,
-               WDT0_IdleState_t idleState)
+void WDT0_init(uint8_t interval, WDT0_Timebase_t  timebase, WDT0_IdleState_t idleState)
 {
     timebase = timebase;
     idleState = idleState;

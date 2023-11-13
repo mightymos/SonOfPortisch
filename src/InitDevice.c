@@ -10,36 +10,29 @@
 
 #include "InitDevice.h"
 
-
-
 //==============================================================================
 // enter_DefaultMode_from_RESET
 //==============================================================================
 void enter_DefaultMode_from_RESET(void)
 {
-	WDT_0_enter_DefaultMode_from_RESET();
 	PORTS_0_enter_DefaultMode_from_RESET();
 	PORTS_1_enter_DefaultMode_from_RESET();
+    
 	PBCFG_0_enter_DefaultMode_from_RESET();
 	CLOCK_0_enter_DefaultMode_from_RESET();
+    
 	TIMER01_0_enter_DefaultMode_from_RESET();
 	TIMER16_2_enter_DefaultMode_from_RESET();
 	TIMER16_3_enter_DefaultMode_from_RESET();
 	TIMER_SETUP_0_enter_DefaultMode_from_RESET();
+    
 	PCA_0_enter_DefaultMode_from_RESET();
 	PCACH_0_enter_DefaultMode_from_RESET();
-	UART_0_enter_DefaultMode_from_RESET();
+    
 	INTERRUPT_0_enter_DefaultMode_from_RESET();
 }
 
-//================================================================================
-// WDT_0_enter_DefaultMode_from_RESET
-//================================================================================
-extern void WDT_0_enter_DefaultMode_from_RESET(void) {
-	// $[WDTCN - Watchdog Timer Control]
-	// [WDTCN - Watchdog Timer Control]$
 
-}
 
 //================================================================================
 // PORTS_0_enter_DefaultMode_from_RESET
@@ -82,13 +75,6 @@ extern void PORTS_0_enter_DefaultMode_from_RESET(void) {
 	P0SKIP = P0SKIP_B0__SKIPPED | P0SKIP_B1__SKIPPED | P0SKIP_B2__SKIPPED
 			| P0SKIP_B3__SKIPPED | P0SKIP_B4__NOT_SKIPPED
 			| P0SKIP_B5__NOT_SKIPPED | P0SKIP_B6__SKIPPED | P0SKIP_B7__SKIPPED;
-	// [P0SKIP - Port 0 Skip]$
-
-	// $[P0MASK - Port 0 Mask]
-	// [P0MASK - Port 0 Mask]$
-
-	// $[P0MAT - Port 0 Match]
-	// [P0MAT - Port 0 Match]$
 
 }
 
@@ -204,45 +190,26 @@ extern void CLOCK_0_enter_DefaultMode_from_RESET(void) {
 // TIMER01_0_enter_DefaultMode_from_RESET
 //================================================================================
 extern void TIMER01_0_enter_DefaultMode_from_RESET(void) {
-	// $[Timer Initialization]
-	//Save Timer Configuration
-	uint8_t TCON_save;
-	TCON_save = TCON;
-	//Stop Timers
-	TCON &= ~TCON_TR0__BMASK & ~TCON_TR1__BMASK;
 
-	// [Timer Initialization]$
+	// save timer configuration
+	//uint8_t TCON_save;
+	//TCON_save = TCON;
+    
+	// stop timers
+	//TCON &= ~TCON_TR0__BMASK & ~TCON_TR1__BMASK;
 
-	// $[TH0 - Timer 0 High Byte]
-	/***********************************************************************
-	 - Timer 0 High Byte = 0xA0
-	 ***********************************************************************/
+    // FIXME: what are the shifts used for?
 	//TH0 = (0xA0 << TH0_TH0__SHIFT);
-    // FIXME:
     TH0 = 0xA0;
     
-	// [TH0 - Timer 0 High Byte]$
-
-	// $[TL0 - Timer 0 Low Byte]
-	// [TL0 - Timer 0 Low Byte]$
-
-	// $[TH1 - Timer 1 High Byte]
-	/***********************************************************************
-	 - Timer 1 High Byte = 0xCB
-	 ***********************************************************************/
 	// FIXME:
+    // sec. 19.3.1 Baud Rate Generation uart0 baud rate is set by timer 1 in 8-bit auto-reload mode
     //TH1 = (0xCB << TH1_TH1__SHIFT);
     TH1 = 0xCB;
-	// [TH1 - Timer 1 High Byte]$
 
-	// $[TL1 - Timer 1 Low Byte]
-	// [TL1 - Timer 1 Low Byte]$
 
-	// $[Timer Restoration]
-	//Restore Timer Configuration
-	TCON |= (TCON_save & TCON_TR0__BMASK) | (TCON_save & TCON_TR1__BMASK);
-
-	// [Timer Restoration]$
+	// restore timer configuration
+	//TCON |= (TCON_save & TCON_TR0__BMASK) | (TCON_save & TCON_TR1__BMASK);
 
 }
 
@@ -250,44 +217,24 @@ extern void TIMER01_0_enter_DefaultMode_from_RESET(void) {
 // TIMER16_3_enter_DefaultMode_from_RESET
 //================================================================================
 extern void TIMER16_3_enter_DefaultMode_from_RESET(void) {
-	// $[Timer Initialization]
+
 	// Save Timer Configuration
-	uint8_t TMR3CN0_TR3_save;
-	TMR3CN0_TR3_save = TMR3CN0 & TMR3CN0_TR3__BMASK;
+	//uint8_t TMR3CN0_TR3_save;
+	//TMR3CN0_TR3_save = TMR3CN0 & TMR3CN0_TR3__BMASK;
+    
 	// Stop Timer
 	TMR3CN0 &= ~(TMR3CN0_TR3__BMASK);
-	// [Timer Initialization]$
 
-	// $[TMR3CN0 - Timer 3 Control]
-	// [TMR3CN0 - Timer 3 Control]$
 
-	// $[TMR3H - Timer 3 High Byte]
-	// [TMR3H - Timer 3 High Byte]$
-
-	// $[TMR3L - Timer 3 Low Byte]
-	// [TMR3L - Timer 3 Low Byte]$
-
-	// $[TMR3RLH - Timer 3 Reload High Byte]
-	// [TMR3RLH - Timer 3 Reload High Byte]$
-
-	// $[TMR3RLL - Timer 3 Reload Low Byte]
-	// [TMR3RLL - Timer 3 Reload Low Byte]$
-
-	// $[TMR3CN0]
-	// [TMR3CN0]$
-
-	// $[Timer Restoration]
 	// Restore Timer Configuration
-	TMR3CN0 |= TMR3CN0_TR3_save;
-	// [Timer Restoration]$
-
+	//TMR3CN0 |= TMR3CN0_TR3_save;
 }
 
 //================================================================================
 // TIMER_SETUP_0_enter_DefaultMode_from_RESET
 //================================================================================
 extern void TIMER_SETUP_0_enter_DefaultMode_from_RESET(void) {
-	// $[CKCON0 - Clock Control 0]
+
 	/***********************************************************************
 	 - System clock divided by 12
 	 - Counter/Timer 0 uses the system clock
@@ -301,9 +248,8 @@ extern void TIMER_SETUP_0_enter_DefaultMode_from_RESET(void) {
 			| CKCON0_T2MH__EXTERNAL_CLOCK | CKCON0_T2ML__SYSCLK
 			| CKCON0_T3MH__EXTERNAL_CLOCK | CKCON0_T3ML__SYSCLK
 			| CKCON0_T1M__PRESCALE;
-	// [CKCON0 - Clock Control 0]$
 
-	// $[TMOD - Timer 0/1 Mode]
+
 	/***********************************************************************
 	 - Mode 2, 8-bit Counter/Timer with Auto-Reload
 	 - Mode 2, 8-bit Counter/Timer with Auto-Reload
@@ -312,18 +258,16 @@ extern void TIMER_SETUP_0_enter_DefaultMode_from_RESET(void) {
 	 - Timer Mode
 	 - Timer 1 enabled when TR1 = 1 irrespective of INT1 logic level
 	 ***********************************************************************/
+    // pg. 194  Setting the TR0 bit enables the timer when either GATE0 in the TMOD register is logic 0
 	TMOD = TMOD_T0M__MODE2 | TMOD_T1M__MODE2 | TMOD_CT0__TIMER
 			| TMOD_GATE0__DISABLED | TMOD_CT1__TIMER | TMOD_GATE1__DISABLED;
-	// [TMOD - Timer 0/1 Mode]$
 
-	// $[TCON - Timer 0/1 Control]
+
 	/***********************************************************************
 	 - Start Timer 0 running
 	 - Start Timer 1 running
 	 ***********************************************************************/
 	TCON |= TCON_TR0__RUN | TCON_TR1__RUN;
-	// [TCON - Timer 0/1 Control]$
-
 }
 
 //================================================================================
@@ -420,18 +364,6 @@ extern void PCACH_0_enter_DefaultMode_from_RESET(void) {
 
 }
 
-//================================================================================
-// UART_0_enter_DefaultMode_from_RESET
-//================================================================================
-extern void UART_0_enter_DefaultMode_from_RESET(void) {
-	// $[SCON0 - UART0 Serial Port Control]
-	/***********************************************************************
-	 - UART0 reception enabled
-	 ***********************************************************************/
-	SCON0 |= SCON0_REN__RECEIVE_ENABLED;
-	// [SCON0 - UART0 Serial Port Control]$
-
-}
 
 //================================================================================
 // INTERRUPT_0_enter_DefaultMode_from_RESET
@@ -448,14 +380,9 @@ extern void INTERRUPT_0_enter_DefaultMode_from_RESET(void) {
 	 - Disable all SMB0 interrupts
 	 - Enable interrupt requests generated by the TF3L or TF3H flags
 	 ***********************************************************************/
-	//EIE1 = EIE1_EADC0__DISABLED | EIE1_EWADC0__DISABLED | EIE1_ECP0__DISABLED
-	//		| EIE1_ECP1__DISABLED | EIE1_EMAT__DISABLED | EIE1_EPCA0__ENABLED
-	//		| EIE1_ESMB0__DISABLED | EIE1_ET3__ENABLED;
-    
-    EIE1 = EIE1 | EIE1_EPCA0__ENABLED;
-    EIE1 = EIE1 | EIE1_ET3__ENABLED;
-    
-    
+	EIE1 = EIE1_EADC0__DISABLED | EIE1_EWADC0__DISABLED | EIE1_ECP0__DISABLED
+			| EIE1_ECP1__DISABLED | EIE1_EMAT__DISABLED | EIE1_EPCA0__ENABLED
+			| EIE1_ESMB0__DISABLED | EIE1_ET3__ENABLED;
 
 	/***********************************************************************
 	 - Enable each interrupt according to its individual mask setting
@@ -467,28 +394,22 @@ extern void INTERRUPT_0_enter_DefaultMode_from_RESET(void) {
 	 - Enable interrupt requests generated by the TF2L or TF2H flags
 	 - Enable UART0 interrupt
 	 ***********************************************************************/
-	//IE = IE_EA__ENABLED | IE_EX0__DISABLED | IE_EX1__DISABLED
-	//		| IE_ESPI0__DISABLED | IE_ET0__DISABLED | IE_ET1__DISABLED
-	//		| IE_ET2__ENABLED | IE_ES0__ENABLED;
-    
-    IE = IE | IE_ES0__ENABLED;
-    IE = IE | IE_ET2__ENABLED;
-            
-            
+	IE = IE_EA__ENABLED | IE_EX0__DISABLED | IE_EX1__DISABLED
+			| IE_ESPI0__DISABLED | IE_ET0__DISABLED | IE_ET1__DISABLED
+			| IE_ET2__ENABLED | IE_ES0__ENABLED;
 }
 
 extern void TIMER16_2_enter_DefaultMode_from_RESET(void) {
-	// $[Timer Initialization]
+
 	// Save Timer Configuration
-	uint8_t TMR2CN0_TR2_save;
-	TMR2CN0_TR2_save = TMR2CN0 & TMR2CN0_TR2__BMASK;
+	//uint8_t TMR2CN0_TR2_save;
+	//TMR2CN0_TR2_save = TMR2CN0 & TMR2CN0_TR2__BMASK;
+    
 	// Stop Timer
 	TMR2CN0 &= ~(TMR2CN0_TR2__BMASK);
 
 
-	// $[Timer Restoration]
 	// Restore Timer Configuration
-	TMR2CN0 |= TMR2CN0_TR2_save;
-
+	//TMR2CN0 |= TMR2CN0_TR2_save;
 }
 

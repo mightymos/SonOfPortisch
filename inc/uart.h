@@ -16,7 +16,7 @@
 #define RF_CODE_START		0xAA
 #define RF_CODE_STOP		0x55
 
-#define UART_RX_BUFFER_SIZE	64
+#define UART_RX_BUFFER_SIZE	32
 #define UART_TX_BUFFER_SIZE	32
 
 /*
@@ -105,20 +105,25 @@ typedef enum
  *
  ******************************************************************************/
 void UART0_init(UART0_RxEnable_t rxen, UART0_Width_t width, UART0_Multiproc_t mce);
+void UART0_initStdio(void);
+
 void UART0_initTxPolling(void);
-void UART0_write(uint8_t value);
+
+void    UART0_write(uint8_t value);
 uint8_t UART0_read(void);
 
-void uart_putc(uint8_t txdata);
 
 bool is_uart_tx_finished(void);
 bool is_uart_tx_buffer_empty(void);
 
 
 extern unsigned int uart_getc(void);
+extern void         uart_putc(uint8_t txdata);
+
 extern void uart_put_command(uint8_t command);
 extern void uart_put_RF_Data_Advanced(uint8_t Command, uint8_t protocol_index);
 extern void uart_put_RF_Data_Standard(uint8_t Command);
+
 #if INCLUDE_BUCKET_SNIFFING == 1
 extern void uart_put_RF_buckets(uint8_t Command);
 #endif

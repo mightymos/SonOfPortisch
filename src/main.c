@@ -5,15 +5,21 @@
 //-----------------------------------------------------------------------------
 // Includes
 //-----------------------------------------------------------------------------
-#include <SI_EFM8BB1_Register_Enums.h>                  // SFR declarations
-
-
+// SFR declarations
+#include <SI_EFM8BB1_Register_Enums.h> 
 //#include <EFM8BB1.h>
 
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdint.h>
+#include "efm8_config.h"
 
+// FIXME: do not understand why compiler is not erroring on symbol not defined
+#ifndef EFM8PDL_UART0_USE_POLLED
+ #define EFM8PDL_UART0_USE_POLLED 1
+#endif
+
+// for printf_tiny()
+//#include <stdio.h>
+
+#include "delay.h"
 #include "Globals.h"
 #include "InitDevice.h"
 #include "RF_Handling.h"
@@ -25,12 +31,16 @@
 #include "wdt_0.h"
 
 
-bool ReadUARTData = true;
+// some operations set flag to true so that uart receiving is temporarily ignored
+static bool ignoreUARTFlag = false;
 
 // sdcc manual section 3.8.1 general information
-void UART0_ISR(void) __interrupt (4);
+// requires interrupt definition to appear or be included in main
+void UART0_ISR(void) __interrupt (UART0_IRQn);
 
-//SI_INTERRUPT(PCA0_ISR, PCA0_IRQn);
+void PCA0_ISR(void)   __interrupt (PCA0_IRQn);
+void TIMER2_ISR(void) __interrupt (TIMER2_IRQn);
+void TIMER3_ISR(void) __interrupt (TIMER3_IRQn);
 
 //-----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -46,10 +56,35 @@ unsigned char __sdcc_external_startup(void)
     WDTCN = 0xDE;
     WDTCN = 0xAD;
     
-    //IE_EA = 1; re-enable interrupts
+    // re-enable interrupts
+    //IE_EA = 1
     
     return 0;
 }
+
+inline void ignore_uart(const bool ignore)
+{    
+    ignoreUARTFlag = ignore;    
+}
+
+inline bool is_uart_ignored(void)
+{
+    return ignoreUARTFlag;
+}
+
+
+#if 0
+
+    void serial_test(void)
+    {
+        efm8_delay_ms(500);
+        
+        led_toggle();
+        
+        printf_tiny("loop\r\n");
+    }
+
+#endif
 
 void finish_command(uint8_t command)
 {
@@ -57,27 +92,10 @@ void finish_command(uint8_t command)
 	uart_put_command(command);
 
 	// enable UART again
-	ReadUARTData = true;
+	ignore_uart(false);
 
 	// restart sniffing in its previous mode
 	PCA0_DoSniffing(last_sniffing_command);
-}
-
-void serial_test(void)
-{
-    uint16_t index;
-
-    // silly delay
-    for (index = 0; index < 60000; index++)
-    {
-    }
-    
-    LED = !LED;
-    
-    printf_tiny("loop\r\n");
-    //uart_put_command(0x4a);
-    
-    //UART0_initTxPolling();
 }
 
 //-----------------------------------------------------------------------------
@@ -90,45 +108,70 @@ int main (void)
     __xdata uint16_t bucket;
     
     __xdata uint16_t index;
+    __xdata uint16_t idleResetCount;
     
 
-	// Call hardware initialization routine
+	// call hardware initialization routine
 	enter_DefaultMode_from_RESET();
 
 	// enter default state
-	LED = LED_ON;
-	BUZZER = BUZZER_OFF;
-	T_DATA = TDATA_OFF;
+	led_on();
+	buzzer_off();
+	tdata_off();
 
-	// enable UART
+
+	// enable uart
 	UART0_init(UART0_RX_ENABLE, UART0_WIDTH_8, UART0_MULTIPROC_DISABLE);
-    //UART0_initStdio();
+
+#if EFM8PDL_UART0_USE_POLLED
+    // basically sets TI flag so putchar() not stuck in an infinite loop
+    UART0_initStdio();
+#endif
+    
+
 
 	// start sniffing if enabled by default
-//#if Sniffing_On == 1
-//	// set desired sniffing type to PT2260
-//	sniffing_mode = STANDARD;
-//	PCA0_DoSniffing(RF_CODE_RFIN);
-//	last_sniffing_command = RF_CODE_RFIN;
-//#else
-//	PCA0_StopSniffing();
-//#endif
+#if (Sniffing_On)
+	// set desired sniffing type to PT2260
+	sniffing_mode = STANDARD;
+	PCA0_DoSniffing(RF_CODE_RFIN);
+	last_sniffing_command = RF_CODE_RFIN;
+#else
+	PCA0_StopSniffing();
+#endif
 
-	// enable global interrupts
-	IE_EA = 1;
-
+#if 0
+    // startup buzzer
 	for (index = 0; index < 10000; index++)
     {
-		BUZZER = BUZZER_ON;
+		buzzer_on();
     }
 
-	BUZZER = BUZZER_OFF;
-    
+	buzzer_off();
+#endif
+
 
     
-    printf_tiny("startup...\r\n");
+#if 0
+    // test uart transmitting in polled mode
+    while (true)
+    {
+        serial_test();
+    }
+#endif
 
-	while (1)
+
+	// enable global interrupts
+	enable_global_interrupts();
+    
+    
+    // startup
+    //requires code and memory space, which is in short supply
+    //but good to check that polled uart is working
+    //printf_tiny("startup...\r\n");
+    //uart_put_command(RF_CODE_ACK);
+
+	while (true)
 	{
 		unsigned int rxdata;
 		uint8_t len;
@@ -137,16 +180,32 @@ int main (void)
 		// reset Watch Dog Timer
 		WDT0_feed();
 
+
+#if 1
 		// check if something got received by UART
-		// read only data from uart if idle
-		if (ReadUARTData)
+		// only read data from uart if idle
+		if (!is_uart_ignored())
         {
+            //disable_global_interrupts();
+            
 			rxdata = uart_getc();
+            
+            // DEBUG:
+            //uart_putc(rxdata & 0xff);
+            
+            //enable_global_interrupts();
 		} else {
 			rxdata = UART_NO_DATA;
         }
         
+#endif
         
+        
+        // DEBUG:
+        //uart_putc(0x4a);
+        //efm8_delay_ms(100);
+        
+
 #if 1
         // check if serial transmit buffer is empty
         if(!is_uart_tx_buffer_empty())
@@ -160,27 +219,34 @@ int main (void)
         
 #endif
 
+        // DEBUG:
+        //led_toggle();
+        //efm8_delay_ms(1000);
+
+
 		if (rxdata == UART_NO_DATA)
 		{
 			if (uart_state == IDLE)
-				index = 0;
+				idleResetCount = 0;
 			else
 			{
-				if (++index > 10000)
-					BUZZER = BUZZER_ON;
+				if (++idleResetCount > 10000)
+                {
+					//buzzer_on();
+                }
 
-				if (index > 30000)
+				if (idleResetCount > 30000)
 				{
-					index = 0;
+					idleResetCount = 0;
 					uart_state = IDLE;
 					uart_command = NONE;
-					BUZZER = BUZZER_OFF;
+					buzzer_off();
 				}
 			}
 		}
 		else
 		{
-			index = 0;
+			idleResetCount = 0;
 
 			// state machine for UART
 			switch(uart_state)
@@ -201,10 +267,10 @@ int main (void)
 					{
 						case RF_CODE_LEARN:
 							InitTimer3_ms(1, 50);
-							BUZZER = BUZZER_ON;
+							//buzzer_on();
 							// wait until timer has finished
 							WaitTimer3Finished();
-							BUZZER = BUZZER_OFF;
+							buzzer_off();
 
 							// set desired RF protocol PT2260
 							sniffing_mode = STANDARD;
@@ -258,10 +324,10 @@ int main (void)
 #endif
 						case RF_CODE_LEARN_NEW:
 							InitTimer3_ms(1, 50);
-							BUZZER = BUZZER_ON;
+							//buzzer_on();
 							// wait until timer has finished
 							WaitTimer3Finished();
-							BUZZER = BUZZER_OFF;
+							buzzer_off();
 
 							// enable sniffing for all known protocols
 							last_sniffing_mode = sniffing_mode;
@@ -320,7 +386,7 @@ int main (void)
 					if ((rxdata & 0xFF) == RF_CODE_STOP)
 					{
 						uart_state = IDLE;
-						ReadUARTData = false;
+						ignore_uart(true);
 
 						// check if AKN should be sent
 						switch(uart_command)
@@ -336,7 +402,7 @@ int main (void)
 								uart_put_command(RF_CODE_ACK);
 							case RF_CODE_ACK:
 								// enable UART again
-								ReadUARTData = true;
+								ignore_uart(false);
 								break;
 #if INCLUDE_BUCKET_SNIFFING == 1
 							case RF_CODE_RFOUT_BUCKET:
@@ -362,10 +428,10 @@ int main (void)
 				if ((RF_DATA_STATUS & RF_DATA_RECEIVED_MASK) != 0)
 				{
 					InitTimer3_ms(1, 200);
-					BUZZER = BUZZER_ON;
+					//buzzer_on();
 					// wait until timer has finished
 					WaitTimer3Finished();
-					BUZZER = BUZZER_OFF;
+					buzzer_off();
 
 					switch(uart_command)
 					{
@@ -388,16 +454,16 @@ int main (void)
 					PCA0CPM0 |= PCA0CPM0_ECCF__ENABLED;
 
 					// enable UART again
-					ReadUARTData = true;
+					ignore_uart(false);
 				}
 				// check for learning timeout
 				else if (IsTimer3Finished())
 				{
 					InitTimer3_ms(1, 1000);
-					BUZZER = BUZZER_ON;
+					//buzzer_on();
 					// wait until timer has finished
 					WaitTimer3Finished();
-					BUZZER = BUZZER_OFF;
+					buzzer_off();
 
 					// send not-acknowledge
 					switch(uart_command)
@@ -415,7 +481,9 @@ int main (void)
 				{
 					// handle new received buckets
 					if (buffer_out(&bucket))
+                    {
 						HandleRFBucket(bucket & 0x7FFF, (bool)((bucket & 0x8000) >> 15));
+                    }
 				}
 				break;
 
@@ -447,7 +515,9 @@ int main (void)
 				{
 					// handle new received buckets
 					if (buffer_out(&bucket))
+                    {
 						HandleRFBucket(bucket & 0x7FFF, (bool)((bucket & 0x8000) >> 15));
+                    }
 				}
 				break;
 
@@ -491,7 +561,7 @@ int main (void)
 						if (tr_repeats == 0)
 						{
 							// disable RF transmit
-							T_DATA = TDATA_OFF;
+							tdata_off();
 
 							finish_command(RF_CODE_ACK);
 						}
@@ -508,10 +578,10 @@ int main (void)
 					break;
 
 				InitTimer3_ms(1, *(uint16_t *)&RF_DATA[0]);
-				BUZZER = BUZZER_ON;
+				//buzzer_on();
 				// wait until timer has finished
 				WaitTimer3Finished();
-				BUZZER = BUZZER_OFF;
+				buzzer_off();
 
 				// send acknowledge
 				finish_command(RF_CODE_ACK);
@@ -549,7 +619,7 @@ int main (void)
 						if (tr_repeats == 0)
 						{
 							// disable RF transmit
-							T_DATA = TDATA_OFF;
+							tdata_off();
 
 							// send acknowledge
 							finish_command(RF_CODE_ACK);
@@ -590,7 +660,7 @@ int main (void)
 						if (tr_repeats == 0)
 						{
 							// disable RF transmit
-							T_DATA = TDATA_OFF;
+							tdata_off();
 
 							// send acknowledge
 							finish_command(RF_CODE_ACK);

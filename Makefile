@@ -65,7 +65,6 @@
 MEMORY_SIZES = \
     --iram-size 256 \
     --xram-size 256 \
-#    --stack-size $(STACK_SIZE) \
     --code-size 8192
 
 #
@@ -80,10 +79,11 @@ include makefiles/0-directories.mk
 PROJECT_NAME := RF-Bridge-EFM8BB1
 
 SRCS := \
+    src/delay.c \
     src/Globals.c \
     src/InitDevice.c \
     src/pca_0.c \
-	src/RF_Bridge_main.c \
+	src/main.c \
     src/RF_Handling.c \
     src/uart.c \
     src/wdt_0.c

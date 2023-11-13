@@ -14,6 +14,8 @@ __xdata uint16_t Timer_2_Interval = 0x0000;
 __xdata uint16_t Timer_3_Timeout  = 0x0000;
 __xdata uint16_t Timer_3_Interval = 0x0000;
 
+
+
 void SetTimer2Reload(uint16_t reload)
 {
 	/***********************************************************************
@@ -143,7 +145,7 @@ bool IsTimer3Finished(void)
 // TMR2CN0::TF2L (Timer # Low Byte Overflow Flag)
 //
 //-----------------------------------------------------------------------------
-SI_INTERRUPT (TIMER2_ISR, TIMER2_IRQn)
+void TIMER2_ISR(void) __interrupt (TIMER2_IRQn)
 {
 	// Clear Timer 2 high overflow flag
 	TMR2CN0 &= ~TMR2CN0_TF2H__SET;
@@ -170,7 +172,7 @@ SI_INTERRUPT (TIMER2_ISR, TIMER2_IRQn)
 // TMR3CN0::TF3L (Timer # Low Byte Overflow Flag)
 //
 //-----------------------------------------------------------------------------
-SI_INTERRUPT (TIMER3_ISR, TIMER3_IRQn)
+void TIMER3_ISR(void) __interrupt (TIMER3_IRQn)
 {
 	// Clear Timer 3 high overflow flag
 	TMR3CN0 &= ~TMR3CN0_TF3H__SET;

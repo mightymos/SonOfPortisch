@@ -8,20 +8,10 @@
 #ifndef INC_GLOBALS_H_
 #define INC_GLOBALS_H_
 
-#include <stdbool.h>
-#include <stdint.h>
-
+// FIXME: what does this do compared to INCLUDE_BUCKET_SNIFFING in RF_Config.h ?
 // USER CONSTANTS
-#define LED_ON	1
-#define LED_OFF	0
-
-#define BUZZER_ON	1
-#define BUZZER_OFF	0
-
-#define TDATA_ON	1
-#define TDATA_OFF	0
-
-#define Sniffing_On	1
+#define Sniffing_On 1
+//#define Sniffing_On 0
 
 #define SYSCLK	24500000
 
@@ -76,10 +66,62 @@
 //__sbit __at (0x96) BUZZER;
 
 #define LED    P1_B0
-#define T_DATA P0_B0
-#define R_DATA P1_B3
+#define TDATA  P0_B0
+#define RDATA  P1_B3
 #define BUZZER P1_B6
 
+inline void buzzer_on(void)
+{
+    BUZZER = 1;
+}
+
+inline void buzzer_off(void)
+{
+    BUZZER = 0;
+}
+
+inline bool rdata_level(void)
+{
+    return RDATA;
+}
+
+// setter prototypes
+inline void led_on(void)
+{
+    LED = 1;
+}
+
+inline void led_off(void)
+{
+    LED = 0;
+}
+
+inline void led_toggle(void)
+{
+    LED = !LED;
+}
+
+
+inline void tdata_on(void)
+{
+    TDATA = 1;
+}
+
+
+inline void tdata_off(void)
+{
+    TDATA = 0;
+}
+
+inline void enable_global_interrupts(void)
+{
+    IE_EA = 1;
+}
+
+inline void disable_global_interrupts(void)
+{
+    IE_EA = 0;
+}
 
 extern void InitTimer2_us(uint16_t interval, uint16_t timeout);
 extern void InitTimer3_us(uint16_t interval, uint16_t timeout);

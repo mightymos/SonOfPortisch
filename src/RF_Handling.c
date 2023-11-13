@@ -7,7 +7,7 @@
 #include <SI_EFM8BB1_Register_Enums.h>
 
 #include <string.h>
-#include <stdlib.h>
+//#include <stdlib.h>
 
 #include "Globals.h"
 #include "RF_Handling.h"
@@ -171,7 +171,7 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration,
 	// check if any bucket got decoded, if not restart
 	if ((BIT0_GET(status[i]) == 0) && (BIT1_GET(status[i]) == 0))
 	{
-		LED = LED_OFF;
+		led_off();
 		START_CLEAR(status[i]);
 		return false;
 	}
@@ -185,7 +185,7 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration,
 	// check if bit 0 is finished
 	if (BIT0_GET(status[i]) == bit0_size - last_bit)
 	{
-		LED = LED_ON;
+		led_on();
 		BITS_CLEAR(status[i]);
 		BITS_INC(status[i]);
 		ABP_DEC(status[i]);
@@ -193,7 +193,7 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration,
 	// check if bit 1 is finished
 	else if (BIT1_GET(status[i]) == bit1_size - last_bit)
 	{
-		LED = LED_ON;
+		led_on();
 		BITS_CLEAR(status[i]);
 		BITS_INC(status[i]);
 		ABP_DEC(status[i]);
@@ -230,7 +230,7 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration,
 			RF_DATA_STATUS |= RF_DATA_RECEIVED_MASK;
 		}
 
-		LED = LED_OFF;
+		led_off();
 		START_CLEAR(status[i]);
 		return true;
 	}
@@ -248,7 +248,7 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 		for (i = 0; i < PROTOCOLCOUNT; i++)
 			START_CLEAR(status[i]);
 
-		LED = LED_OFF;
+		led_off();
 		return;
 	}
 
@@ -374,7 +374,7 @@ void PCA0_channel0EventCb(void)
 	// if bucket is no noise add it to buffer
 	if (/*current_capture_value > MIN_PULSE_LENGTH &&*/ current_capture_value < 0x8000)
 	{
-		buffer_in(current_capture_value | ((uint16_t)(!R_DATA) << 15));
+		buffer_in(current_capture_value | ((uint16_t)(!rdata_level()) << 15));
 	}
 	else
 	{
@@ -449,9 +449,18 @@ void PCA0_StopSniffing(void)
 bool SendSingleBucket(bool high_low, uint16_t bucket_time)
 {
 	// switch to high_low
-	LED = high_low;
-	T_DATA = high_low;
-	InitTimer3_us(10, bucket_time);
+    if (high_low)
+    {
+        led_on();
+        tdata_on();
+    } else {
+        led_off();
+        tdata_off();
+    }
+	//LED = high_low;
+	//T_DATA = high_low;
+	
+    InitTimer3_us(10, bucket_time);
 	// wait until timer has finished
 	WaitTimer3Finished();
 	return !high_low;
@@ -478,7 +487,7 @@ void SendRFBuckets(uint16_t* buckets, uint8_t* rfdata, uint8_t data_len)
 			high_low = SendSingleBucket(high_low_mark ? (bool)((rfdata[i] >> 3) & 0x01) : high_low, buckets[rfdata[i] & 0x07]);
 	}
 
-	LED = LED_OFF;
+	led_off();
 
 	rf_state = RF_FINISHED;
 }
@@ -530,7 +539,7 @@ void SendBuckets(
 	for (i = 0; i < end_size; i++)
 		SendSingleBucket(BUCKET_STATE(end[i]), pulses[BUCKET_NR(end[i])]);
 
-	LED = LED_OFF;
+	led_off();
 
 	rf_state = RF_FINISHED;
 }
@@ -598,7 +607,7 @@ void Bucket_Received(uint16_t duration, bool high_low)
 	{
 		// check if we maybe receive a sync
 		case RF_IDLE:
-			LED = LED_OFF;
+			led_off();
 
 			if (probablyFooter(duration))
 			{
@@ -615,7 +624,7 @@ void Bucket_Received(uint16_t duration, bool high_low)
 				// check if a minimum of buckets where between two sync pulses
 				if (bucket_count_sync_1 > 4)
 				{
-					LED = LED_ON;
+					led_on();
 					bucket_count = 0;
 					actual_byte = 0;
 					actual_byte_high_nibble = false;
@@ -720,7 +729,7 @@ void Bucket_Received(uint16_t duration, bool high_low)
 					RF_DATA_STATUS |= RF_DATA_RECEIVED_MASK;
 				}
 
-				LED = LED_OFF;
+				led_off();
 				rf_state = RF_IDLE;
 			}
 			// next bucket after receiving all data buckets was not a sync bucket, restart

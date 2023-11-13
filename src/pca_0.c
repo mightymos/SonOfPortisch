@@ -6,8 +6,7 @@
 
 #include "pca_0.h"
 
-#include "assert.h"
-
+#if 0
 uint8_t PCA0_getIntFlags(void)
 {
   uint8_t val;
@@ -93,18 +92,9 @@ uint16_t PCA0_readCounter(void)
 
 void PCA0_writeCounter(uint16_t value)
 {
-  PCA0 = value;
+    PCA0 = value;
 }
 
-void PCA0_run(void)
-{
-  PCA0CN0_CR = 1;
-}
-
-void PCA0_halt(void)
-{
-  PCA0CN0_CR = 0;
-}
 
 void PCA0_init(PCA0_Timebase_t  timebase, PCA0_IdleState_t idleState)
 {
@@ -225,9 +215,23 @@ void PCA0_resetChannel(PCA0_Channel_t channel)
   }
 }
 
+#endif
+
+
+void PCA0_run(void)
+{
+    PCA0CN0_CR = 1;
+}
+
+void PCA0_halt(void)
+{
+    PCA0CN0_CR = 0;
+}
+
+
 #if EFM8PDL_PCA0_USE_ISR == 1
 
-SI_INTERRUPT(PCA0_ISR, PCA0_IRQn)
+void PCA0_ISR(void) __interrupt (PCA0_IRQn)
 {
   //Save and clear flags
   uint8_t flags = PCA0CN0 & (PCA0CN0_CF__BMASK
