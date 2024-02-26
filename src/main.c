@@ -18,10 +18,11 @@
 //#include <stdio.h>
 
 #include "delay.h"
-#include "Globals.h"
+#include "globals.h"
 #include "InitDevice.h"
 #include "RF_Handling.h"
 #include "RF_Protocols.h"
+#include "serial.h"
 #include "uart.h"
 
 #include "pca_0.h"
@@ -61,8 +62,8 @@ unsigned char __sdcc_external_startup(void)
 }
 
 inline void ignore_uart(const bool ignore)
-{    
-    ignoreUARTFlag = ignore;    
+{
+    ignoreUARTFlag = ignore;
 }
 
 inline bool is_uart_ignored(void)
@@ -106,15 +107,21 @@ void main (void)
     __xdata uint8_t tr_repeats = 0;
     __xdata uint16_t bucket = 0;
     
-    __xdata uint16_t index = 0;
-    __xdata uint16_t idleResetCount = 0;
+    //__xdata uint16_t index = 0;
 
-	unsigned int rxdata = 0;
+	// FIXME: add comment
+    //__xdata uint16_t idleResetCount = 0;
+
+	// changed by external hardware, so must specify volatile type
+	volatile unsigned int rxdata = UART_NO_DATA;
+
+	// FIXME: add comment
 	uint8_t len = 0;
+	// FIXME: add comment
 	uint8_t position = 0;
 
-	// for buzzer
-	//const uint16_t startupDelay = 10000;
+	// for buzzer (milliseconds)
+	//const uint16_t startupDelay = 100;
 	// longer for LED
 	const uint16_t startupDelay = 3000;
 
@@ -201,9 +208,6 @@ void main (void)
             
 			rxdata = uart_getc();
             
-            // DEBUG:
-            //uart_putc(rxdata & 0xff);
-            
             //enable_global_interrupts();
 		} else {
 			rxdata = UART_NO_DATA;
@@ -230,6 +234,7 @@ void main (void)
 
 		if (rxdata == UART_NO_DATA)
 		{
+			led_on();
 #if 0
 			// FIXME: the magic numbers make this difficult to understand
 			if (uart_state == IDLE)
@@ -256,10 +261,10 @@ void main (void)
 		else
 		{
 			// debug: echo sent character
-			//uart_putc(rxdata & 0xff);
+			uart_putc(rxdata & 0xff);
 
 			// FIXME: add comment
-			idleResetCount = 0;
+			//idleResetCount = 0;
 
 			// state machine for UART
 			switch(uart_state)

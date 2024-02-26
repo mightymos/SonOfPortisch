@@ -8,6 +8,9 @@
 #ifndef INC_RF_HANDLING_H_
 #define INC_RF_HANDLING_H_
 
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "RF_Config.h"
 
 extern bool buffer_out(uint16_t* bucket);

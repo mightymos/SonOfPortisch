@@ -10,9 +10,10 @@
 //#include <stdlib.h>
 
 #include "delay.h"
-#include "Globals.h"
+#include "globals.h"
 #include "RF_Handling.h"
 #include "RF_Protocols.h"
+#include "serial.h"
 #include "pca_0.h"
 #include "uart.h"
 
@@ -72,7 +73,6 @@ __xdata uint8_t buffer_buckets_positions = 0;
 // Callbacks
 //-----------------------------------------------------------------------------
 void PCA0_overflowCb(void) { }
-
 void PCA0_intermediateOverflowCb(void) { }
 
 uint8_t Compute_CRC8_Simple_OneByte(uint8_t byteVal)
@@ -272,7 +272,7 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 					START_INC(status[0]);
 					SYNC_LOW = duration;
 
-                    //FIXME: changed to eliminate divide and multiply
+                    //FIXME: change to eliminate divide and multiply
 					buckets[0] = duration / 31;
 					buckets[1] = buckets[0] * 3;
 					buckets[2] = duration;
@@ -482,6 +482,7 @@ bool SendSingleBucket(bool high_low, uint16_t bucket_time)
 // Send generic signal based on n time bucket pairs (high/low timing)
 //-----------------------------------------------------------------------------
 #if INCLUDE_BUCKET_SNIFFING == 1
+
 void SendRFBuckets(uint16_t* buckets, uint8_t* rfdata, uint8_t data_len)
 {
 	// start transmit of the buckets with a high bucket
@@ -503,6 +504,7 @@ void SendRFBuckets(uint16_t* buckets, uint8_t* rfdata, uint8_t data_len)
 
 	rf_state = RF_FINISHED;
 }
+
 #endif
 
 void SendBuckets(
@@ -570,6 +572,7 @@ void SendBucketsByIndex(uint8_t index, uint8_t* rfdata)
 }
 
 #if INCLUDE_BUCKET_SNIFFING == 1
+
 bool probablyFooter(uint16_t duration)
 {
 	return duration >= MIN_FOOTER_LENGTH;
@@ -753,4 +756,5 @@ void Bucket_Received(uint16_t duration, bool high_low)
 			break;
 	}
 }
+
 #endif

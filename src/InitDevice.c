@@ -128,6 +128,7 @@ void enter_DefaultMode_from_RESET(void)
 	// stop timers
 	//TCON &= ~TCON_TR0__BMASK & ~TCON_TR1__BMASK;
 
+	// FIXME: what is this timer used for?
     // FIXME: what are the shifts used for?
 	//TH0 = (0xA0 << TH0_TH0__SHIFT);
     TH0 = 0xA0;
@@ -137,17 +138,14 @@ void enter_DefaultMode_from_RESET(void)
     //TH1 = (0xCB << TH1_TH1__SHIFT);
     TH1 = 0xCB;
 
-
+	// FIXME: we removed timer3 resource to save on code space
 	// restore timer configuration
 	//TCON |= (TCON_save & TCON_TR0__BMASK) | (TCON_save & TCON_TR1__BMASK);
-
-
 	// Save Timer Configuration
 	//uint8_t TMR3CN0_TR3_save;
 	//TMR3CN0_TR3_save = TMR3CN0 & TMR3CN0_TR3__BMASK;
-    
 	// Stop Timer
-	TMR3CN0 &= ~(TMR3CN0_TR3__BMASK);
+	//TMR3CN0 &= ~(TMR3CN0_TR3__BMASK);
 
 
 	// Restore Timer Configuration

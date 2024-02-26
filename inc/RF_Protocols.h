@@ -12,6 +12,8 @@
 // Includes
 //-----------------------------------------------------------------------------
 #include <stdint.h>
+
+#include "globals.h"
 #include "RF_Config.h"
 
 /*

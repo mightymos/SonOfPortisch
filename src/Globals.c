@@ -7,7 +7,7 @@
 
 #include <SI_EFM8BB1_Register_Enums.h>
 
-#include "Globals.h"
+#include "globals.h"
 
 __xdata uint16_t Timer_2_Timeout  = 0x0000;
 __xdata uint16_t Timer_2_Interval = 0x0000;

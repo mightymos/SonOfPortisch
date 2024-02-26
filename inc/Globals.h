@@ -8,8 +8,12 @@
 #ifndef INC_GLOBALS_H_
 #define INC_GLOBALS_H_
 
-// FIXME: what does this do compared to INCLUDE_BUCKET_SNIFFING in RF_Config.h ?
-// USER CONSTANTS
+
+#include <SI_EFM8BB1_Register_Enums.h> 
+
+
+
+// this seems to start sniffing by default as opposed to waiting for command over uart
 #define SNIFFING_ON 1
 
 #define SYSCLK	24500000
