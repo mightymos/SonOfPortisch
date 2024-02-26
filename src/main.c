@@ -72,19 +72,43 @@ inline bool is_uart_ignored(void)
 }
 
 
+
 #if 0
 
-    void serial_test(void)
+void serial_loopback(void)
+{
+	volatile unsigned int rxdata = UART_NO_DATA;
+
+	// check if serial transmit buffer is empty
+	if(!is_uart_tx_buffer_empty())
+	{
+	    if (is_uart_tx_finished())
+	    {
+	        // if not empty, set TI, which triggers interrupt to actually transmit
+	        UART0_initTxPolling();
+	    }
+	}
+
+	// check if something got received by UART
+	// only read data from uart if idle
+	if (!is_uart_ignored())
     {
-        efm8_delay_ms(500);
-        
-        led_toggle();
-        
-        //printf_tiny("loop\r\n");
-		uart_putc(0xAA);
+		rxdata = uart_getc();
+	} else {
+		rxdata = UART_NO_DATA;
     }
 
+	if (rxdata == UART_NO_DATA)
+	{
+		led_on();
+	} else {
+		uart_putc(rxdata & 0xff);
+	}
+    
+}
+
 #endif
+
 
 void finish_command(uint8_t command)
 {
@@ -197,7 +221,13 @@ void main (void)
 	{
 		// reset Watch Dog Timer
 		//WDT0_feed();
-
+#if 0
+		// DEBUG: infinite loop to echo back serial characters
+		while (true)
+		{
+			serial_loopback();
+		}
+#endif
 
 #if 1
 		// check if something got received by UART
