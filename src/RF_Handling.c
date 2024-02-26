@@ -378,7 +378,8 @@ void PCA0_channel0EventCb(void)
 	PCA0MD = flags;
 
 	// if bucket is no noise add it to buffer
-	if (/*current_capture_value > MIN_PULSE_LENGTH &&*/ current_capture_value < 0x8000)
+	/*current_capture_value > MIN_PULSE_LENGTH &&*/
+	if (current_capture_value < 0x8000)
 	{
 		buffer_in(current_capture_value | ((uint16_t)(!rdata_level()) << 15));
 	}
@@ -496,8 +497,8 @@ void SendRFBuckets(uint16_t* buckets, uint8_t* rfdata, uint8_t data_len)
 	// transmit data
 	for (i = 0; i < data_len; i++)
 	{
-			high_low = SendSingleBucket(high_low_mark ? (bool)(rfdata[i] >> 7) : high_low, buckets[(rfdata[i] >> 4) & 0x07]);
-			high_low = SendSingleBucket(high_low_mark ? (bool)((rfdata[i] >> 3) & 0x01) : high_low, buckets[rfdata[i] & 0x07]);
+		high_low = SendSingleBucket(high_low_mark ? (bool)(rfdata[i] >> 7) : high_low, buckets[(rfdata[i] >> 4) & 0x07]);
+		high_low = SendSingleBucket(high_low_mark ? (bool)((rfdata[i] >> 3) & 0x01) : high_low, buckets[rfdata[i] & 0x07]);
 	}
 
 	led_off();

@@ -33,7 +33,7 @@ __xdata static volatile uint8_t UART_Buffer_Write_Position = 0;
 __xdata static volatile uint8_t UART_Buffer_Write_Len = 0;
 __xdata static volatile uint8_t lastRxError = 0;
 
-bool static volatile TX_Finished = true;
+bool static volatile gTXFinished = true;
 
 
 //-----------------------------------------------------------------------------
@@ -82,9 +82,9 @@ void UART0_ISR(void) __interrupt (UART0_IRQn)
 			UART_Buffer_Write_Position++;
 			UART_Buffer_Write_Len--;
             
-            TX_Finished = false;
+            gTXFinished = false;
 		} else {
-			TX_Finished = true;
+			gTXFinished = true;
         }
 
 		if (UART_Buffer_Write_Position == UART_TX_BUFFER_SIZE)
@@ -146,7 +146,7 @@ uint8_t UART0_read(void)
 
 bool is_uart_tx_finished(void)
 {
-    return TX_Finished;
+    return gTXFinished;
 }
 
 bool is_uart_tx_buffer_empty(void)
@@ -188,9 +188,8 @@ unsigned int uart_getc(void)
     }
 
     // FIXME: can not see where lastRxError is ever set?
-    rxdata |= (lastRxError << 8);
-    
-    lastRxError = 0;
+    //rxdata |= (lastRxError << 8);    
+    //lastRxError = 0;
     
     return rxdata;
 }
