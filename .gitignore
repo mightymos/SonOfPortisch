@@ -1,1 +1,9 @@
 build/*.*
+inc/*.#*
+src/*.adb
+src/*.asm
+src/*.lst
+src/*.rel
+src/*.sym
+src/*.#*
+src/tmp.out

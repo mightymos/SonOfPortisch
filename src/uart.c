@@ -222,7 +222,7 @@ void uart_put_command(uint8_t command)
 	uart_putc(RF_CODE_STOP);
 }
 
-#if 0
+#if 1
 void uart_put_RF_Data_Advanced(uint8_t Command, uint8_t protocol_index)
 {
 	uint8_t i = 0;

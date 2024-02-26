@@ -228,35 +228,36 @@ void main (void)
 
 
 
-		//if (rxdata == UART_NO_DATA)
-		//{
+		if (rxdata == UART_NO_DATA)
+		{
 			// FIXME: the magic numbers make this difficult to understand
-			//if (uart_state == IDLE)
-			//	idleResetCount = 0;
-			//else
-			//{
-			//	if (++idleResetCount > 10000)
-            //    {
-			//		buzzer_on();
-            //    }
-			//
-			//	if (idleResetCount > 30000)
-			//	{
-			//		idleResetCount = 0;
-			//		uart_state = IDLE;
-			//		uart_command = NONE;
-			//		buzzer_off();
-			//	}
-		//	}
-		//}
-		//else
-		if (rxdata != UART_NO_DATA)
+			if (uart_state == IDLE)
+				idleResetCount = 0;
+			else
+			{
+				if (++idleResetCount > 10000)
+                {
+					//buzzer_on();
+					led_on();
+                }
+			
+				if (idleResetCount > 30000)
+				{
+					idleResetCount = 0;
+					uart_state = IDLE;
+					uart_command = NONE;
+					//buzzer_off();
+					led_off();
+				}
+			}
+		}
+		else
 		{
 			// debug: echo sent character
 			//uart_putc(rxdata & 0xff);
 
 			// FIXME: add comment
-			//idleResetCount = 0;
+			idleResetCount = 0;
 
 			// state machine for UART
 			switch(uart_state)
@@ -312,9 +313,9 @@ void main (void)
 						case RF_ALTERNATIVE_FIRMWARE:
 							break;
 						case RF_CODE_SNIFFING_ON:
-							//sniffing_mode = ADVANCED;
-							//PCA0_DoSniffing(RF_CODE_SNIFFING_ON);
-							//last_sniffing_command = RF_CODE_SNIFFING_ON;
+							sniffing_mode = ADVANCED;
+							PCA0_DoSniffing(RF_CODE_SNIFFING_ON);
+							last_sniffing_command = RF_CODE_SNIFFING_ON;
 							break;
 						case RF_CODE_SNIFFING_OFF:
 							// set desired RF protocol PT2260
@@ -347,12 +348,12 @@ void main (void)
 							//buzzer_off();
 
 							// enable sniffing for all known protocols
-							//last_sniffing_mode = sniffing_mode;
-							//sniffing_mode = ADVANCED;
-							//last_sniffing_command = PCA0_DoSniffing(RF_CODE_LEARN_NEW);
+							last_sniffing_mode = sniffing_mode;
+							sniffing_mode = ADVANCED;
+							last_sniffing_command = PCA0_DoSniffing(RF_CODE_LEARN_NEW);
 
 							// start timeout timer
-							//InitTimer3_ms(1, 30000);
+							InitTimer3_ms(1, 30000);
 							break;
 						case RF_CODE_ACK:
 							// re-enable default RF_CODE_RFIN sniffing
@@ -460,9 +461,9 @@ void main (void)
 							break;
 
 						case RF_CODE_LEARN_NEW:
-							//sniffing_mode = last_sniffing_mode;
-							//PCA0_DoSniffing(last_sniffing_command);
-							//uart_put_RF_Data_Advanced(RF_CODE_LEARN_OK_NEW, RF_DATA_STATUS & 0x7F);
+							sniffing_mode = last_sniffing_mode;
+							PCA0_DoSniffing(last_sniffing_command);
+							uart_put_RF_Data_Advanced(RF_CODE_LEARN_OK_NEW, RF_DATA_STATUS & 0x7F);
 							break;
 					}
 
@@ -522,7 +523,7 @@ void main (void)
 							break;
 
 						case RF_CODE_SNIFFING_ON:
-							//uart_put_RF_Data_Advanced(RF_CODE_SNIFFING_ON, RF_DATA_STATUS & 0x7F);
+							uart_put_RF_Data_Advanced(RF_CODE_SNIFFING_ON, RF_DATA_STATUS & 0x7F);
 							break;
 					}
 

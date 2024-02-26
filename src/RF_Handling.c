@@ -288,8 +288,6 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 			break;
 
 		case ADVANCED:
-// FIXME: trying to reduce code size
-#if 0
 			// check each protocol for each bucket
 			for (i = 0; i < NUM_OF_PROTOCOLS; i++)
 			{
@@ -323,7 +321,6 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 						return;
 				}
 			}
-#endif
 			break;
 	}	// switch(sniffing_mode)
 }
