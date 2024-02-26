@@ -411,14 +411,14 @@ typedef enum
  * The state of the interrupt flag.
  *
  ******************************************************************************/
-bool SMB0_getIntFlag();
+bool SMB0_getIntFlag(void);
 
 /***************************************************************************//**
  * @brief
  * Clear SMB Interrupt flag.
  *
  ******************************************************************************/
-void SMB0_clearIntFlag();
+void SMB0_clearIntFlag(void);
 
 /***************************************************************************//**
  * @brief
@@ -432,7 +432,8 @@ void SMB0_clearIntFlag();
  *
  * Valid enums can be found in the Status Flag Enums group.
  ******************************************************************************/
-SI_REENTRANT_FUNCTION_PROTO(SMB0_getStatusFlag, uint8_t, (uint8_t flag));
+//SI_REENTRANT_FUNCTION_PROTO(SMB0_getStatusFlag, uint8_t, (uint8_t flag));
+uint8_t SMB0_getStatusFlag (uint8_t flag) __reentrant;
 
 /***************************************************************************//**
  * @brief
@@ -446,7 +447,8 @@ SI_REENTRANT_FUNCTION_PROTO(SMB0_getStatusFlag, uint8_t, (uint8_t flag));
  * Valid enums can be found in the Status Flag Enums group.
  *
  ******************************************************************************/
-SI_REENTRANT_FUNCTION_PROTO(SMB0_setStatusFlag, void, (uint8_t flag, uint8_t state));
+//SI_REENTRANT_FUNCTION_PROTO(SMB0_setStatusFlag, void, (uint8_t flag, uint8_t state));
+void SMB0_setStatusFlag(uint8_t flag, uint8_t state) __reentrant;
 
 /***************************************************************************//**
  * @brief

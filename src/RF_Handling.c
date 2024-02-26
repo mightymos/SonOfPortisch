@@ -37,7 +37,7 @@ bool actual_byte_high_nibble = false;
 __xdata uint8_t actual_byte = 0;
 
 // status of each protocol
-PROTOCOL_STATUS status[PROTOCOLCOUNT];
+PROTOCOL_STATUS status[NUM_OF_PROTOCOLS];
 
 
 __xdata uint8_t old_crc = 0;
@@ -245,7 +245,8 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 	// if noise got received stop all running decodings
 	if (duration < MIN_BUCKET_LENGTH)
 	{
-		for (i = 0; i < PROTOCOLCOUNT; i++)
+		// compiler will optimize this out if NUM_OF_PROTOCOLS = 1
+		for (i = 0; i < NUM_OF_PROTOCOLS; i++)
 			START_CLEAR(status[i]);
 
 		led_off();
@@ -287,8 +288,10 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 			break;
 
 		case ADVANCED:
+// FIXME: trying to reduce code size
+#if 0
 			// check each protocol for each bucket
-			for (i = 0; i < PROTOCOLCOUNT; i++)
+			for (i = 0; i < NUM_OF_PROTOCOLS; i++)
 			{
 				// protocol started, check if sync is finished
 				if (START_GET(status[i]) < PROTOCOL_DATA[i].start.size)
@@ -320,6 +323,7 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 						return;
 				}
 			}
+#endif
 			break;
 	}	// switch(sniffing_mode)
 }
@@ -402,7 +406,7 @@ uint8_t PCA0_DoSniffing(uint8_t active_command)
 	uint8_t ret = last_sniffing_command;
 
     // FIXME: possible to remove to save code size?
-	memset(status, 0, sizeof(PROTOCOL_STATUS) * PROTOCOLCOUNT);
+	memset(status, 0, sizeof(PROTOCOL_STATUS) * NUM_OF_PROTOCOLS);
 
 	// restore timer to 100000Hz, 10µs interval
 	SetTimer0Overflow(0x0B);

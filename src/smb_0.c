@@ -4,6 +4,7 @@
  * http://developer.silabs.com/legal/version/v11/Silicon_Labs_Software_License_Agreement.txt
  *****************************************************************************/
 
+//
 #include "smb_0.h"
 #include "assert.h"
 
@@ -24,12 +25,14 @@ void SMB0_clearIntFlag()
   SMB0CN0_SI = 0;
 }
 
-SI_REENTRANT_FUNCTION(SMB0_getStatusFlag, uint8_t, (uint8_t flag))
+//SI_REENTRANT_FUNCTION(SMB0_getStatusFlag, uint8_t, (uint8_t flag))
+uint8_t SMB0_getStatusFlag (uint8_t flag) __reentrant
 {
   return SMB0CN0 & flag;
 }
 
-SI_REENTRANT_FUNCTION(SMB0_setStatusFlag, void, (uint8_t flag, uint8_t state))
+//SI_REENTRANT_FUNCTION(SMB0_setStatusFlag, void, (uint8_t flag, uint8_t state))
+void SMB0_setStatusFlag(uint8_t flag, uint8_t state) __reentrant
 {
   if (state)
   {

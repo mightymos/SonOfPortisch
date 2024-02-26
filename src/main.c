@@ -1,20 +1,18 @@
 //=========================================================
 // Jonathan Armstrong - Port to SDCC compiler
+// Silicon Labs IDE 5.50.00 seems to the last IDE that makes compiling with SDCC possible
 //=========================================================
 
 //-----------------------------------------------------------------------------
 // Includes
 //-----------------------------------------------------------------------------
 // SFR declarations
+// FIXME: eventually it seems like we would like to use definitions shipped with compiler
 #include <SI_EFM8BB1_Register_Enums.h> 
 //#include <EFM8BB1.h>
 
 #include "efm8_config.h"
 
-// FIXME: do not understand why compiler is not erroring on symbol not defined
-#ifndef EFM8PDL_UART0_USE_POLLED
- #define EFM8PDL_UART0_USE_POLLED 1
-#endif
 
 // for printf_tiny()
 //#include <stdio.h>
@@ -28,7 +26,7 @@
 
 #include "pca_0.h"
 //#include "uart_0.h"
-#include "wdt_0.h"
+//#include "wdt_0.h"
 
 
 // some operations set flag to true so that uart receiving is temporarily ignored
@@ -81,7 +79,8 @@ inline bool is_uart_ignored(void)
         
         led_toggle();
         
-        printf_tiny("loop\r\n");
+        //printf_tiny("loop\r\n");
+		uart_putc(0xAA);
     }
 
 #endif
@@ -101,15 +100,24 @@ void finish_command(uint8_t command)
 //-----------------------------------------------------------------------------
 // main() Routine
 // ----------------------------------------------------------------------------
-int main (void)
+void main (void)
 {
-    __xdata rf_sniffing_mode_t last_sniffing_mode;
-    __xdata uint8_t tr_repeats;
-    __xdata uint16_t bucket;
+    __xdata rf_sniffing_mode_t last_sniffing_mode = STANDARD;
+    __xdata uint8_t tr_repeats = 0;
+    __xdata uint16_t bucket = 0;
     
-    __xdata uint16_t index;
-    __xdata uint16_t idleResetCount;
-    
+    __xdata uint16_t index = 0;
+    __xdata uint16_t idleResetCount = 0;
+
+	unsigned int rxdata = 0;
+	uint8_t len = 0;
+	uint8_t position = 0;
+
+	// for buzzer
+	//const uint16_t startupDelay = 10000;
+	// longer for LED
+	const uint16_t startupDelay = 3000;
+
 
 	// call hardware initialization routine
 	enter_DefaultMode_from_RESET();
@@ -120,18 +128,24 @@ int main (void)
 	tdata_off();
 
 
-	// enable uart
-	UART0_init(UART0_RX_ENABLE, UART0_WIDTH_8, UART0_MULTIPROC_DISABLE);
 
-#if EFM8PDL_UART0_USE_POLLED
-    // basically sets TI flag so putchar() not stuck in an infinite loop
-    UART0_initStdio();
+// baud rate is 19200, 8 data bits, 1 stop bit, no parity
+#if defined(EFM8PDL_UART0_USE_POLLED)
+	#if EFM8PDL_UART0_USE_POLLED
+    	// basically sets TI flag so putchar() does not get stuck in an infinite loop
+    	UART0_initStdio();
+	#else
+		// enable uart
+		UART0_init(UART0_RX_ENABLE, UART0_WIDTH_8, UART0_MULTIPROC_DISABLE);
+	#endif
+#else
+	#error Please define EFM8PDL_UART0_USE_POLLED as 0 or 1.
 #endif
     
 
 
 	// start sniffing if enabled by default
-#if (Sniffing_On)
+#if (SNIFFING_ON)
 	// set desired sniffing type to PT2260
 	sniffing_mode = STANDARD;
 	PCA0_DoSniffing(RF_CODE_RFIN);
@@ -140,18 +154,18 @@ int main (void)
 	PCA0_StopSniffing();
 #endif
 
-#if 0
-    // startup buzzer
-	for (index = 0; index < 10000; index++)
-    {
-		buzzer_on();
-    }
+#if 1
+    // startup buzzer (can be annoying during development)
+	// use LED instead (for development)
+	//buzzer_on();
+	led_on();
+	efm8_delay_ms(startupDelay);
 
-	buzzer_off();
+	//buzzer_off();
+	led_off();
 #endif
 
 
-    
 #if 0
     // test uart transmitting in polled mode
     while (true)
@@ -160,25 +174,22 @@ int main (void)
     }
 #endif
 
-
+    
 	// enable global interrupts
 	enable_global_interrupts();
     
+
     
     // startup
     //requires code and memory space, which is in short supply
     //but good to check that polled uart is working
     //printf_tiny("startup...\r\n");
-    //uart_put_command(RF_CODE_ACK);
+    uart_put_command(RF_CODE_ACK);
 
 	while (true)
 	{
-		unsigned int rxdata;
-		uint8_t len;
-		uint8_t position;
-
 		// reset Watch Dog Timer
-		WDT0_feed();
+		//WDT0_feed();
 
 
 #if 1
@@ -201,10 +212,6 @@ int main (void)
 #endif
         
         
-        // DEBUG:
-        //uart_putc(0x4a);
-        //efm8_delay_ms(100);
-        
 
 #if 1
         // check if serial transmit buffer is empty
@@ -219,34 +226,37 @@ int main (void)
         
 #endif
 
-        // DEBUG:
-        //led_toggle();
-        //efm8_delay_ms(1000);
 
 
-		if (rxdata == UART_NO_DATA)
+		//if (rxdata == UART_NO_DATA)
+		//{
+			// FIXME: the magic numbers make this difficult to understand
+			//if (uart_state == IDLE)
+			//	idleResetCount = 0;
+			//else
+			//{
+			//	if (++idleResetCount > 10000)
+            //    {
+			//		buzzer_on();
+            //    }
+			//
+			//	if (idleResetCount > 30000)
+			//	{
+			//		idleResetCount = 0;
+			//		uart_state = IDLE;
+			//		uart_command = NONE;
+			//		buzzer_off();
+			//	}
+		//	}
+		//}
+		//else
+		if (rxdata != UART_NO_DATA)
 		{
-			if (uart_state == IDLE)
-				idleResetCount = 0;
-			else
-			{
-				if (++idleResetCount > 10000)
-                {
-					//buzzer_on();
-                }
+			// debug: echo sent character
+			//uart_putc(rxdata & 0xff);
 
-				if (idleResetCount > 30000)
-				{
-					idleResetCount = 0;
-					uart_state = IDLE;
-					uart_command = NONE;
-					buzzer_off();
-				}
-			}
-		}
-		else
-		{
-			idleResetCount = 0;
+			// FIXME: add comment
+			//idleResetCount = 0;
 
 			// state machine for UART
 			switch(uart_state)
@@ -268,11 +278,14 @@ int main (void)
 					switch(uart_command)
 					{
 						case RF_CODE_LEARN:
-							InitTimer3_ms(1, 50);
+							//buzzer_on();
+							//FIXME: seems to make more sense to just delay()
+							//InitTimer3_ms(1, 50);
 							//buzzer_on();
 							// wait until timer has finished
-							WaitTimer3Finished();
-							buzzer_off();
+							//WaitTimer3Finished();
+							//efm8_delay_ms(50);
+							//buzzer_off();
 
 							// set desired RF protocol PT2260
 							sniffing_mode = STANDARD;
@@ -299,9 +312,9 @@ int main (void)
 						case RF_ALTERNATIVE_FIRMWARE:
 							break;
 						case RF_CODE_SNIFFING_ON:
-							sniffing_mode = ADVANCED;
-							PCA0_DoSniffing(RF_CODE_SNIFFING_ON);
-							last_sniffing_command = RF_CODE_SNIFFING_ON;
+							//sniffing_mode = ADVANCED;
+							//PCA0_DoSniffing(RF_CODE_SNIFFING_ON);
+							//last_sniffing_command = RF_CODE_SNIFFING_ON;
 							break;
 						case RF_CODE_SNIFFING_OFF:
 							// set desired RF protocol PT2260
@@ -325,19 +338,21 @@ int main (void)
 							break;
 #endif
 						case RF_CODE_LEARN_NEW:
-							InitTimer3_ms(1, 50);
+							//buzzer_on();
+							//InitTimer3_ms(1, 50);
 							//buzzer_on();
 							// wait until timer has finished
-							WaitTimer3Finished();
-							buzzer_off();
+							//WaitTimer3Finished();
+							//efm8_delay_ms(50);
+							//buzzer_off();
 
 							// enable sniffing for all known protocols
-							last_sniffing_mode = sniffing_mode;
-							sniffing_mode = ADVANCED;
-							last_sniffing_command = PCA0_DoSniffing(RF_CODE_LEARN_NEW);
+							//last_sniffing_mode = sniffing_mode;
+							//sniffing_mode = ADVANCED;
+							//last_sniffing_command = PCA0_DoSniffing(RF_CODE_LEARN_NEW);
 
 							// start timeout timer
-							InitTimer3_ms(1, 30000);
+							//InitTimer3_ms(1, 30000);
 							break;
 						case RF_CODE_ACK:
 							// re-enable default RF_CODE_RFIN sniffing
@@ -429,11 +444,13 @@ int main (void)
 				// check if a RF signal got decoded
 				if ((RF_DATA_STATUS & RF_DATA_RECEIVED_MASK) != 0)
 				{
-					InitTimer3_ms(1, 200);
+					//buzzer_on();
+					//InitTimer3_ms(1, 200);
 					//buzzer_on();
 					// wait until timer has finished
-					WaitTimer3Finished();
-					buzzer_off();
+					//WaitTimer3Finished();
+					//efm8_delay_ms(200);
+					//buzzer_off();
 
 					switch(uart_command)
 					{
@@ -443,9 +460,9 @@ int main (void)
 							break;
 
 						case RF_CODE_LEARN_NEW:
-							sniffing_mode = last_sniffing_mode;
-							PCA0_DoSniffing(last_sniffing_command);
-							uart_put_RF_Data_Advanced(RF_CODE_LEARN_OK_NEW, RF_DATA_STATUS & 0x7F);
+							//sniffing_mode = last_sniffing_mode;
+							//PCA0_DoSniffing(last_sniffing_command);
+							//uart_put_RF_Data_Advanced(RF_CODE_LEARN_OK_NEW, RF_DATA_STATUS & 0x7F);
 							break;
 					}
 
@@ -461,11 +478,13 @@ int main (void)
 				// check for learning timeout
 				else if (IsTimer3Finished())
 				{
-					InitTimer3_ms(1, 1000);
+					//buzzer_on();
+					//InitTimer3_ms(1, 1000);
 					//buzzer_on();
 					// wait until timer has finished
-					WaitTimer3Finished();
-					buzzer_off();
+					//WaitTimer3Finished();
+					//efm8_delay_ms(100);
+					//buzzer_off();
 
 					// send not-acknowledge
 					switch(uart_command)
@@ -503,7 +522,7 @@ int main (void)
 							break;
 
 						case RF_CODE_SNIFFING_ON:
-							uart_put_RF_Data_Advanced(RF_CODE_SNIFFING_ON, RF_DATA_STATUS & 0x7F);
+							//uart_put_RF_Data_Advanced(RF_CODE_SNIFFING_ON, RF_DATA_STATUS & 0x7F);
 							break;
 					}
 
@@ -579,11 +598,12 @@ int main (void)
 				if (uart_state != IDLE)
 					break;
 
-				InitTimer3_ms(1, *(uint16_t *)&RF_DATA[0]);
+				//InitTimer3_ms(1, *(uint16_t *)&RF_DATA[0]);
 				//buzzer_on();
 				// wait until timer has finished
-				WaitTimer3Finished();
-				buzzer_off();
+				//WaitTimer3Finished();
+				//efm8_delay_ms(*(uint16_t *)&RF_DATA[0]);
+				//buzzer_off();
 
 				// send acknowledge
 				finish_command(RF_CODE_ACK);

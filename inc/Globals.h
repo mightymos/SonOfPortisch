@@ -10,7 +10,7 @@
 
 // FIXME: what does this do compared to INCLUDE_BUCKET_SNIFFING in RF_Config.h ?
 // USER CONSTANTS
-#define Sniffing_On 0
+#define SNIFFING_ON 1
 
 #define SYSCLK	24500000
 
@@ -64,7 +64,10 @@
 //__sbit __at (0x93) R_DATA;
 //__sbit __at (0x96) BUZZER;
 
-#define LED    P1_B0
+// Sonoff Bridge
+//#define LED    P1_B0
+// EFM8BB1LCK board
+#define LED    P1_B4
 #define TDATA  P0_B0
 #define RDATA  P1_B3
 #define BUZZER P1_B6
@@ -87,12 +90,18 @@ inline bool rdata_level(void)
 // setter prototypes
 inline void led_on(void)
 {
-    LED = 1;
+	// sonoff bridge
+    //LED = 1;
+	// EFM8BB1LCK board
+	LED = 0;
 }
 
 inline void led_off(void)
 {
-    LED = 0;
+	// sonoff bridge
+    //LED = 0;
+	// EFM8BB1LCK board
+	LED = 1;
 }
 
 inline void led_toggle(void)

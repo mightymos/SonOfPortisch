@@ -6,6 +6,9 @@
 
 #include "pca_0.h"
 
+// FIXME: we need dead code elimination because
+// many of these functions are unused
+
 #if 0
 uint8_t PCA0_getIntFlags(void)
 {
@@ -215,7 +218,7 @@ void PCA0_resetChannel(PCA0_Channel_t channel)
   }
 }
 
-#endif
+#endif //dead code elimination
 
 
 void PCA0_run(void)

@@ -20,8 +20,9 @@ void ADC0_init(ADC0_ConversionStart_t convStart,
 {
 	uint8_t divider;
 
+	// FIXME: not available in ide v3 apparently
 	// Sysclk cannot be greater than the maximum
-	SLAB_ASSERT(sysclk <= MAX_SYSCLK);
+	//SLAB_ASSERT(sysclk <= MAX_SYSCLK);
 
     // calculate SAR clock divider 
     divider = 0; 
@@ -56,7 +57,7 @@ void ADC0_init(ADC0_ConversionStart_t convStart,
 }
 #endif //EFM8PDL_ADC0_USE_INIT
 
-uint8_t ADC0_getIntFlags()
+uint8_t ADC0_getIntFlags(void)
 {
   uint8_t val;
   val = ADC0CN0 & (ADC0_CONVERSION_COMPLETE_IF | ADC0_WINDOW_COMPARE_IF);
@@ -66,8 +67,9 @@ uint8_t ADC0_getIntFlags()
 void ADC0_clearIntFlags(uint8_t flags)
 {
  
+	// FIXME: not available in ide v3 apparently
   // Must pass one of the valid flags
-  SLAB_ASSERT(flags & (ADC0_CONVERSION_COMPLETE_IF | ADC0_WINDOW_COMPARE_IF));
+  //SLAB_ASSERT(flags & (ADC0_CONVERSION_COMPLETE_IF | ADC0_WINDOW_COMPARE_IF));
 
   ADC0CN0 &= ~(flags & (ADC0_CONVERSION_COMPLETE_IF | ADC0_WINDOW_COMPARE_IF));
 }
@@ -76,8 +78,9 @@ void ADC0_enableInt(uint8_t flags, bool enable)
 {
   uint8_t en;
 
+	// FIXME: not available in ide v3 apparently
   // Must pass one of the valid flags
-  SLAB_ASSERT(flags & (ADC0_CONVERSION_COMPLETE_IF | ADC0_WINDOW_COMPARE_IF));
+  //SLAB_ASSERT(flags & (ADC0_CONVERSION_COMPLETE_IF | ADC0_WINDOW_COMPARE_IF));
 
   en = (uint8_t) enable;
 

@@ -58,9 +58,10 @@ void enter_DefaultMode_from_RESET(void)
 	 - P1.5 output is open-drain
 	 - P1.6 output is push-pull
 	 ***********************************************************************/
+	// FIXME: correctly handle LED on sonoff different from LED on EFM8BB1LCK board
 	P1MDOUT = P1MDOUT_B0__PUSH_PULL | P1MDOUT_B1__OPEN_DRAIN
 			| P1MDOUT_B2__OPEN_DRAIN | P1MDOUT_B3__OPEN_DRAIN
-			| P1MDOUT_B4__OPEN_DRAIN | P1MDOUT_B5__OPEN_DRAIN
+			| P1MDOUT_B4__PUSH_PULL | P1MDOUT_B5__OPEN_DRAIN
 			| P1MDOUT_B6__PUSH_PULL;
 
 	// $[P1SKIP - Port 1 Skip]
@@ -74,7 +75,7 @@ void enter_DefaultMode_from_RESET(void)
 	 - P1.6 pin is skipped by the crossbar
 	 ***********************************************************************/
 	P1SKIP = P1SKIP_B0__SKIPPED | P1SKIP_B1__SKIPPED | P1SKIP_B2__SKIPPED
-			| P1SKIP_B3__NOT_SKIPPED | P1SKIP_B4__SKIPPED | P1SKIP_B5__SKIPPED
+			| P1SKIP_B3__NOT_SKIPPED | P1SKIP_B4__NOT_SKIPPED | P1SKIP_B5__SKIPPED
 			| P1SKIP_B6__SKIPPED;
 
 

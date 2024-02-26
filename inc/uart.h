@@ -121,7 +121,7 @@ extern unsigned int uart_getc(void);
 extern void         uart_putc(uint8_t txdata);
 
 extern void uart_put_command(uint8_t command);
-extern void uart_put_RF_Data_Advanced(uint8_t Command, uint8_t protocol_index);
+//extern void uart_put_RF_Data_Advanced(uint8_t Command, uint8_t protocol_index);
 extern void uart_put_RF_Data_Standard(uint8_t Command);
 
 #if INCLUDE_BUCKET_SNIFFING == 1

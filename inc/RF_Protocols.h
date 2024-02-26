@@ -594,5 +594,6 @@ __code static struct BUCKET_PROTOCOL_DATA PROTOCOL_DATA[] =
 #endif
 };
 
-#define PROTOCOLCOUNT (sizeof(PROTOCOL_DATA) / sizeof(PROTOCOL_DATA[0]))
+// https://www.ashn.dev/blog/2020-01-06-c-array-length.html
+#define NUM_OF_PROTOCOLS (sizeof(PROTOCOL_DATA) / sizeof(PROTOCOL_DATA[0]))
 #endif // INC_RF_PROTOCOLS_H_
