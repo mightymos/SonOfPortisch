@@ -4,6 +4,7 @@ src/*.adb
 src/*.asm
 src/*.lst
 src/*.rel
+src/*.rst
 src/*.sym
 src/*.#*
 src/tmp.out

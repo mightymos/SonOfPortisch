@@ -28,7 +28,8 @@ void SetTimer2Reload(uint16_t reload)
 	TMR2RLL = ((reload & 0xFF) << TMR2RLL_TMR2RLL__SHIFT);
 }
 
-void SetTimerReload(uint16_t reload)
+#if 0
+void SetTimer3Reload(uint16_t reload)
 {
 	/***********************************************************************
 	 - Timer 3 Reload High Byte
@@ -39,6 +40,7 @@ void SetTimerReload(uint16_t reload)
 	 ***********************************************************************/
 	TMR3RLL = ((reload & 0xFF) << TMR3RLL_TMR3RLL__SHIFT);
 }
+#endif
 
 /*
  * Init Timer 2 with microseconds interval, maximum is 65535µs.
@@ -55,6 +57,7 @@ void InitTimer2_us(uint16_t interval, uint16_t timeout)
 	TMR2CN0 |= TMR2CN0_TR2__RUN;
 }
 
+#if 0
 /*
  * Init Timer 3 with microseconds interval, maximum is 65535µs.
  */
@@ -69,6 +72,7 @@ void InitTimer3_us(uint16_t interval, uint16_t timeout)
 	// start timer
 	TMR3CN0 |= TMR3CN0_TR3__RUN;
 }
+#endif
 
 /*
  * Init Timer 2 with milliseconds interval, maximum is ~2.5ms.
@@ -84,6 +88,7 @@ void InitTimer2_ms(uint16_t interval, uint16_t timeout)
 	TMR2CN0 |= TMR2CN0_TR2__RUN;
 }
 
+#if 0
 /*
  * Init Timer 3 with milliseconds interval, maximum is ~2.5ms.
  */
@@ -97,6 +102,7 @@ void InitTimer3_ms(uint16_t interval, uint16_t timeout)
 	// start timer
 	TMR3CN0 |= TMR3CN0_TR3__RUN;
 }
+#endif
 
 void WaitTimer2Finished(void)
 {
@@ -104,12 +110,15 @@ void WaitTimer2Finished(void)
 	while((TMR2CN0 & TMR2CN0_TR2__BMASK) == TMR2CN0_TR2__RUN);
 }
 
+#if 0
 void WaitTimer3Finished(void)
 {
 	// wait until timer has finished
 	while((TMR3CN0 & TMR3CN0_TR3__BMASK) == TMR3CN0_TR3__RUN);
 }
+#endif
 
+#if 1
 void StopTimer2(void)
 {
 	// stop timer
@@ -117,7 +126,9 @@ void StopTimer2(void)
 	// Clear Timer 2 high overflow flag
 	TMR2CN0 &= ~TMR2CN0_TF2H__SET;
 }
+#endif
 
+#if 0
 void StopTimer3(void)
 {
 	// stop timer
@@ -125,16 +136,19 @@ void StopTimer3(void)
 	// Clear Timer 3 high overflow flag
 	TMR3CN0 &= ~TMR3CN0_TF3H__SET;
 }
+#endif
 
 bool IsTimer2Finished(void)
 {
 	return ((TMR2CN0 & TMR2CN0_TR2__BMASK) != TMR2CN0_TR2__RUN);
 }
 
+#if 0
 bool IsTimer3Finished(void)
 {
 	return ((TMR3CN0 & TMR3CN0_TR3__BMASK) != TMR3CN0_TR3__RUN);
 }
+#endif
 
 //-----------------------------------------------------------------------------
 // TIMER2_ISR
@@ -163,6 +177,7 @@ void TIMER2_ISR(void) __interrupt (TIMER2_IRQn)
 		Timer_2_Timeout -= Timer_2_Interval;
 }
 
+#if 0
 //-----------------------------------------------------------------------------
 // TIMER3_ISR
 //-----------------------------------------------------------------------------
@@ -189,3 +204,4 @@ void TIMER3_ISR(void) __interrupt (TIMER3_IRQn)
 	else
 		Timer_3_Timeout -= Timer_3_Interval;
 }
+#endif

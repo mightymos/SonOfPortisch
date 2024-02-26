@@ -38,7 +38,7 @@ void UART0_ISR(void) __interrupt (UART0_IRQn);
 
 void PCA0_ISR(void)   __interrupt (PCA0_IRQn);
 void TIMER2_ISR(void) __interrupt (TIMER2_IRQn);
-void TIMER3_ISR(void) __interrupt (TIMER3_IRQn);
+//void TIMER3_ISR(void) __interrupt (TIMER3_IRQn);
 
 //-----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -154,7 +154,7 @@ void main (void)
 	PCA0_StopSniffing();
 #endif
 
-#if 1
+#if 0
     // startup buzzer (can be annoying during development)
 	// use LED instead (for development)
 	//buzzer_on();
@@ -184,7 +184,7 @@ void main (void)
     //requires code and memory space, which is in short supply
     //but good to check that polled uart is working
     //printf_tiny("startup...\r\n");
-    uart_put_command(RF_CODE_ACK);
+    //uart_put_command(RF_CODE_ACK);
 
 	while (true)
 	{
@@ -230,6 +230,7 @@ void main (void)
 
 		if (rxdata == UART_NO_DATA)
 		{
+#if 0
 			// FIXME: the magic numbers make this difficult to understand
 			if (uart_state == IDLE)
 				idleResetCount = 0;
@@ -250,6 +251,7 @@ void main (void)
 					led_off();
 				}
 			}
+#endif
 		}
 		else
 		{
@@ -292,8 +294,9 @@ void main (void)
 							sniffing_mode = STANDARD;
 							last_sniffing_command = PCA0_DoSniffing(RF_CODE_LEARN);
 
+							// FIXME: need another way to time out since Timer3 resource removed
 							// start timeout timer
-							InitTimer3_ms(1, 30000);
+							//InitTimer3_ms(1, 30000);
 							break;
 						case RF_CODE_RFOUT:
 							// stop sniffing while handling received data
@@ -353,7 +356,7 @@ void main (void)
 							last_sniffing_command = PCA0_DoSniffing(RF_CODE_LEARN_NEW);
 
 							// start timeout timer
-							InitTimer3_ms(1, 30000);
+							//InitTimer3_ms(1, 30000);
 							break;
 						case RF_CODE_ACK:
 							// re-enable default RF_CODE_RFIN sniffing
@@ -476,8 +479,10 @@ void main (void)
 					// enable UART again
 					ignore_uart(false);
 				}
+				// FIXME: need another timer resource
 				// check for learning timeout
-				else if (IsTimer3Finished())
+				//else if (IsTimer3Finished())
+				else if (0)
 				{
 					//buzzer_on();
 					//InitTimer3_ms(1, 1000);

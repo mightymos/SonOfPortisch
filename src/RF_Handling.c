@@ -9,6 +9,7 @@
 #include <string.h>
 //#include <stdlib.h>
 
+#include "delay.h"
 #include "Globals.h"
 #include "RF_Handling.h"
 #include "RF_Protocols.h"
@@ -212,7 +213,9 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration,
 	{
 		// check if timeout timer for crc is finished
 		if (IsTimer2Finished())
+		{
 			old_crc = 0;
+		}
 
 		// check new crc on last received data for debounce
 		if (crc != old_crc)
@@ -414,9 +417,11 @@ uint8_t PCA0_DoSniffing(uint8_t active_command)
 	// start PCA
 	PCA0_run();
 
-	InitTimer3_ms(1, 10);
+	// FIXME: trying to remove use of Timer3 resource to save code size
+	//InitTimer3_ms(1, 10);
 	// wait until timer has finished
-	WaitTimer3Finished();
+	//WaitTimer3Finished();
+	efm8_delay_ms(10);
 
 	rf_state = RF_IDLE;
 	RF_DATA_STATUS = 0;
@@ -464,9 +469,12 @@ bool SendSingleBucket(bool high_low, uint16_t bucket_time)
 	//LED = high_low;
 	//T_DATA = high_low;
 	
-    InitTimer3_us(10, bucket_time);
+	// FIXME: remove need for Timer3 resource
+    //InitTimer3_us(10, bucket_time);
 	// wait until timer has finished
-	WaitTimer3Finished();
+	//WaitTimer3Finished();
+	efm8_delay_us(bucket_time);
+
 	return !high_low;
 }
 
