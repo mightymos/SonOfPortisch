@@ -31,8 +31,8 @@ __xdata static volatile uint8_t UART_TX_Buffer_Position = 0;
 __xdata static volatile uint8_t UART_Buffer_Read_Position = 0;
 __xdata static volatile uint8_t UART_Buffer_Write_Position = 0;
 __xdata static volatile uint8_t UART_Buffer_Write_Len = 0;
-__xdata static volatile uint8_t lastRxError = 0;
 
+// FIXME: add comment as to why set true
 bool static volatile gTXFinished = true;
 
 
