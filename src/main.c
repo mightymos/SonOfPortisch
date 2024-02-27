@@ -134,7 +134,7 @@ void main (void)
     //__xdata uint16_t index = 0;
 
 	// FIXME: add comment
-    //__xdata uint16_t idleResetCount = 0;
+    __xdata uint16_t idleResetCount = 0;
 
 	// changed by external hardware, so must specify volatile type
 	volatile unsigned int rxdata = UART_NO_DATA;
@@ -264,18 +264,14 @@ void main (void)
 
 		if (rxdata == UART_NO_DATA)
 		{
-			led_on();
-#if 0
+			//led_on();
+#if 1
 			// FIXME: the magic numbers make this difficult to understand
 			if (uart_state == IDLE)
 				idleResetCount = 0;
 			else
 			{
-				if (++idleResetCount > 10000)
-                {
-					//buzzer_on();
-					led_on();
-                }
+				idleResetCount += 1;
 			
 				if (idleResetCount > 30000)
 				{
@@ -283,7 +279,7 @@ void main (void)
 					uart_state = IDLE;
 					uart_command = NONE;
 					//buzzer_off();
-					led_off();
+					//led_off();
 				}
 			}
 #endif

@@ -15,8 +15,9 @@
 #include "RF_Protocols.h"
 #include "serial.h"
 #include "pca_0.h"
-#include "uart.h"
 
+
+// FIXME: add comment
 __xdata uint8_t RF_DATA[RF_DATA_BUFFERSIZE];
 
 // RF_DATA_STATUS
@@ -377,10 +378,11 @@ void PCA0_channel0EventCb(void)
 	PCA0L = 0x00;
 	PCA0MD = flags;
 
-	// if bucket is no noise add it to buffer
+	// if bucket is not noise add it to buffer
 	/*current_capture_value > MIN_PULSE_LENGTH &&*/
 	if (current_capture_value < 0x8000)
 	{
+		// FIXME: what is this doing?
 		buffer_in(current_capture_value | ((uint16_t)(!rdata_level()) << 15));
 	}
 	else
