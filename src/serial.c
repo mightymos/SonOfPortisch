@@ -14,7 +14,7 @@ void uart_put_command(uint8_t command)
 }
 
 
-void uart_put_RF_Data_Standard(uint8_t Command)
+void uart_put_RF_Data_Standard(uint8_t command)
 {
 	uint8_t index = 0;
 	uint8_t b = 0;
@@ -46,7 +46,7 @@ void uart_put_RF_Data_Standard(uint8_t Command)
 }
 
 
-void uart_put_RF_Data_Advanced(uint8_t Command, uint8_t protocol_index)
+void uart_put_RF_Data_Advanced(uint8_t command, uint8_t protocol_index)
 {
 	uint8_t index = 0;
 	uint8_t b = 0;

@@ -121,6 +121,7 @@ void finish_command(uint8_t command)
 	// FIXME: this is confusing because last_sniffing_command seems to be associated with uart state
 	// restart sniffing in its previous mode
 	//PCA0_DoSniffing(last_sniffing_command);
+	//rf_state = RF_IDLE;
 }
 
 //-----------------------------------------------------------------------------
@@ -128,6 +129,16 @@ void finish_command(uint8_t command)
 // ----------------------------------------------------------------------------
 void main (void)
 {
+	// for buzzer (milliseconds)
+	//const uint16_t startupDelay = 100;
+	// longer for LED
+	const uint16_t startupDelay = 3000;
+
+	// changed by external hardware, so must specify volatile type
+	__xdata volatile unsigned int rxdata = UART_NO_DATA;
+
+
+	__xdata rf_state_t rf_state = RF_IDLE;
     __xdata rf_sniffing_mode_t last_sniffing_mode = STANDARD;
     __xdata uint8_t tr_repeats = 0;
     __xdata uint16_t bucket = 0;
@@ -137,18 +148,14 @@ void main (void)
 	// FIXME: add comment
     __xdata uint16_t idleResetCount = 0;
 
-	// changed by external hardware, so must specify volatile type
-	__xdata volatile unsigned int rxdata = UART_NO_DATA;
+
 
 	// FIXME: add comment
 	__xdata uint8_t len = 0;
 	// FIXME: add comment
 	__xdata uint8_t position = 0;
 
-	// for buzzer (milliseconds)
-	//const uint16_t startupDelay = 100;
-	// longer for LED
-	const uint16_t startupDelay = 3000;
+
 
 
 	// call hardware initialization routine
@@ -181,12 +188,14 @@ void main (void)
 	// set desired sniffing type to PT2260
 	sniffing_mode = STANDARD;
 	PCA0_DoSniffing(RF_CODE_RFIN);
+	rf_state = RF_IDLE;
 
 	// FIXME: hack since we remove last_sniffing_command
 	//last_sniffing_command = RF_CODE_RFIN;
 	uart_command = RF_CODE_RFIN;
 #else
 	PCA0_StopSniffing();
+	rf_state = RF_IDLE;
 #endif
 
 #if 0
@@ -316,6 +325,7 @@ void main (void)
 						case RF_CODE_RFOUT:
 							// stop sniffing while handling received data
 							PCA0_StopSniffing();
+							rf_state = RF_IDLE;
 							uart_state = RECEIVING;
 							tr_repeats = RF_TRANSMIT_REPEATS;
 							position = 0;
@@ -324,6 +334,7 @@ void main (void)
 						case RF_DO_BEEP:
 							// stop sniffing while handling received data
 							PCA0_StopSniffing();
+							rf_state = RF_IDLE;
 							uart_state = RECEIVING;
 							position = 0;
 							len = 2;
@@ -334,6 +345,7 @@ void main (void)
 							sniffing_mode = ADVANCED;
 							PCA0_DoSniffing(RF_CODE_SNIFFING_ON);
 							//last_sniffing_command = RF_CODE_SNIFFING_ON;
+							rf_state = RF_IDLE;
 							break;
 						case RF_CODE_SNIFFING_OFF:
 							// set desired RF protocol PT2260
@@ -341,6 +353,7 @@ void main (void)
 							// re-enable default RF_CODE_RFIN sniffing
 							PCA0_DoSniffing(RF_CODE_RFIN);
 							//last_sniffing_command = RF_CODE_RFIN;
+							rf_state = RF_IDLE;
 							break;
 						case RF_CODE_RFOUT_NEW:
 							tr_repeats = RF_TRANSMIT_REPEATS;
@@ -351,6 +364,7 @@ void main (void)
 							break;
 						case RF_CODE_SNIFFING_ON_BUCKET:
 							//last_sniffing_command = PCA0_DoSniffing(RF_CODE_SNIFFING_ON_BUCKET);
+							rf_state = RF_IDLE;
 #endif
 							break;
 
@@ -360,6 +374,7 @@ void main (void)
 							// re-enable default RF_CODE_RFIN sniffing
 							//last_sniffing_command = PCA0_DoSniffing(last_sniffing_command);
 							uart_state = IDLE;
+							rf_state = RF_IDLE;
 							break;
 
 						// unknown command
@@ -378,6 +393,7 @@ void main (void)
 					{
 						// stop sniffing while handling received data
 						PCA0_StopSniffing();
+						rf_state = RF_IDLE;
 						uart_state = RECEIVING;
 					}
 					else
@@ -491,6 +507,7 @@ void main (void)
 					case RF_IDLE:
 						tr_repeats--;
 						PCA0_StopSniffing();
+						rf_state = RF_IDLE;
 
 						// byte 0..1:	Tsyn
 						// byte 2..3:	Tlow
@@ -510,6 +527,7 @@ void main (void)
 								PROTOCOL_DATA[0].bit_count,
 								RF_DATA + 6
 								);
+						rf_state = RF_FINISHED;
                                 
 						break;
 
@@ -568,11 +586,13 @@ void main (void)
 					case RF_IDLE:
 						tr_repeats--;
 						PCA0_StopSniffing();
+						rf_state = RF_IDLE;
 
 						// byte 0:		PROTOCOL_DATA index
 						// byte 1..:	Data
 
 						SendBucketsByIndex(RF_DATA[0], RF_DATA + 1);
+						rf_state = RF_FINISHED;
 						break;
 
 					// wait until data got transfered
@@ -607,6 +627,7 @@ void main (void)
 					case RF_IDLE:
 						tr_repeats--;
 						PCA0_StopSniffing();
+						rf_state = RF_IDLE;
 
 						// byte 0:				number of buckets: k
 						// byte 1:				number of repeats: r
@@ -614,6 +635,7 @@ void main (void)
 						// byte 2*(1..k)+1:		bucket time low
 						// byte 2*k+2..N:		RF buckets to send
 						SendRFBuckets((uint16_t *)(RF_DATA + 2), RF_DATA + (RF_DATA[0] << 1) + 2, len - 2 - (RF_DATA[0] << 1));
+						rf_state = RF_FINISHED;
 						break;
 
 					// wait until data got transfered
@@ -652,7 +674,7 @@ void main (void)
 				// do bucket sniffing handling
 				if (buffer_out(&bucket))
                 {
-					Bucket_Received(bucket & 0x7FFF, (bool)((bucket & 0x8000) >> 15));
+					Bucket_Received(bucket & 0x7FFF, (bool)((bucket & 0x8000) >> 15), &rf_state);
                 }
 			}
 

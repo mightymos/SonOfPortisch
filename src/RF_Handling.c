@@ -23,7 +23,6 @@ __xdata uint8_t RF_DATA[RF_DATA_BUFFERSIZE];
 // Bit 7:	1 Data received, 0 nothing received
 // Bit 6-0:	Protocol identifier
 __xdata uint8_t RF_DATA_STATUS = 0;
-__xdata rf_state_t rf_state = RF_IDLE;
 __xdata rf_sniffing_mode_t sniffing_mode = STANDARD;
 
 // FIXME: we need to separate functional units, it is not clear if this is associated with uart or rf or whatever
@@ -428,7 +427,7 @@ uint8_t PCA0_DoSniffing(uint8_t active_command)
 	//WaitTimer3Finished();
 	efm8_delay_ms(10);
 
-	rf_state = RF_IDLE;
+	// FIXME: add comment
 	RF_DATA_STATUS = 0;
 
 	// FIXME: we need to separate functional units here, this was effectively controlling a state machine in main
@@ -458,8 +457,6 @@ void PCA0_StopSniffing(void)
 
 	// be sure the timeout timer is stopped
 	StopTimer2();
-
-	rf_state = RF_IDLE;
 }
 
 bool SendSingleBucket(bool high_low, uint16_t bucket_time)
@@ -508,8 +505,6 @@ void SendRFBuckets(uint16_t* buckets, uint8_t* rfdata, uint8_t data_len)
 	}
 
 	led_off();
-
-	rf_state = RF_FINISHED;
 }
 
 #endif
@@ -561,8 +556,6 @@ void SendBuckets(
 		SendSingleBucket(BUCKET_STATE(end[i]), pulses[BUCKET_NR(end[i])]);
 
 	led_off();
-
-	rf_state = RF_FINISHED;
 }
 
 void SendBucketsByIndex(uint8_t index, uint8_t* rfdata)
@@ -614,7 +607,7 @@ bool findBucket(uint16_t duration, uint8_t *index)
 	return false;
 }
 
-void Bucket_Received(uint16_t duration, bool high_low)
+void Bucket_Received(uint16_t duration, bool high_low, rf_state_t* rf_state)
 {
 	uint8_t bucket_index;
 
@@ -625,7 +618,7 @@ void Bucket_Received(uint16_t duration, bool high_low)
 		return;
 	}
 
-	switch (rf_state)
+	switch (*rf_state)
 	{
 		// check if we maybe receive a sync
 		case RF_IDLE:
