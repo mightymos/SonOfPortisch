@@ -13,7 +13,6 @@
 #include "globals.h"
 #include "RF_Handling.h"
 #include "RF_Protocols.h"
-#include "serial.h"
 #include "pca_0.h"
 
 
@@ -27,7 +26,8 @@ __xdata uint8_t RF_DATA_STATUS = 0;
 __xdata rf_state_t rf_state = RF_IDLE;
 __xdata rf_sniffing_mode_t sniffing_mode = STANDARD;
 
-__xdata uint8_t last_sniffing_command = NONE;
+// FIXME: we need to separate functional units, it is not clear if this is associated with uart or rf or whatever
+//__xdata uint8_t last_sniffing_command = NONE;
 
 // PT226x variables
 __xdata uint16_t SYNC_LOW = 0x00;
@@ -406,7 +406,9 @@ void SetTimer0Overflow(uint8_t T0_Overflow)
 
 uint8_t PCA0_DoSniffing(uint8_t active_command)
 {
-	uint8_t ret = last_sniffing_command;
+	// FIXME:
+	//uint8_t ret = last_sniffing_command;
+	uint8_t ret = 0;
 
     // FIXME: possible to remove to save code size?
 	memset(status, 0, sizeof(PROTOCOL_STATUS) * NUM_OF_PROTOCOLS);
@@ -429,11 +431,13 @@ uint8_t PCA0_DoSniffing(uint8_t active_command)
 	rf_state = RF_IDLE;
 	RF_DATA_STATUS = 0;
 
+	// FIXME: we need to separate functional units here, this was effectively controlling a state machine in main
 	// set uart_command back if sniffing was on
-	uart_command = active_command;
+	//uart_command = active_command;
 
+	// FIXME:
 	// backup uart_command to be able to enable the sniffing again
-	last_sniffing_command = active_command;
+	//last_sniffing_command = active_command;
 
 	return ret;
 }

@@ -14,7 +14,7 @@
 
 
 // this seems to start sniffing by default as opposed to waiting for command over uart
-#define SNIFFING_ON 1
+#define SNIFFING_ON_AT_STARTUP 0
 
 #define SYSCLK	24500000
 

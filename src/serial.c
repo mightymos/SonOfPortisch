@@ -83,16 +83,17 @@ void uart_put_RF_Data_Advanced(uint8_t Command, uint8_t protocol_index)
 
 #if INCLUDE_BUCKET_SNIFFING == 1
 
-void uart_put_RF_buckets(uint8_t Command)
+void uart_put_RF_buckets(uint8_t command)
 {
 	uint8_t index = 0;
 
 	uart_putc(RF_CODE_START);
-	uart_putc(Command);
+	uart_putc(command);
     
 	// put bucket count + sync bucket
 	uart_putc(bucket_count + 1);
 
+	// FIXME: should not need this as long as buffer is large enough...
 	// start and wait for transmit
 	//UART0_initTxPolling();
 	//uart_wait_until_TX_finished();
