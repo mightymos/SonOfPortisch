@@ -255,6 +255,7 @@ void PCA0_ISR(void) __interrupt (PCA0_IRQn)
 
   if((flags & PCA0CN0_CCF0__BMASK) && (PCA0CPM0 & PCA0CPM0_ECCF__BMASK))
   {
+  	// apparently our radio input
     PCA0_channel0EventCb();
   }
 

@@ -53,6 +53,7 @@ extern __xdata uart_command_t uart_command;
 
 extern void uart_put_command(uint8_t command);
 
+extern void uart_put_rf_human_readable(uint8_t command);
 extern void uart_put_RF_Data_Standard(uint8_t command);
 extern void uart_put_RF_Data_Advanced(uint8_t command, uint8_t protocol_index);
 

@@ -403,7 +403,7 @@ void SetTimer0Overflow(uint8_t T0_Overflow)
 	TH0 = (T0_Overflow << TH0_TH0__SHIFT);
 }
 
-uint8_t PCA0_DoSniffing(uint8_t active_command)
+uint8_t PCA0_DoSniffing(void)
 {
 	// FIXME:
 	//uint8_t ret = last_sniffing_command;
@@ -447,10 +447,7 @@ void PCA0_StopSniffing(void)
 	PCA0_halt();
 
 	// clear all interrupt flags of PCA0
-	PCA0CN0 &= ~(PCA0CN0_CF__BMASK
-	  		                       | PCA0CN0_CCF0__BMASK
-	  		                       | PCA0CN0_CCF1__BMASK
-	  		                       | PCA0CN0_CCF2__BMASK);
+	PCA0CN0 &= ~(PCA0CN0_CF__BMASK | PCA0CN0_CCF0__BMASK | PCA0CN0_CCF1__BMASK | PCA0CN0_CCF2__BMASK);
 
 	// disable interrupt for RF receiving
 	PCA0CPM0 &= ~PCA0CPM0_ECCF__ENABLED;
@@ -628,7 +625,7 @@ void Bucket_Received(uint16_t duration, bool high_low, rf_state_t* rf_state)
 			{
 				bucket_sync = duration | ((uint16_t)high_low << 15);
 				bucket_count_sync_1 = 0;
-				rf_state = RF_BUCKET_REPEAT;
+				*rf_state = RF_BUCKET_REPEAT;
 			}
 			break;
 
@@ -646,11 +643,11 @@ void Bucket_Received(uint16_t duration, bool high_low, rf_state_t* rf_state)
 					bucket_count_sync_2 = 0;
 					crc = 0x00;
 					RF_DATA[0] = 0;
-					rf_state = RF_BUCKET_IN_SYNC;
+					*rf_state = RF_BUCKET_IN_SYNC;
 				}
 				else
 				{
-					rf_state = RF_IDLE;
+					*rf_state = RF_IDLE;
 				}
 			}
 			// check if duration is longer than sync bucket restart
@@ -667,7 +664,9 @@ void Bucket_Received(uint16_t duration, bool high_low, rf_state_t* rf_state)
 
 			// no more buckets are possible, reset
 			if (bucket_count_sync_1 >= RF_DATA_BUFFERSIZE << 1)
-				rf_state = RF_IDLE;
+			{
+				*rf_state = RF_IDLE;
+			}
 
 			break;
 
@@ -690,7 +689,7 @@ void Bucket_Received(uint16_t duration, bool high_low, rf_state_t* rf_state)
 					if (bucket_count > ARRAY_LENGTH(buckets))
 					{
 						// restart sync
-						rf_state = RF_IDLE;
+						*rf_state = RF_IDLE;
 					}
 				}
 
@@ -711,7 +710,7 @@ void Bucket_Received(uint16_t duration, bool high_low, rf_state_t* rf_state)
 					if (actual_byte > RF_DATA_BUFFERSIZE)
 					{
 						// restart sync
-						rf_state = RF_IDLE;
+						*rf_state = RF_IDLE;
 					}
 				}
 
@@ -745,13 +744,13 @@ void Bucket_Received(uint16_t duration, bool high_low, rf_state_t* rf_state)
 				}
 
 				led_off();
-				rf_state = RF_IDLE;
+				*rf_state = RF_IDLE;
 			}
 			// next bucket after receiving all data buckets was not a sync bucket, restart
 			else
 			{
 				// restart sync
-				rf_state = RF_IDLE;
+				*rf_state = RF_IDLE;
 			}
 			break;
 	}

@@ -2,6 +2,7 @@
 #include "RF_Protocols.h"
 #include "serial.h"
 #include "uart.h"
+#include "util.h"
 
 __xdata uart_state_t uart_state = IDLE;
 __xdata uart_command_t uart_command = NONE;
@@ -13,14 +14,47 @@ void uart_put_command(uint8_t command)
 	uart_putc(RF_CODE_STOP);
 }
 
+void uart_put_rf_human_readable(uint8_t command)
+{
+	uint8_t index = 0;
+
+	uart_putc('s');
+	uart_putc('0');
+	uart_putc('x');
+
+	// sync low time
+	puthex2(SYNC_LOW);
+
+	uart_putc('0');
+	uart_putc('x');
+	// bit 0 high time
+	puthex2(BIT_LOW);
+
+	uart_putc('1');
+	uart_putc('x');
+	// bit 1 high time
+	puthex2(BIT_HIGH);
+
+	// copy data to UART buffer
+	index = 0;
+
+	// FIXME: used to say 24/8 but in any case would be better to avoid magic numbers
+	while(index < 3)
+	{
+		uart_putc(RF_DATA[index]);
+		index++;
+	}
+    
+    uart_putc('\r');
+    uart_putc('\n');
+}
 
 void uart_put_RF_Data_Standard(uint8_t command)
 {
 	uint8_t index = 0;
-	uint8_t b = 0;
 
 	uart_putc(RF_CODE_START);
-	uart_putc(Command);
+	uart_putc(command);
 
 	// sync low time
 	uart_putc((SYNC_LOW >> 8) & 0xFF);
@@ -35,7 +69,7 @@ void uart_put_RF_Data_Standard(uint8_t command)
 	// copy data to UART buffer
 	index = 0;
 
-	// FIXME: used to say 24/8 but in any case better to avoid magic numbers
+	// FIXME: used to say 24/8 but in any case would be better to avoid magic numbers
 	while(index < 3)
 	{
 		uart_putc(RF_DATA[index]);
@@ -53,7 +87,7 @@ void uart_put_RF_Data_Advanced(uint8_t command, uint8_t protocol_index)
 	uint8_t bits = 0;
 
 	uart_putc(RF_CODE_START);
-	uart_putc(Command);
+	uart_putc(command);
 
 	bits = PROTOCOL_DATA[protocol_index].bit_count;
 
