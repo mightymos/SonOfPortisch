@@ -4,9 +4,6 @@
 #include "uart.h"
 #include "util.h"
 
-__xdata uart_state_t uart_state = IDLE;
-__xdata uart_command_t uart_command = NONE;
-
 void uart_put_command(uint8_t command)
 {
 	uart_putc(RF_CODE_START);

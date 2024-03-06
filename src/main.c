@@ -29,15 +29,18 @@
 //#include "uart_0.h"
 //#include "wdt_0.h"
 
+// uart state machine
+__xdata uart_state_t uart_state = IDLE;
+__xdata uart_command_t uart_command = NONE;
+__xdata uart_command_t idle_uart_command;
 __xdata uint8_t uartPacket[10];
 
 // some operations set flag to true so that uart receiving is temporarily ignored
-__xdata volatile static bool ignoreUARTFlag = false;
+volatile static bool ignoreUARTFlag = false;
 
 // sdcc manual section 3.8.1 general information
 // requires interrupt definition to appear or be included in main
 void UART0_ISR(void) __interrupt (UART0_IRQn);
-
 void PCA0_ISR(void)   __interrupt (PCA0_IRQn);
 void TIMER2_ISR(void) __interrupt (TIMER2_IRQn);
 //void TIMER3_ISR(void) __interrupt (TIMER3_IRQn);
@@ -291,19 +294,19 @@ void main (void)
 	__code uint16_t startupDelay = 3000;
 
 	// changed by external hardware, so must specify volatile type so not optimized out
-	__xdata volatile unsigned int rxdata = UART_NO_DATA;
+	volatile unsigned int rxdata = UART_NO_DATA;
 
 
-	__xdata rf_state_t rf_state = RF_IDLE;
-    __xdata rf_sniffing_mode_t last_sniffing_mode = STANDARD;
-    __xdata uint16_t bucket = 0;
+	rf_state_t rf_state = RF_IDLE;
+    uint16_t bucket = 0;
     
     //__xdata uint16_t index = 0;
 
 	// FIXME: add comment
     __xdata uint16_t idleResetCount = 0;
 
-	__xdata bool result;
+	// prefer bool type in internel ram to take advantage of bit addressable locations
+	bool result;
 
 
 	// call hardware initialization routine
@@ -339,9 +342,6 @@ void main (void)
 #endif
     
 
-	// FIXME: add comment
-	uart_state   = IDLE;
-	uart_command = NONE;
 
 	// start sniffing if enabled by default
 #if (SNIFFING_ON_AT_STARTUP)
@@ -351,7 +351,7 @@ void main (void)
 	rf_state = RF_IDLE;
 
 	// FIXME: hack since we remove last_sniffing_command
-	//last_sniffing_command = RF_CODE_RFIN;
+	idle_uart_command = RF_CODE_RFIN;
 	uart_command = RF_CODE_RFIN;
 #else
 	PCA0_StopSniffing();
@@ -427,7 +427,7 @@ void main (void)
 		if (rxdata == UART_NO_DATA)
 		{
 
-#if 0
+#if 1
 			// FIXME: the magic numbers make this difficult to understand
 			// but seems to reset uart if it sits in non-idle state
 			// for too long without receiving any more data
@@ -549,7 +549,7 @@ void main (void)
 
 				// send acknowledge
 				finish_command(RF_CODE_ACK);
-				uart_command = NONE;
+				uart_command = idle_uart_command;
 				break;
 
 			// host was requesting the firmware version
@@ -557,7 +557,7 @@ void main (void)
 
 				// send firmware version
 				finish_command(FIRMWARE_VERSION);
-				uart_command = NONE;
+				uart_command = idle_uart_command;
 				break;
 
 			default:

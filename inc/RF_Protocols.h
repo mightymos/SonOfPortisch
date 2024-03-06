@@ -151,10 +151,10 @@ __code static uint8_t PROTOCOL_BIT1(HT6P20X)[]     = { LOW(1), HIGH(0) };
  */
 #if EFM8BB1_SUPPORT_HT12_PROTOCOL == 1
 #define HT12
-SI_SEGMENT_VARIABLE(PROTOCOL_BUCKETS(HT12)[], static uint16_t, SI_SEG_CODE) = { 330, 630, 10830};
-SI_SEGMENT_VARIABLE(PROTOCOL_START(HT12)[], static uint8_t, SI_SEG_CODE) = { LOW(2), HIGH(0) };
-SI_SEGMENT_VARIABLE(PROTOCOL_BIT0(HT12)[], static uint8_t, SI_SEG_CODE) = { LOW(0), HIGH(1) };
-SI_SEGMENT_VARIABLE(PROTOCOL_BIT1(HT12)[], static uint8_t, SI_SEG_CODE) = { LOW(1), HIGH(0) };
+__code static uint16_t PROTOCOL_BUCKETS(HT12)[] = { 330, 630, 10830};
+__code static uint8_t PROTOCOL_START(HT12)[]    = { LOW(2), HIGH(0) };
+__code static uint8_t PROTOCOL_BIT0(HT12)[]     = { LOW(0), HIGH(1) };
+__code static uint8_t PROTOCOL_BIT1(HT12)[]     = { LOW(1), HIGH(0) };
 #endif
 
 /*

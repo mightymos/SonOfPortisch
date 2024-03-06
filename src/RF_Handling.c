@@ -42,8 +42,8 @@ __xdata uint8_t actual_byte = 0;
 __xdata PROTOCOL_STATUS status[NUM_OF_PROTOCOLS];
 
 
-__xdata uint8_t old_crc = 0;
-__xdata uint8_t crc = 0;
+uint8_t old_crc = 0;
+uint8_t crc = 0;
 
 // up to 8 timing buckets for RF_CODE_SNIFFING_ON_BUCKET
 // -1 because of the bucket_sync
