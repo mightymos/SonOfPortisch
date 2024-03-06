@@ -75,7 +75,7 @@ void enter_DefaultMode_from_RESET(void)
 	 - P1.6 pin is skipped by the crossbar
 	 ***********************************************************************/
 	P1SKIP = P1SKIP_B0__SKIPPED | P1SKIP_B1__SKIPPED | P1SKIP_B2__SKIPPED
-			| P1SKIP_B3__NOT_SKIPPED | P1SKIP_B4__NOT_SKIPPED | P1SKIP_B5__NOT_SKIPPED
+			| P1SKIP_B3__NOT_SKIPPED | P1SKIP_B4__SKIPPED | P1SKIP_B5__SKIPPED
 			| P1SKIP_B6__SKIPPED | P1SKIP_B7__SKIPPED;
 
 

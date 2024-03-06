@@ -39,7 +39,7 @@ bool actual_byte_high_nibble = false;
 __xdata uint8_t actual_byte = 0;
 
 // status of each protocol
-PROTOCOL_STATUS status[NUM_OF_PROTOCOLS];
+__xdata PROTOCOL_STATUS status[NUM_OF_PROTOCOLS];
 
 
 __xdata uint8_t old_crc = 0;
@@ -236,7 +236,7 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration,
 
 			// FIXME: it can be confusing to bury things like this in functions
 			// disable interrupt for RF receiving while uart transfer
-			PCA0CPM0 &= ~PCA0CPM0_ECCF__ENABLED;
+			//PCA0CPM0 &= ~PCA0CPM0_ECCF__ENABLED;
 
 			// set status
 			RF_DATA_STATUS = i;
@@ -419,14 +419,6 @@ void PCA0_channel0EventCb(void)
 	{
 		// FIXME: add comment
 		buffer_in(current_capture_value | ((uint16_t)(!rdata_level()) << 15));
-
-		// DEBUG:
-		if (rdata_level())
-		{
-			debug_pin0_on();
-		} else {
-			debug_pin0_off();
-		}
 	}
 	else
 	{
@@ -782,7 +774,8 @@ void Bucket_Received(uint16_t duration, bool high_low, rf_state_t* rf_state)
 					old_crc = crc;
 
 					// disable interrupt for RF receiving while uart transfer
-					PCA0CPM0 &= ~PCA0CPM0_ECCF__ENABLED;
+					//FIXME: want to move outside of buried function
+					//PCA0CPM0 &= ~PCA0CPM0_ECCF__ENABLED;
 
 					// add sync bucket number to data
 					RF_DATA[0] |= ((bucket_count << 4) | ((bucket_sync & 0x8000) >> 8));

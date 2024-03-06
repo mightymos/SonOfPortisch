@@ -29,10 +29,10 @@
 //#include "uart_0.h"
 //#include "wdt_0.h"
 
-uint8_t uartPacket[10];
+__xdata uint8_t uartPacket[10];
 
 // some operations set flag to true so that uart receiving is temporarily ignored
-volatile static bool ignoreUARTFlag = false;
+__xdata volatile static bool ignoreUARTFlag = false;
 
 // sdcc manual section 3.8.1 general information
 // requires interrupt definition to appear or be included in main
@@ -288,7 +288,7 @@ void main (void)
 	// for buzzer (milliseconds)
 	//const uint16_t startupDelay = 100;
 	// longer for LED
-	//__code uint16_t startupDelay = 3000;
+	__code uint16_t startupDelay = 3000;
 
 	// changed by external hardware, so must specify volatile type so not optimized out
 	__xdata volatile unsigned int rxdata = UART_NO_DATA;
@@ -339,6 +339,9 @@ void main (void)
 #endif
     
 
+	// FIXME: add comment
+	uart_state   = IDLE;
+	uart_command = NONE;
 
 	// start sniffing if enabled by default
 #if (SNIFFING_ON_AT_STARTUP)
@@ -355,7 +358,7 @@ void main (void)
 	rf_state = RF_IDLE;
 #endif
 
-#if 0
+#if 1
     // startup buzzer (can be annoying during development)
 	// use LED instead (for development)
 	//buzzer_on();
@@ -364,15 +367,6 @@ void main (void)
 
 	//buzzer_off();
 	led_off();
-#endif
-
-
-#if 0
-    // test uart transmitting in polled mode
-    while (true)
-    {
-        serial_test();
-    }
 #endif
 
     
@@ -391,6 +385,8 @@ void main (void)
 	{
 		// reset Watch Dog Timer
 		//WDT0_feed();
+
+
 #if 0
 		// DEBUG: infinite loop to echo back serial characters
 		while (true)
@@ -473,15 +469,17 @@ void main (void)
 					// DEBUG:
 					if (rdata_level())
 					{
-						debug_pin1_on();
+						debug_pin0_on();
 					} else {
-						debug_pin1_off();
+						debug_pin0_off();
 					}
 
 					switch(uart_command)
 					{
 						case RF_CODE_RFIN:
+							PCA0CPM0 &= ~PCA0CPM0_ECCF__ENABLED;
 							uart_put_RF_Data_Standard(RF_CODE_RFIN);
+							PCA0CPM0 |= PCA0CPM0_ECCF__ENABLED;
 							break;
 
 						case RF_CODE_SNIFFING_ON:
@@ -509,6 +507,34 @@ void main (void)
                     }
 				}
 				break;
+			case RF_CODE_SNIFFING_ON_BUCKET:
+
+				// check if a RF signal got decoded
+				if ((RF_DATA_STATUS & RF_DATA_RECEIVED_MASK) != 0)
+				{
+					// disable interrupt for RF receiving while uart transfer
+					//FIXME: want to move outside of buried function
+					PCA0CPM0 &= ~PCA0CPM0_ECCF__ENABLED;
+					
+					uart_put_RF_buckets(RF_CODE_SNIFFING_ON_BUCKET);
+
+					// clear RF status
+					RF_DATA_STATUS = 0;
+
+					// enable interrupt for RF receiving
+					PCA0CPM0 |= PCA0CPM0_ECCF__ENABLED;
+				}
+				else
+				{
+					// do bucket sniffing handling
+					result = buffer_out(&bucket);
+					if (result)
+					{
+						Bucket_Received(bucket & 0x7FFF, (bool)((bucket & 0x8000) >> 15), &rf_state);
+					}
+				}
+
+			break;
 
 			// do a beep
 			case RF_DO_BEEP:
@@ -523,7 +549,6 @@ void main (void)
 
 				// send acknowledge
 				finish_command(RF_CODE_ACK);
-				uart_put_rf_human_readable();
 				uart_command = NONE;
 				break;
 

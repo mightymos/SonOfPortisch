@@ -14,41 +14,6 @@ void uart_put_command(uint8_t command)
 	uart_putc(RF_CODE_STOP);
 }
 
-void uart_put_rf_human_readable(void)
-{
-	uint8_t index = 0;
-
-	uart_putc('s');
-	uart_putc('0');
-	uart_putc('x');
-
-	// sync low time
-	puthex2(SYNC_LOW);
-
-	uart_putc('0');
-	uart_putc('x');
-	// bit 0 high time
-	puthex2(BIT_LOW);
-
-	uart_putc('1');
-	uart_putc('x');
-	// bit 1 high time
-	puthex2(BIT_HIGH);
-
-	// copy data to UART buffer
-	index = 0;
-
-	// FIXME: used to say 24/8 but in any case would be better to avoid magic numbers
-	while(index < 3)
-	{
-		uart_putc(RF_DATA[index]);
-		index++;
-	}
-    
-    uart_putc('\r');
-    uart_putc('\n');
-}
-
 void uart_put_RF_Data_Standard(uint8_t command)
 {
 	uint8_t index = 0;
