@@ -56,18 +56,24 @@ __xdata uint8_t bucket_count_sync_1;
 __xdata uint8_t bucket_count_sync_2;
 #endif
 
-#define GET_W_POSITION(x) (((x) >> 4) & 0x0F)
-#define INC_W_POSITION(x) ((x) = ((((x) >> 4) + 1) << 4) | ((x) & 0x0F))
-#define DEC_W_POSITION(x) ((x) = ((((x) >> 4) - 1) << 4) | ((x) & 0x0F))
-#define CLR_W_POSITION(x) ((x) &= 0x0F)
+// FIXME: these were potentially not working properly with sdcc
+//#define GET_W_POSITION(x) (((x) >> 4) & 0x0F)
+//#define INC_W_POSITION(x) ((x) = ((((x) >> 4) + 1) << 4) | ((x) & 0x0F))
+//#define DEC_W_POSITION(x) ((x) = ((((x) >> 4) - 1) << 4) | ((x) & 0x0F))
+//#define CLR_W_POSITION(x) ((x) &= 0x0F)
+//
+//#define GET_R_POSITION(x) ((x) & 0x0F)
+//#define INC_R_POSITION(x) ((x) = ((x) + 1) | ((x) & 0xF0))
+//#define DEC_R_POSITION(x) ((x) = ((x) - 1) | ((x) & 0xF0))
+//#define CLR_R_POSITION(x) ((x) &= 0xF0)
 
-#define GET_R_POSITION(x) ((x) & 0x0F)
-#define INC_R_POSITION(x) ((x) = ((x) + 1) | ((x) & 0xF0))
-#define DEC_R_POSITION(x) ((x) = ((x) - 1) | ((x) & 0xF0))
-#define CLR_R_POSITION(x) ((x) &= 0xF0)
+#define BUFFER_BUCKETS_SIZE 4
+__xdata uint16_t buffer_buckets[BUFFER_BUCKETS_SIZE] = {0};
 
-__xdata uint16_t buffer_buckets[4] = {0};
-__xdata uint8_t buffer_buckets_positions = 0;
+// use separate read and write "pointers" into circular buffer
+//__xdata uint8_t buffer_buckets_positions = 0;
+__xdata uint8_t buffer_buckets_read = 0;
+__xdata uint8_t buffer_buckets_write = 0;
 
 //-----------------------------------------------------------------------------
 // Callbacks
@@ -79,16 +85,19 @@ uint8_t Compute_CRC8_Simple_OneByte(uint8_t byteVal)
 {
     const uint8_t generator = 0x1D;
     uint8_t i;
-    uint8_t crc = byteVal; /* init crc directly with input byte instead of 0, avoid useless 8 bitshifts until input byte is in crc register */
+	// init crc directly with input byte instead of 0, avoid useless 8 bitshifts until input byte is in crc register
+    uint8_t crc = byteVal;
 
     for (i = 0; i < 8; i++)
     {
         if ((crc & 0x80) != 0)
-        { /* most significant bit set, shift crc register and perform XOR operation, taking not-saved 9th set bit into account */
+        { 
+			// most significant bit set, shift crc register and perform XOR operation, taking not-saved 9th set bit into account
             crc = (uint8_t)((crc << 1) ^ generator);
         }
         else
-        { /* most significant bit not set, go to next bit */
+        { 
+			// most significant bit not set, go to next bit
             crc <<= 1;
         }
     }
@@ -225,6 +234,7 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration,
 			InitTimer2_ms(1, 800);
 			old_crc = crc;
 
+			// FIXME: it can be confusing to bury things like this in functions
 			// disable interrupt for RF receiving while uart transfer
 			PCA0CPM0 &= ~PCA0CPM0_ECCF__ENABLED;
 
@@ -250,7 +260,9 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 	{
 		// compiler will optimize this out if NUM_OF_PROTOCOLS = 1
 		for (i = 0; i < NUM_OF_PROTOCOLS; i++)
+		{
 			START_CLEAR(status[i]);
+		}
 
 		led_off();
 		return;
@@ -330,37 +342,60 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 
 void buffer_in(uint16_t bucket)
 {
-	if ((GET_W_POSITION(buffer_buckets_positions) + 1 == GET_R_POSITION(buffer_buckets_positions)) ||
-			(GET_R_POSITION(buffer_buckets_positions) == 0 && GET_W_POSITION(buffer_buckets_positions) + 1 == ARRAY_LENGTH(buffer_buckets)))
+	//if ((GET_W_POSITION(buffer_buckets_positions) + 1 == GET_R_POSITION(buffer_buckets_positions)) ||
+	//		(GET_R_POSITION(buffer_buckets_positions) == 0 && GET_W_POSITION(buffer_buckets_positions) + 1 == ARRAY_LENGTH(buffer_buckets)))
+	//	return;
+	// check if writing next byte into circular buffer will catch up to read position, and if so bail out
+	if ((buffer_buckets_write + 1 == buffer_buckets_read) || (buffer_buckets_read == 0 && buffer_buckets_write + 1 == BUFFER_BUCKETS_SIZE))
+	{
 		return;
+	}
 
-	buffer_buckets[GET_W_POSITION(buffer_buckets_positions)] = bucket;
+	//buffer_buckets[GET_W_POSITION(buffer_buckets_positions)] = bucket;
+	buffer_buckets[buffer_buckets_write] = bucket;
 
-	INC_W_POSITION(buffer_buckets_positions);
+	//INC_W_POSITION(buffer_buckets_positions);
+	buffer_buckets_write++;
 
-	if (GET_W_POSITION(buffer_buckets_positions) >= ARRAY_LENGTH(buffer_buckets))
-		CLR_W_POSITION(buffer_buckets_positions);
+	//if (GET_W_POSITION(buffer_buckets_positions) >= ARRAY_LENGTH(buffer_buckets))
+	//	CLR_W_POSITION(buffer_buckets_positions);
+	// wrap write position around to start if it reaches end of array
+	if (buffer_buckets_write >= BUFFER_BUCKETS_SIZE)
+	{
+		buffer_buckets_write = 0;
+	}
 }
 
 bool buffer_out(uint16_t* bucket)
 {
-	uint8_t backup_PCA0CPM0 = PCA0CPM0;
+	//uint8_t backup_PCA0CPM0 = PCA0CPM0;
 
 	// check if buffer is empty
-	if (GET_W_POSITION(buffer_buckets_positions) == GET_R_POSITION(buffer_buckets_positions))
+	//if (GET_W_POSITION(buffer_buckets_positions) == GET_R_POSITION(buffer_buckets_positions))
+	//	return false;
+	if (buffer_buckets_write == buffer_buckets_read)
+	{
 		return false;
+	}
 
 	// disable interrupt for RF receiving while reading buffer
-	PCA0CPM0 &= ~PCA0CPM0_ECCF__ENABLED;
+	//PCA0CPM0 &= ~PCA0CPM0_ECCF__ENABLED;
 
-	*bucket = buffer_buckets[GET_R_POSITION(buffer_buckets_positions)];
-	INC_R_POSITION(buffer_buckets_positions);
+	//*bucket = buffer_buckets[GET_R_POSITION(buffer_buckets_positions)];
+	//INC_R_POSITION(buffer_buckets_positions);
+	*bucket = buffer_buckets[buffer_buckets_read];
+	buffer_buckets_read++;
 
-	if (GET_R_POSITION(buffer_buckets_positions) >= ARRAY_LENGTH(buffer_buckets))
-		CLR_R_POSITION(buffer_buckets_positions);
+	//if (GET_R_POSITION(buffer_buckets_positions) >= ARRAY_LENGTH(buffer_buckets))
+	//	CLR_R_POSITION(buffer_buckets_positions);
+
+	if (buffer_buckets_read >= BUFFER_BUCKETS_SIZE)
+	{
+		buffer_buckets_read = 0;
+	}
 
 	// reset register
-	PCA0CPM0 = backup_PCA0CPM0;
+	//PCA0CPM0 = backup_PCA0CPM0;
 
 	return true;
 }
@@ -377,17 +412,28 @@ void PCA0_channel0EventCb(void)
 	PCA0L = 0x00;
 	PCA0MD = flags;
 
+
 	// if bucket is not noise add it to buffer
 	/*current_capture_value > MIN_PULSE_LENGTH &&*/
 	if (current_capture_value < 0x8000)
 	{
-		// FIXME: what is this doing?
+		// FIXME: add comment
 		buffer_in(current_capture_value | ((uint16_t)(!rdata_level()) << 15));
+
+		// DEBUG:
+		if (rdata_level())
+		{
+			debug_pin0_on();
+		} else {
+			debug_pin0_off();
+		}
 	}
 	else
 	{
 		// received noise, clear all received buckets
-		buffer_buckets_positions = 0;
+		//buffer_buckets_positions = 0;
+		buffer_buckets_read = 0;
+		buffer_buckets_write = 0;
 	}
 }
 
@@ -506,8 +552,7 @@ void SendRFBuckets(uint16_t* buckets, uint8_t* rfdata, uint8_t data_len)
 
 #endif
 
-void SendBuckets(
-		uint16_t *pulses,
+void SendBuckets(uint16_t *pulses,
 		uint8_t* start, uint8_t start_size,
 		uint8_t* bit0, uint8_t bit0_size,
 		uint8_t* bit1, uint8_t bit1_size,
@@ -530,13 +575,16 @@ void SendBuckets(
 		if ((rfdata[actual_byte] & actual_bit) == 0)
 		{
 			for (a = 0; a < bit0_size; a++)
+			{
 				SendSingleBucket(BUCKET_STATE(bit0[a]), pulses[BUCKET_NR(bit0[a])]);
+			}
 		}
-		// send bit 1
 		else
-		{
+		{	// send bit 1
 			for (a = 0; a < bit1_size; a++)
+			{
 				SendSingleBucket(BUCKET_STATE(bit1[a]), pulses[BUCKET_NR(bit1[a])]);
+			}
 		}
 
 		actual_bit >>= 1;
@@ -550,7 +598,9 @@ void SendBuckets(
 
 	// transmit end bucket(s)
 	for (i = 0; i < end_size; i++)
+	{
 		SendSingleBucket(BUCKET_STATE(end[i]), pulses[BUCKET_NR(end[i])]);
+	}
 
 	led_off();
 }
@@ -611,7 +661,7 @@ void Bucket_Received(uint16_t duration, bool high_low, rf_state_t* rf_state)
 	// if pulse is too short reset status
 	if (duration < MIN_BUCKET_LENGTH)
 	{
-		rf_state = RF_IDLE;
+		*rf_state = RF_IDLE;
 		return;
 	}
 

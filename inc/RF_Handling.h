@@ -26,11 +26,9 @@ typedef enum
 {
 	RF_IDLE,
 	RF_IN_SYNC,
-#if INCLUDE_BUCKET_SNIFFING == 1
 	RF_BUCKET_REPEAT,
 	RF_BUCKET_IN_SYNC,
 	RF_DECODE_BUCKET,
-#endif
 	RF_FINISHED
 } rf_state_t;
 

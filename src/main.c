@@ -137,8 +137,9 @@ void uart_state_machine(const unsigned int rxdata)
 
     __xdata uint8_t tr_repeats = 0;
 
-	// FIXME: add comment
-	__xdata uint8_t packetLength = 0;
+	// need to specify volatile so optimizer does not remove
+	// given that it is set by external data input to uart
+	volatile __xdata uint8_t packetLength = 0;
 	// FIXME: add comment
 	__xdata uint8_t position = 0;
 
@@ -200,13 +201,12 @@ void uart_state_machine(const unsigned int rxdata)
 					//tr_repeats = RF_TRANSMIT_REPEATS;
 					// no break
 				case RF_CODE_RFOUT_BUCKET:
-					uart_state = RECEIVE_LEN;
+					//uart_state = RECEIVE_LEN;
 					break;
 				case RF_CODE_SNIFFING_ON_BUCKET:
 					//last_sniffing_command = PCA0_DoSniffing();
-					rf_state = RF_IDLE;
+					//rf_state = RF_IDLE;
 					break;
-
 				case RF_CODE_LEARN_NEW:
 					break;
 				case RF_CODE_ACK:
@@ -288,7 +288,7 @@ void main (void)
 	// for buzzer (milliseconds)
 	//const uint16_t startupDelay = 100;
 	// longer for LED
-	const uint16_t startupDelay = 3000;
+	//__code uint16_t startupDelay = 3000;
 
 	// changed by external hardware, so must specify volatile type so not optimized out
 	__xdata volatile unsigned int rxdata = UART_NO_DATA;
@@ -303,6 +303,8 @@ void main (void)
 	// FIXME: add comment
     __xdata uint16_t idleResetCount = 0;
 
+	__xdata bool result;
+
 
 	// call hardware initialization routine
 	enter_DefaultMode_from_RESET();
@@ -311,6 +313,15 @@ void main (void)
 	led_on();
 	buzzer_off();
 	tdata_off();
+
+
+	// DEBUG:
+	// enable interrupt for RF receiving
+	//PCA0CPM0 |= PCA0CPM0_ECCF__ENABLED;
+	// start PCA
+	//PCA0_run();
+	
+	debug_pin0_off();
 
 
 
@@ -332,13 +343,13 @@ void main (void)
 	// start sniffing if enabled by default
 #if (SNIFFING_ON_AT_STARTUP)
 	// set desired sniffing type to PT2260
-	//sniffing_mode = STANDARD;
-	//PCA0_DoSniffing();
-	//rf_state = RF_IDLE;
+	sniffing_mode = STANDARD;
+	PCA0_DoSniffing();
+	rf_state = RF_IDLE;
 
 	// FIXME: hack since we remove last_sniffing_command
 	//last_sniffing_command = RF_CODE_RFIN;
-	//uart_command = RF_CODE_RFIN;
+	uart_command = RF_CODE_RFIN;
 #else
 	PCA0_StopSniffing();
 	rf_state = RF_IDLE;
@@ -458,6 +469,15 @@ void main (void)
 				// check if a RF signal got decoded
 				if ((RF_DATA_STATUS & RF_DATA_RECEIVED_MASK) != 0)
 				{
+
+					// DEBUG:
+					if (rdata_level())
+					{
+						debug_pin1_on();
+					} else {
+						debug_pin1_off();
+					}
+
 					switch(uart_command)
 					{
 						case RF_CODE_RFIN:
@@ -477,8 +497,13 @@ void main (void)
 				}
 				else
 				{
+					// disable interrupt for RF receiving while reading buffer
+					PCA0CPM0 &= ~PCA0CPM0_ECCF__ENABLED;
+					result = buffer_out(&bucket);
+					// FIXME: reenable (should store previous and just restore that?)
+					PCA0CPM0 |= PCA0CPM0_ECCF__ENABLED;
 					// handle new received buckets
-					if (buffer_out(&bucket))
+					if (result)
                     {
 						HandleRFBucket(bucket & 0x7FFF, (bool)((bucket & 0x8000) >> 15));
                     }
@@ -487,7 +512,6 @@ void main (void)
 
 			// do a beep
 			case RF_DO_BEEP:
-				// FIXME: is this needed?
 				// only do the job if all data got received by UART
 				if (uart_state != IDLE)
 					break;
@@ -499,7 +523,7 @@ void main (void)
 
 				// send acknowledge
 				finish_command(RF_CODE_ACK);
-				uart_put_rf_human_readable(RF_CODE_RFIN);
+				uart_put_rf_human_readable();
 				uart_command = NONE;
 				break;
 

@@ -36,10 +36,8 @@ typedef enum
 	RF_CODE_LEARN_NEW = 0xA9,
 	RF_CODE_LEARN_KO_NEW = 0xAA,
 	RF_CODE_LEARN_OK_NEW = 0xAB,
-#if INCLUDE_BUCKET_SNIFFING == 1
 	RF_CODE_RFOUT_BUCKET = 0xB0,
 	RF_CODE_SNIFFING_ON_BUCKET = 0xB1,
-#endif
 	RF_DO_BEEP = 0xC0,
 	RF_ALTERNATIVE_FIRMWARE = 0xFF
 } uart_command_t;
@@ -53,7 +51,7 @@ extern __xdata uart_command_t uart_command;
 
 extern void uart_put_command(uint8_t command);
 
-extern void uart_put_rf_human_readable(uint8_t command);
+extern void uart_put_rf_human_readable(void);
 extern void uart_put_RF_Data_Standard(uint8_t command);
 extern void uart_put_RF_Data_Advanced(uint8_t command, uint8_t protocol_index);
 

@@ -76,6 +76,9 @@
 #define RDATA  P1_B3
 #define BUZZER P1_B6
 
+#define DEBUG_PIN0 P1_B5
+#define DEBUG_PIN1 P1_B6
+
 inline void buzzer_on(void)
 {
     BUZZER = 1;
@@ -124,6 +127,37 @@ inline void tdata_off(void)
 {
     TDATA = 0;
 }
+
+inline void debug_pin0_on(void)
+{
+	DEBUG_PIN0 = 1;
+}
+
+inline void debug_pin0_off(void)
+{
+	DEBUG_PIN0 = 0;
+}
+
+inline void debug_pin0_toggle(void)
+{
+	DEBUG_PIN0 = !DEBUG_PIN0;
+}
+
+inline void debug_pin1_on(void)
+{
+	DEBUG_PIN1 = 1;
+}
+
+inline void debug_pin1_off(void)
+{
+	DEBUG_PIN1 = 0;
+}
+
+inline void debug_pin1_toggle(void)
+{
+	DEBUG_PIN1 = !DEBUG_PIN1;
+}
+
 
 inline void enable_global_interrupts(void)
 {

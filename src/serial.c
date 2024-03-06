@@ -14,7 +14,7 @@ void uart_put_command(uint8_t command)
 	uart_putc(RF_CODE_STOP);
 }
 
-void uart_put_rf_human_readable(uint8_t command)
+void uart_put_rf_human_readable(void)
 {
 	uint8_t index = 0;
 
