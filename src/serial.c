@@ -2,7 +2,6 @@
 #include "RF_Protocols.h"
 #include "serial.h"
 #include "uart.h"
-#include "util.h"
 
 void uart_put_command(uint8_t command)
 {

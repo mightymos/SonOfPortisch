@@ -26,8 +26,6 @@ __xdata uint8_t RF_DATA[RF_DATA_BUFFERSIZE];
 __xdata uint8_t RF_DATA_STATUS = 0;
 __xdata rf_sniffing_mode_t sniffing_mode = STANDARD;
 
-// FIXME: we need to separate functional units, it is not clear if this is associated with uart or rf or whatever
-//__xdata uint8_t last_sniffing_command = NONE;
 
 // PT226x variables
 __xdata uint16_t SYNC_LOW = 0x00;
@@ -287,8 +285,7 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 						buckets,
 						PROTOCOL_DATA[0].bit0.dat, PROTOCOL_DATA[0].bit0.size,
 						PROTOCOL_DATA[0].bit1.dat, PROTOCOL_DATA[0].bit1.size,
-						PROTOCOL_DATA[0].bit_count
-						);
+						PROTOCOL_DATA[0].bit_count);
 			}
 			break;
 
@@ -321,8 +318,7 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 							PROTOCOL_DATA[i].buckets.dat,
 							PROTOCOL_DATA[i].bit0.dat, PROTOCOL_DATA[i].bit0.size,
 							PROTOCOL_DATA[i].bit1.dat, PROTOCOL_DATA[i].bit1.size,
-							PROTOCOL_DATA[i].bit_count
-							))
+							PROTOCOL_DATA[i].bit_count))
 						return;
 				}
 			}

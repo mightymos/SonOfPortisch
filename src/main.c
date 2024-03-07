@@ -10,8 +10,7 @@
 #include <stdint.h>
 #include <EFM8BB1.h>
 
-//#include "efm8_config.h"
-#define EFM8PDL_PCA0_USE_ISR	1
+#include "efm8_config.h"
 
 // for printf_tiny()
 //#include <stdio.h>
@@ -34,8 +33,6 @@ __xdata uart_command_t uart_command = NONE;
 __xdata uart_command_t idle_uart_command;
 __xdata uint8_t uartPacket[10];
 
-// some operations set flag to true so that uart receiving is temporarily ignored
-volatile static bool ignoreUARTFlag = false;
 
 // sdcc manual section 3.8.1 general information
 // requires interrupt definition to appear or be included in main
@@ -63,17 +60,6 @@ unsigned char __sdcc_external_startup(void)
     
     return 0;
 }
-
-inline void ignore_uart(const bool ignore)
-{
-    ignoreUARTFlag = ignore;
-}
-
-inline bool is_uart_ignored(void)
-{
-    return ignoreUARTFlag;
-}
-
 
 
 #if 0
@@ -113,19 +99,6 @@ void serial_loopback(void)
 #endif
 
 
-void finish_command(uint8_t command)
-{
-	// send uart command
-	uart_put_command(command);
-
-	// enable UART again
-	//ignore_uart(false);
-
-	// FIXME: this is confusing because last_sniffing_command seems to be associated with uart state
-	// restart sniffing in its previous mode
-	//PCA0_DoSniffing();
-	//rf_state = RF_IDLE;
-}
 
 void uart_state_machine(const unsigned int rxdata)
 {
@@ -257,7 +230,6 @@ void uart_state_machine(const unsigned int rxdata)
 			if ((rxdata & 0xFF) == RF_CODE_STOP)
 			{
 				uart_state = IDLE;
-				//ignore_uart(true);
 
 				// check if ACK should be sent
 				switch(uart_command)
@@ -270,8 +242,6 @@ void uart_state_machine(const unsigned int rxdata)
 						// send acknowledge
 						uart_put_command(RF_CODE_ACK);
 					case RF_CODE_ACK:
-						// enable UART again
-						//ignore_uart(false);
 						break;
 					case RF_CODE_RFOUT_BUCKET:
 						tr_repeats = uartPacket[1] + 1;
@@ -318,12 +288,7 @@ void main (void)
 
 
 	// DEBUG:
-	// enable interrupt for RF receiving
-	//PCA0CPM0 |= PCA0CPM0_ECCF__ENABLED;
-	// start PCA
-	//PCA0_run();
-	
-	debug_pin0_off();
+	//debug_pin0_off();
 
 
 
@@ -397,7 +362,7 @@ void main (void)
 #if 1
 		// check if something got received by UART
 		// only read data from uart if idle
-		if (!is_uart_ignored())
+		if (true)
         {
 			rxdata = uart_getc();
 		} else {
@@ -464,15 +429,6 @@ void main (void)
 				// check if a RF signal got decoded
 				if ((RF_DATA_STATUS & RF_DATA_RECEIVED_MASK) != 0)
 				{
-
-					// DEBUG:
-					if (rdata_level())
-					{
-						debug_pin0_on();
-					} else {
-						debug_pin0_off();
-					}
-
 					switch(uart_command)
 					{
 						case RF_CODE_RFIN:
@@ -511,8 +467,7 @@ void main (void)
 				// check if a RF signal got decoded
 				if ((RF_DATA_STATUS & RF_DATA_RECEIVED_MASK) != 0)
 				{
-					// disable interrupt for RF receiving while uart transfer
-					//FIXME: want to move outside of buried function
+					// disable interrupt for RF receiving during uart transfer
 					PCA0CPM0 &= ~ECCF__ENABLED;
 					
 					uart_put_RF_buckets(RF_CODE_SNIFFING_ON_BUCKET);
@@ -542,12 +497,13 @@ void main (void)
 					break;
 
 				// this is blocking unfortunately
-				//buzzer_on();
-				//efm8_delay_ms(*(uint16_t *)&RF_DATA[0]);
-				//buzzer_off();
+				buzzer_on();
+				efm8_delay_ms(*(uint16_t *)&uartPacket[1]);
+				buzzer_off();
 
 				// send acknowledge
-				finish_command(RF_CODE_ACK);
+				// send uart command
+				uart_put_command(RF_CODE_ACK);
 				uart_command = idle_uart_command;
 				break;
 
@@ -555,7 +511,7 @@ void main (void)
 			case RF_ALTERNATIVE_FIRMWARE:
 
 				// send firmware version
-				finish_command(FIRMWARE_VERSION);
+				uart_put_command(FIRMWARE_VERSION);
 				uart_command = idle_uart_command;
 				break;
 

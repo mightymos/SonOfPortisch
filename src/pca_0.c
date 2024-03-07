@@ -129,7 +129,7 @@ void PCA0_initChannel(PCA0_Channel_t channel,
                      | PCA0CPM0_MAT__ENABLED \
                      | PCA0CPM0_TOG__DISABLED \
                      | PCA0CPM0_PWM__ENABLED
-  # define IS_16BIT 0x80
+  #define IS_16BIT 0x80
 
   uint8_t pwmValue = (uint8_t) mode;
 
