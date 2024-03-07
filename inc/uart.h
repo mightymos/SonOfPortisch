@@ -8,7 +8,8 @@
 #ifndef INC_UART_H_
 #define INC_UART_H_
 
-#include <SI_EFM8BB1_Register_Enums.h> 
+#include <stdint.h>
+#include <EFM8BB1.h>
 
 #include "RF_Config.h"
 
@@ -32,22 +33,22 @@
 /// UART transfer width enums.
 typedef enum
 {
-  UART0_WIDTH_8 = SCON0_SMODE__8_BIT, //!< UART in 8-bit mode.
-  UART0_WIDTH_9 = SCON0_SMODE__9_BIT, //!< UART in 9-bit mode.
+  UART0_WIDTH_8 = SMODE__8_BIT, //!< UART in 8-bit mode.
+  UART0_WIDTH_9 = SMODE__9_BIT, //!< UART in 9-bit mode.
 } UART0_Width_t;
 
 /// UART Multiprocessor support enums.
 typedef enum
 {
-  UART0_MULTIPROC_DISABLE = SCON0_MCE__MULTI_DISABLED, //!< UART Multiprocessor communication Disabled.
-  UART0_MULTIPROC_ENABLE  = SCON0_MCE__MULTI_ENABLED,  //!< UART Multiprocessor communication Enabled.
+  UART0_MULTIPROC_DISABLE = MCE__MULTI_DISABLED, //!< UART Multiprocessor communication Disabled.
+  UART0_MULTIPROC_ENABLE  = MCE__MULTI_ENABLED,  //!< UART Multiprocessor communication Enabled.
 } UART0_Multiproc_t;
 
 /// UART RX support enums
 typedef enum
 {
-  UART0_RX_ENABLE  = SCON0_REN__RECEIVE_ENABLED,   //!< UART Receive Enabled.
-  UART0_RX_DISABLE = SCON0_REN__RECEIVE_DISABLED,  //!< UART Receive Disabled.
+  UART0_RX_ENABLE  = REN__RECEIVE_ENABLED,   //!< UART Receive Enabled.
+  UART0_RX_DISABLE = REN__RECEIVE_DISABLED,  //!< UART Receive Disabled.
 } UART0_RxEnable_t;
 
 /***************************************************************************//**

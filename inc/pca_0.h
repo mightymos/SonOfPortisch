@@ -9,7 +9,9 @@
 
 
 #include "efm8_config.h"
-#include "SI_EFM8BB1_Register_Enums.h"
+#include <stdbool.h>
+#include <stdint.h>
+#include <EFM8BB1.h>
 
 /**************************************************************************//**
  * @addtogroup pca_0 PCA0 Driver
@@ -151,11 +153,11 @@ typedef enum
  * @addtogroup pca0_if Interrupt Flag Enums
  * @{
  ******************************************************************************/
-#define PCA0_OVERFLOW_IF  PCA0CN0_CF__BMASK    //!<  Counter overflow flag
-#define PCA0_IOVERFLOW_IF PCA0PWM_COVF__BMASK //!<  Intermediate overflow flag
-#define PCA0_CHAN0_IF     PCA0CN0_CCF0__BMASK  //!<  Channel 0
-#define PCA0_CHAN1_IF     PCA0CN0_CCF1__BMASK  //!<  Channel 1
-#define PCA0_CHAN2_IF     PCA0CN0_CCF2__BMASK  //!<  Channel 2
+#define PCA0_OVERFLOW_IF  CF__BMASK    //!<  Counter overflow flag
+#define PCA0_IOVERFLOW_IF COVF__BMASK //!<  Intermediate overflow flag
+#define PCA0_CHAN0_IF     CCF0__BMASK  //!<  Channel 0
+#define PCA0_CHAN1_IF     CCF1__BMASK  //!<  Channel 1
+#define PCA0_CHAN2_IF     CCF2__BMASK  //!<  Channel 2
 
 #if IS_DOXYGEN
   #define PCA0_CHAN3_IF -1 //!< @warning NOT SUPPORTED ON THIS DEVICE
@@ -272,13 +274,13 @@ void PCA0_halt(void);
 /// @brief Clock Selection Enum.
 typedef enum
 {
-  PCA0_SYSCLK_DIV12 = PCA0MD_CPS__SYSCLK_DIV_12, //!< Select SystemClock/12
-  PCA0_SYSCLK_DIV4 = PCA0MD_CPS__SYSCLK_DIV_4,   //!< Select SystemClock/4
-  PCA0_TIMER0      = PCA0MD_CPS__T0_OVERFLOW,    //!< Select Timer0 Overflow
-  PCA0_ECI         = PCA0MD_CPS__ECI,            //!< Select ECI falling edge
-  PCA0_SYSCLK      = PCA0MD_CPS__SYSCLK,         //!< Select SystemClock
-  PCA0_EXTOSC_DIV8 = PCA0MD_CPS__EXTOSC_DIV_8,   //!< Select ExternalOsc/8
-  PCA0_LFOSC_DIV8  = PCA0MD_CPS__LFOSC_DIV_8,    //!< Select LowFrequencyOsc/8
+  PCA0_SYSCLK_DIV12 = CPS__SYSCLK_DIV_12, //!< Select SystemClock/12
+  PCA0_SYSCLK_DIV4 = CPS__SYSCLK_DIV_4,   //!< Select SystemClock/4
+  PCA0_TIMER0      = CPS__T0_OVERFLOW,    //!< Select Timer0 Overflow
+  PCA0_ECI         = CPS__ECI,            //!< Select ECI falling edge
+  PCA0_SYSCLK      = CPS__SYSCLK,         //!< Select SystemClock
+  PCA0_EXTOSC_DIV8 = CPS__EXTOSC_DIV_8,   //!< Select ExternalOsc/8
+  PCA0_LFOSC_DIV8  = CPS__LFOSC_DIV_8,    //!< Select LowFrequencyOsc/8
 } PCA0_Timebase_t;
 
 /// @brief Channel mode enum.
@@ -286,129 +288,129 @@ typedef enum
 {
   //xx10 000* (CPM) 0x20
   //0x*0 0xxx (PWM)
-  PCA0_CAPTURE_POS_CEX   = PCA0CPM0_PWM16__8_BIT //!< Capture mode triggered by CEX rising
-                           | PCA0CPM0_ECOM__DISABLED
-                           | PCA0CPM0_CAPP__ENABLED
-                           | PCA0CPM0_CAPN__DISABLED
-                           | PCA0CPM0_MAT__DISABLED
-                           | PCA0CPM0_TOG__DISABLED
-                           | PCA0CPM0_PWM__DISABLED,
+  PCA0_CAPTURE_POS_CEX   = PWM16__8_BIT //!< Capture mode triggered by CEX rising
+                           | ECOM__DISABLED
+                           | CAPP__ENABLED
+                           | CAPN__DISABLED
+                           | MAT__DISABLED
+                           | TOG__DISABLED
+                           | PWM__DISABLED,
 
   //xx01 000* (CPM) 0x10
   //0x*0 0xxx (PWM)
-  PCA0_CAPTURE_NEG_CEX   = PCA0CPM0_PWM16__8_BIT //!< Capture mode triggered by CEX falling
-                           | PCA0CPM0_ECOM__DISABLED
-                           | PCA0CPM0_CAPP__DISABLED
-                           | PCA0CPM0_CAPN__ENABLED
-                           | PCA0CPM0_MAT__DISABLED
-                           | PCA0CPM0_TOG__DISABLED
-                           | PCA0CPM0_PWM__DISABLED,
+  PCA0_CAPTURE_NEG_CEX   = PWM16__8_BIT //!< Capture mode triggered by CEX falling
+                           | ECOM__DISABLED
+                           | CAPP__DISABLED
+                           | CAPN__ENABLED
+                           | MAT__DISABLED
+                           | TOG__DISABLED
+                           | PWM__DISABLED,
 
   //xx11 000* (CPM) 0x30
   //0x*0 0xxx (PWM)
-  PCA0_CAPTUE_TOGGLE_CEX = PCA0CPM0_PWM16__8_BIT //!< Capture Mode triggered by CEX rising or falling
-                           | PCA0CPM0_ECOM__DISABLED
-                           | PCA0CPM0_CAPP__ENABLED
-                           | PCA0CPM0_CAPN__ENABLED
-                           | PCA0CPM0_MAT__DISABLED
-                           | PCA0CPM0_TOG__DISABLED
-                           | PCA0CPM0_PWM__DISABLED,
+  PCA0_CAPTUE_TOGGLE_CEX = PWM16__8_BIT //!< Capture Mode triggered by CEX rising or falling
+                           | ECOM__DISABLED
+                           | CAPP__ENABLED
+                           | CAPN__ENABLED
+                           | MAT__DISABLED
+                           | TOG__DISABLED
+                           | PWM__DISABLED,
 
   //x100 100* (CPM) 0x48
   //0x*0 0xxx (PWM)
-  PCA0_TIMER             = PCA0CPM0_PWM16__8_BIT //!< Timer mode
-                           | PCA0CPM0_ECOM__ENABLED
-                           | PCA0CPM0_CAPP__DISABLED
-                           | PCA0CPM0_CAPN__DISABLED
-                           | PCA0CPM0_MAT__ENABLED
-                           | PCA0CPM0_TOG__DISABLED
-                           | PCA0CPM0_PWM__DISABLED,
+  PCA0_TIMER             = PWM16__8_BIT //!< Timer mode
+                           | ECOM__ENABLED
+                           | CAPP__DISABLED
+                           | CAPN__DISABLED
+                           | MAT__ENABLED
+                           | TOG__DISABLED
+                           | PWM__DISABLED,
 
   //x100 110* (CPM) 0x4C
   //0x*0 0xxx (PWM)
-  PCA0_HIGH_SPEED_OUT    = PCA0CPM0_PWM16__8_BIT //!< High speed output mode
-                           | PCA0CPM0_ECOM__ENABLED
-                           | PCA0CPM0_CAPP__DISABLED
-                           | PCA0CPM0_CAPN__DISABLED
-                           | PCA0CPM0_MAT__ENABLED
-                           | PCA0CPM0_TOG__ENABLED
-                           | PCA0CPM0_PWM__DISABLED,
+  PCA0_HIGH_SPEED_OUT    = PWM16__8_BIT //!< High speed output mode
+                           | ECOM__ENABLED
+                           | CAPP__DISABLED
+                           | CAPN__DISABLED
+                           | MAT__ENABLED
+                           | TOG__ENABLED
+                           | PWM__DISABLED,
 
   //x100 011* (CPM) 0x46
   //0x*0 0xxx (PWM)
-  PCA0_FREQUENCY_OUT     = PCA0CPM0_PWM16__8_BIT //!< High frequency output mode
-                           | PCA0CPM0_ECOM__ENABLED
-                           | PCA0CPM0_CAPP__DISABLED
-                           | PCA0CPM0_CAPN__DISABLED
-                           | PCA0CPM0_MAT__DISABLED
-                           | PCA0CPM0_TOG__ENABLED
-                           | PCA0CPM0_PWM__ENABLED,
+  PCA0_FREQUENCY_OUT     = PWM16__8_BIT //!< High frequency output mode
+                           | ECOM__ENABLED
+                           | CAPP__DISABLED
+                           | CAPN__DISABLED
+                           | MAT__DISABLED
+                           | TOG__ENABLED
+                           | PWM__ENABLED,
 
   //0111 101* (CPM) 0x4A
   //10*0 0000 (PWM) 0x80
-  PCA0_PWM8              = PCA0CPM0_PWM16__8_BIT //!< 8-bit PWM (edge aligned)
-                           | PCA0CPM0_ECOM__ENABLED
+  PCA0_PWM8              = PWM16__8_BIT //!< 8-bit PWM (edge aligned)
+                           | ECOM__ENABLED
                            | 0x30 //Code for n-bit PWM
-                           | PCA0PWM_CLSEL__8_BITS,
+                           | CLSEL__8_BITS,
 
-  PCA0_PWM8_CENTER       = PCA0CPM0_PWM16__8_BIT //!< 8-bit PWM (center aligned)
-                           | PCA0CPM0_ECOM__ENABLED
+  PCA0_PWM8_CENTER       = PWM16__8_BIT //!< 8-bit PWM (center aligned)
+                           | ECOM__ENABLED
                            | 0x30 //Code for n-bit PWM
-                           | PCA0PWM_CLSEL__8_BITS
+                           | CLSEL__8_BITS
                            | 0x08, //center alignment
 
   //0111 101* (CPM) 0x4A
   //10*0 0001 (PWM) 0x81
-  PCA0_PWM9              = PCA0CPM0_PWM16__8_BIT //!< 9-bit PWM (edge aligned)
-                           | PCA0CPM0_ECOM__ENABLED
+  PCA0_PWM9              = PWM16__8_BIT //!< 9-bit PWM (edge aligned)
+                           | ECOM__ENABLED
                            | 0x30 //Code for n-bit PWM
-                           | PCA0PWM_CLSEL__9_BITS,
+                           | CLSEL__9_BITS,
 
-  PCA0_PWM9_CENTER       = PCA0CPM0_PWM16__8_BIT //!< 9-bit PWM (center aligned)
-                           | PCA0CPM0_ECOM__ENABLED
+  PCA0_PWM9_CENTER       = PWM16__8_BIT //!< 9-bit PWM (center aligned)
+                           | ECOM__ENABLED
                            | 0x30 //Code for n-bit PWM
-                           | PCA0PWM_CLSEL__9_BITS
+                           | CLSEL__9_BITS
                            | 0x08, //center alignment
 
   //0111 101* (CPM) 0x4A
   //10*0 0010 (PWM) 0x82
-  PCA0_PWM10             = PCA0CPM0_PWM16__8_BIT //!< 10-bit PWM (edge aligned)
-                           | PCA0CPM0_ECOM__ENABLED
+  PCA0_PWM10             = PWM16__8_BIT //!< 10-bit PWM (edge aligned)
+                           | ECOM__ENABLED
                            | 0x30 //Code for n-bit PWM
-                           | PCA0PWM_CLSEL__10_BITS,
+                           | CLSEL__10_BITS,
 
-  PCA0_PWM10_CENTER      = PCA0CPM0_PWM16__8_BIT //!< 10-bit PWM (center aligned)
-                           | PCA0CPM0_ECOM__ENABLED
+  PCA0_PWM10_CENTER      = PWM16__8_BIT //!< 10-bit PWM (center aligned)
+                           | ECOM__ENABLED
                            | 0x30 //Code for n-bit PWM
-                           | PCA0PWM_CLSEL__10_BITS
+                           | CLSEL__10_BITS
                            | 0x08, //center alignment
 
   //0111 101* (CPM) 0x4A
   //10*0 0011 (PWM) 0x83
-  PCA0_PWM11             = PCA0CPM0_PWM16__8_BIT //!< 11-bit PWM (edge aligned)
-                           | PCA0CPM0_ECOM__ENABLED
+  PCA0_PWM11             = PWM16__8_BIT //!< 11-bit PWM (edge aligned)
+                           | ECOM__ENABLED
                            | 0x30 //Code for n-bit PWM
-                           | PCA0PWM_CLSEL__11_BITS,
+                           | CLSEL__11_BITS,
 
-  PCA0_PWM11_CENTER      = PCA0CPM0_PWM16__8_BIT //!< 11-bit PWM (center aligned)
-                           | PCA0CPM0_ECOM__ENABLED
+  PCA0_PWM11_CENTER      = PWM16__8_BIT //!< 11-bit PWM (center aligned)
+                           | ECOM__ENABLED
                            | 0x30 //Code for n-bit PWM
-                           | PCA0PWM_CLSEL__11_BITS
+                           | CLSEL__11_BITS
                            | 0x08, //center alignment
 
   //1111 101* (CPM) 0xCA
   //00*0 0xxx (PWM) 0x00
-  PCA0_PWM16             = PCA0CPM0_PWM16__16_BIT //!< 16-bit PWM (edge aligned)
-                           | PCA0CPM0_ECOM__ENABLED
+  PCA0_PWM16             = PWM16__16_BIT //!< 16-bit PWM (edge aligned)
+                           | ECOM__ENABLED
                            | 0x30 //Code for n-bit PWM
-                           | PCA0PWM_CLSEL__11_BITS,
+                           | CLSEL__11_BITS,
                            //1111 101* (CPM) 0xCA
                            //00*0 0xxx (PWM) 0x00
 
-  PCA0_PWM16_CENTER      = PCA0CPM0_PWM16__16_BIT //!< 16-bit PWM (center aligned)
-                           | PCA0CPM0_ECOM__ENABLED
+  PCA0_PWM16_CENTER      = PWM16__16_BIT //!< 16-bit PWM (center aligned)
+                           | ECOM__ENABLED
                            | 0x30 //Code for n-bit PWM
-                           | PCA0PWM_CLSEL__11_BITS
+                           | CLSEL__11_BITS
                            | 0x08, //center alignment
 } PCA0_ChannelMode_t;
 
@@ -423,8 +425,8 @@ typedef enum
 /// @brief Idle state of PCA Counter
 typedef enum
 {
-  PCA0_IDLE_RUN     = PCA0MD_CIDL__NORMAL,  //!< PCA runs when idle
-  PCA0_IDLE_SUSPEND = PCA0MD_CIDL__SUSPEND, //!< PCA suspended when idle
+  PCA0_IDLE_RUN     = CIDL__NORMAL,  //!< PCA runs when idle
+  PCA0_IDLE_SUSPEND = CIDL__SUSPEND, //!< PCA suspended when idle
 } PCA0_IdleState_t;
 
 

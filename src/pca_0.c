@@ -223,48 +223,48 @@ void PCA0_resetChannel(PCA0_Channel_t channel)
 
 void PCA0_run(void)
 {
-    PCA0CN0_CR = 1;
+    PCA0CN0 |= CR__RUN;
 }
 
 void PCA0_halt(void)
 {
-    PCA0CN0_CR = 0;
+    PCA0CN0 &= ~CR__RUN;
 }
 
 
 #if EFM8PDL_PCA0_USE_ISR == 1
 
-void PCA0_ISR(void) __interrupt (PCA0_IRQn)
+void PCA0_ISR(void) __interrupt (11)
 {
   // save and clear flags
-  uint8_t flags = PCA0CN0 & (PCA0CN0_CF__BMASK | PCA0CN0_CCF0__BMASK | PCA0CN0_CCF1__BMASK | PCA0CN0_CCF2__BMASK);
+  uint8_t flags = PCA0CN0 & (CF__BMASK | CCF0__BMASK | CCF1__BMASK | CCF2__BMASK);
 
   PCA0CN0 &= ~flags;
 
-  if( (PCA0PWM & PCA0PWM_COVF__BMASK) && (PCA0PWM & PCA0PWM_ECOV__BMASK))
+  if( (PCA0PWM & COVF__BMASK) && (PCA0PWM & ECOV__BMASK))
   {
     PCA0_intermediateOverflowCb();
   }
 
-  PCA0PWM &= ~PCA0PWM_COVF__BMASK;
+  PCA0PWM &= ~COVF__BMASK;
 
-  if((flags & PCA0CN0_CF__BMASK) && (PCA0MD & PCA0MD_ECF__BMASK))
+  if((flags & CF__BMASK) && (PCA0MD & ECF__BMASK))
   {
     PCA0_overflowCb();
   }
 
-  if((flags & PCA0CN0_CCF0__BMASK) && (PCA0CPM0 & PCA0CPM0_ECCF__BMASK))
+  if((flags & CCF0__BMASK) && (PCA0CPM0 & ECCF__BMASK))
   {
   	// apparently our radio input
     PCA0_channel0EventCb();
   }
 
-  if((flags & PCA0CN0_CCF1__BMASK) && (PCA0CPM1 & PCA0CPM1_ECCF__BMASK))
+  if((flags & CCF1__BMASK) && (PCA0CPM1 & ECCF__BMASK))
   {
     PCA0_channel1EventCb();
   }
 
-  if((flags & PCA0CN0_CCF2__BMASK) && (PCA0CPM2 & PCA0CPM2_ECCF__BMASK))
+  if((flags & CCF2__BMASK) && (PCA0CPM2 & ECCF__BMASK))
   {
     PCA0_channel2EventCb();
   }

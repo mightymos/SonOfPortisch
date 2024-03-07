@@ -8,8 +8,9 @@
 #ifndef INC_GLOBALS_H_
 #define INC_GLOBALS_H_
 
-
-#include <SI_EFM8BB1_Register_Enums.h> 
+#include <stdbool.h>
+#include <stdint.h>
+#include <EFM8BB1.h>
 
 
 
@@ -68,16 +69,17 @@
 //__sbit __at (0x93) R_DATA;
 //__sbit __at (0x96) BUZZER;
 
-// Sonoff Bridge
-//#define LED    P1_B0
-// EFM8BB1LCK board
-#define LED    P1_B4
-#define TDATA  P0_B0
-#define RDATA  P1_B3
-#define BUZZER P1_B6
 
-#define DEBUG_PIN0 P1_B5
-#define DEBUG_PIN1 P1_B6
+#define TDATA  P0_0
+// Sonoff Bridge
+// EFM8BB1LCK board (uncomment only one LED line)
+//#define LED    P1_0
+#define LED    P1_4
+#define RDATA  P1_3
+#define BUZZER P1_6
+
+#define DEBUG_PIN0 P1_5
+#define DEBUG_PIN1 P1_6
 
 inline void buzzer_on(void)
 {
@@ -161,12 +163,12 @@ inline void debug_pin1_toggle(void)
 
 inline void enable_global_interrupts(void)
 {
-    IE_EA = 1;
+    EA = 1;
 }
 
 inline void disable_global_interrupts(void)
 {
-    IE_EA = 0;
+    EA = 0;
 }
 
 extern void InitTimer2_us(uint16_t interval, uint16_t timeout);

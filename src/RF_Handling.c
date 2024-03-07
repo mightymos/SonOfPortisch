@@ -4,7 +4,8 @@
  *  Created on: 27.11.2017
  *      Author:
  */
-#include <SI_EFM8BB1_Register_Enums.h>
+#include <stdint.h>
+#include <EFM8BB1.h>
 
 #include <string.h>
 //#include <stdlib.h>
@@ -56,22 +57,11 @@ __xdata uint8_t bucket_count_sync_1;
 __xdata uint8_t bucket_count_sync_2;
 #endif
 
-// FIXME: these were potentially not working properly with sdcc
-//#define GET_W_POSITION(x) (((x) >> 4) & 0x0F)
-//#define INC_W_POSITION(x) ((x) = ((((x) >> 4) + 1) << 4) | ((x) & 0x0F))
-//#define DEC_W_POSITION(x) ((x) = ((((x) >> 4) - 1) << 4) | ((x) & 0x0F))
-//#define CLR_W_POSITION(x) ((x) &= 0x0F)
-//
-//#define GET_R_POSITION(x) ((x) & 0x0F)
-//#define INC_R_POSITION(x) ((x) = ((x) + 1) | ((x) & 0xF0))
-//#define DEC_R_POSITION(x) ((x) = ((x) - 1) | ((x) & 0xF0))
-//#define CLR_R_POSITION(x) ((x) &= 0xF0)
 
 #define BUFFER_BUCKETS_SIZE 4
 __xdata uint16_t buffer_buckets[BUFFER_BUCKETS_SIZE] = {0};
 
 // use separate read and write "pointers" into circular buffer
-//__xdata uint8_t buffer_buckets_positions = 0;
 __xdata uint8_t buffer_buckets_read = 0;
 __xdata uint8_t buffer_buckets_write = 0;
 
@@ -342,24 +332,17 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 
 void buffer_in(uint16_t bucket)
 {
-	//if ((GET_W_POSITION(buffer_buckets_positions) + 1 == GET_R_POSITION(buffer_buckets_positions)) ||
-	//		(GET_R_POSITION(buffer_buckets_positions) == 0 && GET_W_POSITION(buffer_buckets_positions) + 1 == ARRAY_LENGTH(buffer_buckets)))
-	//	return;
 	// check if writing next byte into circular buffer will catch up to read position, and if so bail out
 	if ((buffer_buckets_write + 1 == buffer_buckets_read) || (buffer_buckets_read == 0 && buffer_buckets_write + 1 == BUFFER_BUCKETS_SIZE))
 	{
 		return;
 	}
 
-	//buffer_buckets[GET_W_POSITION(buffer_buckets_positions)] = bucket;
 	buffer_buckets[buffer_buckets_write] = bucket;
 
-	//INC_W_POSITION(buffer_buckets_positions);
 	buffer_buckets_write++;
 
-	//if (GET_W_POSITION(buffer_buckets_positions) >= ARRAY_LENGTH(buffer_buckets))
-	//	CLR_W_POSITION(buffer_buckets_positions);
-	// wrap write position around to start if it reaches end of array
+
 	if (buffer_buckets_write >= BUFFER_BUCKETS_SIZE)
 	{
 		buffer_buckets_write = 0;
@@ -368,11 +351,10 @@ void buffer_in(uint16_t bucket)
 
 bool buffer_out(uint16_t* bucket)
 {
+	//FIXME: may need to do this type of save outside of function call
 	//uint8_t backup_PCA0CPM0 = PCA0CPM0;
 
 	// check if buffer is empty
-	//if (GET_W_POSITION(buffer_buckets_positions) == GET_R_POSITION(buffer_buckets_positions))
-	//	return false;
 	if (buffer_buckets_write == buffer_buckets_read)
 	{
 		return false;
@@ -381,13 +363,10 @@ bool buffer_out(uint16_t* bucket)
 	// disable interrupt for RF receiving while reading buffer
 	//PCA0CPM0 &= ~PCA0CPM0_ECCF__ENABLED;
 
-	//*bucket = buffer_buckets[GET_R_POSITION(buffer_buckets_positions)];
-	//INC_R_POSITION(buffer_buckets_positions);
+
 	*bucket = buffer_buckets[buffer_buckets_read];
 	buffer_buckets_read++;
 
-	//if (GET_R_POSITION(buffer_buckets_positions) >= ARRAY_LENGTH(buffer_buckets))
-	//	CLR_R_POSITION(buffer_buckets_positions);
 
 	if (buffer_buckets_read >= BUFFER_BUCKETS_SIZE)
 	{
@@ -413,8 +392,7 @@ void PCA0_channel0EventCb(void)
 	PCA0MD = flags;
 
 
-	// if bucket is not noise add it to buffer
-	/*current_capture_value > MIN_PULSE_LENGTH &&*/
+	// FIXME: additional comments; if bucket is not noise add it to buffer
 	if (current_capture_value < 0x8000)
 	{
 		// FIXME: add comment
@@ -422,8 +400,7 @@ void PCA0_channel0EventCb(void)
 	}
 	else
 	{
-		// received noise, clear all received buckets
-		//buffer_buckets_positions = 0;
+		// received noise, so clear all received buckets
 		buffer_buckets_read = 0;
 		buffer_buckets_write = 0;
 	}
@@ -435,16 +412,16 @@ void PCA0_channel2EventCb(void) { }
 
 void SetTimer0Overflow(uint8_t T0_Overflow)
 {
-	/***********************************************************************
-	 - Timer 0 High Byte = T0_Overflow
-	 ***********************************************************************/
-	TH0 = (T0_Overflow << TH0_TH0__SHIFT);
+	// FIXME: add comment
+	// timer 0 high byte - overflow
+	 // shift was 0x00 anyway...
+	//TH0 = (T0_Overflow << TH0_TH0__SHIFT);
+	TH0 = T0_Overflow;
 }
 
 uint8_t PCA0_DoSniffing(void)
 {
 	// FIXME:
-	//uint8_t ret = last_sniffing_command;
 	uint8_t ret = 0;
 
     // FIXME: possible to remove to save code size?
@@ -454,7 +431,7 @@ uint8_t PCA0_DoSniffing(void)
 	SetTimer0Overflow(0x0B);
 
 	// enable interrupt for RF receiving
-	PCA0CPM0 |= PCA0CPM0_ECCF__ENABLED;
+	PCA0CPM0 |= ECCF__ENABLED;
 
 	// start PCA
 	PCA0_run();
@@ -468,13 +445,6 @@ uint8_t PCA0_DoSniffing(void)
 	// FIXME: add comment
 	RF_DATA_STATUS = 0;
 
-	// FIXME: we need to separate functional units here, this was effectively controlling a state machine in main
-	// set uart_command back if sniffing was on
-	//uart_command = active_command;
-
-	// FIXME:
-	// backup uart_command to be able to enable the sniffing again
-	//last_sniffing_command = active_command;
 
 	return ret;
 }
@@ -485,10 +455,10 @@ void PCA0_StopSniffing(void)
 	PCA0_halt();
 
 	// clear all interrupt flags of PCA0
-	PCA0CN0 &= ~(PCA0CN0_CF__BMASK | PCA0CN0_CCF0__BMASK | PCA0CN0_CCF1__BMASK | PCA0CN0_CCF2__BMASK);
+	PCA0CN0 &= ~(CF__BMASK | CCF0__BMASK | CCF1__BMASK | CCF2__BMASK);
 
 	// disable interrupt for RF receiving
-	PCA0CPM0 &= ~PCA0CPM0_ECCF__ENABLED;
+	PCA0CPM0 &= ~ECCF__ENABLED;
 
 	// be sure the timeout timer is stopped
 	StopTimer2();

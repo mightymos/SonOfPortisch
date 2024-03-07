@@ -5,7 +5,9 @@
  *      Author:
  */
 
-#include <SI_EFM8BB1_Register_Enums.h>
+#include <stdint.h>
+#include <EFM8BB1.h>
+
 
 #include "globals.h"
 
@@ -21,11 +23,11 @@ void SetTimer2Reload(uint16_t reload)
 	/***********************************************************************
 	 - Timer 2 Reload High Byte
 	 ***********************************************************************/
-	TMR2RLH = (((reload >> 8) & 0xFF) << TMR2RLH_TMR2RLH__SHIFT);
+	TMR2RLH = ((reload >> 8) & 0xFF);
 	/***********************************************************************
 	 - Timer 2 Reload Low Byte = 0x86
 	 ***********************************************************************/
-	TMR2RLL = ((reload & 0xFF) << TMR2RLL_TMR2RLL__SHIFT);
+	TMR2RLL = (reload & 0xFF);
 }
 
 #if 0
@@ -34,11 +36,11 @@ void SetTimer3Reload(uint16_t reload)
 	/***********************************************************************
 	 - Timer 3 Reload High Byte
 	 ***********************************************************************/
-	TMR3RLH = (((reload >> 8) & 0xFF) << TMR3RLH_TMR3RLH__SHIFT);
+	TMR3RLH = ((reload >> 8) & 0xFF);
 	/***********************************************************************
 	 - Timer 3 Reload Low Byte = 0x86
 	 ***********************************************************************/
-	TMR3RLL = ((reload & 0xFF) << TMR3RLL_TMR3RLL__SHIFT);
+	TMR3RLL = (reload & 0xFF);
 }
 #endif
 
@@ -54,7 +56,7 @@ void InitTimer2_us(uint16_t interval, uint16_t timeout)
 	Timer_2_Interval = interval;
 
 	// start timer
-	TMR2CN0 |= TMR2CN0_TR2__RUN;
+	TMR2CN0 |= TR2__RUN;
 }
 
 #if 0
@@ -70,7 +72,7 @@ void InitTimer3_us(uint16_t interval, uint16_t timeout)
 	Timer_3_Interval = interval;
 
 	// start timer
-	TMR3CN0 |= TMR3CN0_TR3__RUN;
+	TMR3CN0 |= TR3__RUN;
 }
 #endif
 
@@ -85,7 +87,7 @@ void InitTimer2_ms(uint16_t interval, uint16_t timeout)
 	Timer_2_Interval = interval;
 
 	// start timer
-	TMR2CN0 |= TMR2CN0_TR2__RUN;
+	TMR2CN0 |= TR2__RUN;
 }
 
 #if 0
@@ -100,21 +102,21 @@ void InitTimer3_ms(uint16_t interval, uint16_t timeout)
 	Timer_3_Interval = interval;
 
 	// start timer
-	TMR3CN0 |= TMR3CN0_TR3__RUN;
+	TMR3CN0 |= TR3__RUN;
 }
 #endif
 
 void WaitTimer2Finished(void)
 {
 	// wait until timer has finished
-	while((TMR2CN0 & TMR2CN0_TR2__BMASK) == TMR2CN0_TR2__RUN);
+	while((TMR2CN0 & TR2__BMASK) == TR2__RUN);
 }
 
 #if 0
 void WaitTimer3Finished(void)
 {
 	// wait until timer has finished
-	while((TMR3CN0 & TMR3CN0_TR3__BMASK) == TMR3CN0_TR3__RUN);
+	while((TMR3CN0 & TR3__BMASK) == TR3__RUN);
 }
 #endif
 
@@ -122,9 +124,9 @@ void WaitTimer3Finished(void)
 void StopTimer2(void)
 {
 	// stop timer
-	TMR2CN0 &= ~TMR2CN0_TR2__RUN;
+	TMR2CN0 &= ~TR2__RUN;
 	// Clear Timer 2 high overflow flag
-	TMR2CN0 &= ~TMR2CN0_TF2H__SET;
+	TMR2CN0 &= ~TF2H__SET;
 }
 #endif
 
@@ -132,21 +134,21 @@ void StopTimer2(void)
 void StopTimer3(void)
 {
 	// stop timer
-	TMR3CN0 &= ~TMR3CN0_TR3__RUN;
+	TMR3CN0 &= ~TR3__RUN;
 	// Clear Timer 3 high overflow flag
-	TMR3CN0 &= ~TMR3CN0_TF3H__SET;
+	TMR3CN0 &= ~TF3H__SET;
 }
 #endif
 
 bool IsTimer2Finished(void)
 {
-	return ((TMR2CN0 & TMR2CN0_TR2__BMASK) != TMR2CN0_TR2__RUN);
+	return ((TMR2CN0 & TR2__BMASK) != TR2__RUN);
 }
 
 #if 0
 bool IsTimer3Finished(void)
 {
-	return ((TMR3CN0 & TMR3CN0_TR3__BMASK) != TMR3CN0_TR3__RUN);
+	return ((TMR3CN0 & TR3__BMASK) != TR3__RUN);
 }
 #endif
 
@@ -159,16 +161,16 @@ bool IsTimer3Finished(void)
 // TMR2CN0::TF2L (Timer # Low Byte Overflow Flag)
 //
 //-----------------------------------------------------------------------------
-void TIMER2_ISR(void) __interrupt (TIMER2_IRQn)
+void TIMER2_ISR(void) __interrupt (5)
 {
 	// Clear Timer 2 high overflow flag
-	TMR2CN0 &= ~TMR2CN0_TF2H__SET;
+	TMR2CN0 &= ~TF2H__SET;
 
 	// check if pulse time is over
 	if(Timer_2_Timeout == 0)
 	{
 		// stop timer
-		TMR2CN0 &= ~TMR2CN0_TR2__RUN;
+		TMR2CN0 &= ~TR2__RUN;
 	}
 
 	if (Timer_2_Timeout < Timer_2_Interval)
@@ -190,13 +192,13 @@ void TIMER2_ISR(void) __interrupt (TIMER2_IRQn)
 void TIMER3_ISR(void) __interrupt (TIMER3_IRQn)
 {
 	// Clear Timer 3 high overflow flag
-	TMR3CN0 &= ~TMR3CN0_TF3H__SET;
+	TMR3CN0 &= ~TF3H__SET;
 
 	// check if pulse time is over
 	if(Timer_3_Timeout == 0)
 	{
 		// stop timer
-		TMR3CN0 &= ~TMR3CN0_TR3__RUN;
+		TMR3CN0 &= ~TR3__RUN;
 	}
 
 	if (Timer_3_Timeout < Timer_3_Interval)

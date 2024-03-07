@@ -6,7 +6,8 @@
 // or they will be overwritten!
 //=========================================================
 
-#include <SI_EFM8BB1_Register_Enums.h>
+#include <stdint.h>
+#include <EFM8BB1.h>
 
 #include "InitDevice.h"
 
@@ -16,53 +17,19 @@
 void enter_DefaultMode_from_RESET(void)
 {
 
-	// $[P0MDOUT - Port 0 Output Mode]
-	/***********************************************************************
-	 - P0.0 output is push-pull
-	 - P0.1 output is open-drain
-	 - P0.2 output is open-drain
-	 - P0.3 output is open-drain
-	 - P0.4 output is push-pull
-	 - P0.5 output is open-drain
-	 - P0.6 output is open-drain
-	 - P0.7 output is open-drain
-	 ***********************************************************************/
-	P0MDOUT = P0MDOUT_B0__PUSH_PULL | P0MDOUT_B1__OPEN_DRAIN
-			| P0MDOUT_B2__OPEN_DRAIN | P0MDOUT_B3__OPEN_DRAIN
-			| P0MDOUT_B4__PUSH_PULL | P0MDOUT_B5__OPEN_DRAIN
-			| P0MDOUT_B6__OPEN_DRAIN | P0MDOUT_B7__OPEN_DRAIN;
+	// FIXME: add comment to explain pin functions
+	P0MDOUT = B0__PUSH_PULL | B1__OPEN_DRAIN | B2__OPEN_DRAIN | B3__OPEN_DRAIN | B4__PUSH_PULL | B5__OPEN_DRAIN | B6__OPEN_DRAIN | B7__OPEN_DRAIN;
 
-	// $[P0SKIP - Port 0 Skip]
-	/***********************************************************************
-	 - P0.0 pin is skipped by the crossbar
-	 - P0.1 pin is skipped by the crossbar
-	 - P0.2 pin is skipped by the crossbar
-	 - P0.3 pin is skipped by the crossbar
-	 - P0.4 pin is not skipped by the crossbar
-	 - P0.5 pin is not skipped by the crossbar
-	 - P0.6 pin is skipped by the crossbar
-	 - P0.7 pin is skipped by the crossbar
-	 ***********************************************************************/
-	P0SKIP = P0SKIP_B0__SKIPPED | P0SKIP_B1__SKIPPED | P0SKIP_B2__SKIPPED
-			| P0SKIP_B3__SKIPPED | P0SKIP_B4__NOT_SKIPPED
-			| P0SKIP_B5__NOT_SKIPPED | P0SKIP_B6__SKIPPED | P0SKIP_B7__SKIPPED;
+	// add explanation
+	P0SKIP = B0__SKIPPED | B1__SKIPPED | B2__SKIPPED | B3__SKIPPED | B4__NOT_SKIPPED | B5__NOT_SKIPPED | B6__SKIPPED | B7__SKIPPED;
 
 
-	// $[P1MDOUT - Port 1 Output Mode]
-	/***********************************************************************
-	 - P1.0 output is push-pull
-	 - P1.1 output is open-drain
-	 - P1.2 output is open-drain
-	 - P1.3 output is open-drain
-	 - P1.4 output is open-drain
-	 - P1.5 output is open-drain
-	 - P1.6 output is push-pull
-	 ***********************************************************************/
+
 	// FIXME: correctly handle LED on sonoff different from LED on EFM8BB1LCK board
-	P1MDOUT = P1MDOUT_B0__PUSH_PULL | P1MDOUT_B1__OPEN_DRAIN
-			| P1MDOUT_B2__OPEN_DRAIN | P1MDOUT_B3__OPEN_DRAIN
-			| P1MDOUT_B4__PUSH_PULL | P1MDOUT_B5__PUSH_PULL
-			| P1MDOUT_B6__PUSH_PULL | P1MDOUT_B7__PUSH_PULL;
+	P1MDOUT = B0__PUSH_PULL | B1__OPEN_DRAIN
+			| B2__OPEN_DRAIN | B3__OPEN_DRAIN
+			| B4__PUSH_PULL | B5__PUSH_PULL
+			| B6__PUSH_PULL | B7__PUSH_PULL;
 
 	// $[P1SKIP - Port 1 Skip]
 	/***********************************************************************
@@ -74,9 +41,9 @@ void enter_DefaultMode_from_RESET(void)
 	 - P1.5 pin is skipped by the crossbar
 	 - P1.6 pin is skipped by the crossbar
 	 ***********************************************************************/
-	P1SKIP = P1SKIP_B0__SKIPPED | P1SKIP_B1__SKIPPED | P1SKIP_B2__SKIPPED
-			| P1SKIP_B3__NOT_SKIPPED | P1SKIP_B4__SKIPPED | P1SKIP_B5__SKIPPED
-			| P1SKIP_B6__SKIPPED | P1SKIP_B7__SKIPPED;
+	P1SKIP = B0__SKIPPED | B1__SKIPPED | B2__SKIPPED
+			| B3__NOT_SKIPPED | B4__SKIPPED | B5__SKIPPED
+			| B6__SKIPPED | B7__SKIPPED;
 
 
 	// $[XBR2 - Port I/O Crossbar 2]
@@ -84,7 +51,7 @@ void enter_DefaultMode_from_RESET(void)
 	 - Weak Pullups enabled 
 	 - Crossbar enabled
 	 ***********************************************************************/
-	XBR2 = XBR2_WEAKPUD__PULL_UPS_ENABLED | XBR2_XBARE__ENABLED;
+	XBR2 = WEAKPUD__PULL_UPS_ENABLED | XBARE__ENABLED;
 
 
 	// $[XBR0 - Port I/O Crossbar 0]
@@ -98,9 +65,9 @@ void enter_DefaultMode_from_RESET(void)
 	 - Asynchronous CP1 unavailable at Port pin
 	 - SYSCLK unavailable at Port pin
 	 ***********************************************************************/
-	XBR0 = XBR0_URT0E__ENABLED | XBR0_SPI0E__DISABLED | XBR0_SMB0E__DISABLED
-			| XBR0_CP0E__DISABLED | XBR0_CP0AE__DISABLED | XBR0_CP1E__DISABLED
-			| XBR0_CP1AE__DISABLED | XBR0_SYSCKE__DISABLED;
+	XBR0 = URT0E__ENABLED | SPI0E__DISABLED | SMB0E__DISABLED
+			| CP0E__DISABLED | CP0AE__DISABLED | CP1E__DISABLED
+			| CP1AE__DISABLED | SYSCKE__DISABLED;
 
 	// $[XBR1 - Port I/O Crossbar 1]
 	/***********************************************************************
@@ -110,23 +77,15 @@ void enter_DefaultMode_from_RESET(void)
 	 - T1 unavailable at Port pin
 	 - T2 unavailable at Port pin
 	 ***********************************************************************/
-	XBR1 = XBR1_PCA0ME__CEX0 | XBR1_ECIE__DISABLED | XBR1_T0E__DISABLED
-			| XBR1_T1E__DISABLED | XBR1_T2E__DISABLED;
+	XBR1 = PCA0ME__CEX0 | ECIE__DISABLED | T0E__DISABLED | T1E__DISABLED | T2E__DISABLED;
 
 
     //*****************************************
 	// - Clock derived from the Internal High-Frequency Oscillator
 	// - SYSCLK is equal to selected clock source divided by 1
 	//*****************************************
-	CLKSEL = CLKSEL_CLKSL__HFOSC | CLKSEL_CLKDIV__SYSCLK_DIV_1;
+	CLKSEL = CLKSL__HFOSC | CLKDIV__SYSCLK_DIV_1;
 
-
-	// save timer configuration
-	//uint8_t TCON_save;
-	//TCON_save = TCON;
-    
-	// stop timers
-	//TCON &= ~TCON_TR0__BMASK & ~TCON_TR1__BMASK;
 
 	// FIXME: what is this timer used for?
     // FIXME: what are the shifts used for?
@@ -139,17 +98,8 @@ void enter_DefaultMode_from_RESET(void)
     TH1 = 0xCB;
 
 	// FIXME: we removed timer3 resource to save on code space
-	// restore timer configuration
-	//TCON |= (TCON_save & TCON_TR0__BMASK) | (TCON_save & TCON_TR1__BMASK);
-	// Save Timer Configuration
-	//uint8_t TMR3CN0_TR3_save;
-	//TMR3CN0_TR3_save = TMR3CN0 & TMR3CN0_TR3__BMASK;
-	// Stop Timer
-	//TMR3CN0 &= ~(TMR3CN0_TR3__BMASK);
 
 
-	// Restore Timer Configuration
-	//TMR3CN0 |= TMR3CN0_TR3_save;
 
 	//**********************************************************************
 	// - System clock divided by 12
@@ -160,10 +110,7 @@ void enter_DefaultMode_from_RESET(void)
 	// - Timer 3 low byte uses the system clock
 	// - Timer 1 uses the clock defined by the prescale field, SCA
 	//***********************************************************************/
-	CKCON0 = CKCON0_SCA__SYSCLK_DIV_12 | CKCON0_T0M__SYSCLK
-			| CKCON0_T2MH__EXTERNAL_CLOCK | CKCON0_T2ML__SYSCLK
-			| CKCON0_T3MH__EXTERNAL_CLOCK | CKCON0_T3ML__SYSCLK
-			| CKCON0_T1M__PRESCALE;
+	CKCON0 = SCA__SYSCLK_DIV_12 | T0M__SYSCLK | T2MH__EXTERNAL_CLOCK | T2ML__SYSCLK | T3MH__EXTERNAL_CLOCK | T3ML__SYSCLK | T1M__PRESCALE;
 
 
 	/***********************************************************************
@@ -175,30 +122,23 @@ void enter_DefaultMode_from_RESET(void)
 	 - Timer 1 enabled when TR1 = 1 irrespective of INT1 logic level
 	 ***********************************************************************/
     // pg. 194  Setting the TR0 bit enables the timer when either GATE0 in the TMOD register is logic 0
-	TMOD = TMOD_T0M__MODE2 | TMOD_T1M__MODE2 | TMOD_CT0__TIMER
-			| TMOD_GATE0__DISABLED | TMOD_CT1__TIMER | TMOD_GATE1__DISABLED;
+	TMOD = T0M__MODE2 | T1M__MODE2 | CT0__TIMER | GATE0__DISABLED | CT1__TIMER | GATE1__DISABLED;
 
 
 	/***********************************************************************
 	 - Start Timer 0 running
 	 - Start Timer 1 running
 	 ***********************************************************************/
-	TCON |= TCON_TR0__RUN | TCON_TR1__RUN;
+	TCON |= TR0__RUN | TR1__RUN;
 
-	// Save Timer Configuration
-	//uint8_t TMR2CN0_TR2_save;
-	//TMR2CN0_TR2_save = TMR2CN0 & TMR2CN0_TR2__BMASK;
     
 	// Stop Timer
-	TMR2CN0 &= ~(TMR2CN0_TR2__BMASK);
+	TMR2CN0 &= ~(TR2__BMASK);
 
 
-	// Restore Timer Configuration
-	//TMR2CN0 |= TMR2CN0_TR2_save;
+	// 
+	PCA0CN0 = CR__STOP;
 
-	// $[PCA Off]
-	PCA0CN0_CR = PCA0CN0_CR__STOP;
-	// [PCA Off]$
 
 	// $[PCA0MD - PCA Mode]
 	/***********************************************************************
@@ -207,8 +147,7 @@ void enter_DefaultMode_from_RESET(void)
 	 - Enable a PCA Counter/Timer Overflow interrupt request when CF is set
 	 - Timer 0 overflow
 	 ***********************************************************************/
-	PCA0MD = PCA0MD_CIDL__NORMAL | PCA0MD_ECF__OVF_INT_ENABLED
-			| PCA0MD_CPS__T0_OVERFLOW;
+	PCA0MD = CIDL__NORMAL | ECF__OVF_INT_ENABLED | CPS__T0_OVERFLOW;
 
 	/***********************************************************************
 	 - PCA Counter/Timer Low Byte = 0xFF
@@ -221,15 +160,12 @@ void enter_DefaultMode_from_RESET(void)
 	 - Use default polarity
 	 - Use default polarity
 	 ***********************************************************************/
-	PCA0POL = PCA0POL_CEX0POL__INVERT | PCA0POL_CEX1POL__DEFAULT
-			| PCA0POL_CEX2POL__DEFAULT;
+	PCA0POL = CEX0POL__INVERT | CEX1POL__DEFAULT | CEX2POL__DEFAULT;
 
 
+	// FIXME: comment
+	PCA0PWM &= ~ARSEL__BMASK;
 
-	// $[PCA0 Settings Save]
-	// Select Capture/Compare register)
-	PCA0PWM &= ~PCA0PWM_ARSEL__BMASK;
-	// [PCA0 Settings Save]$
 
 	// $[PCA0CPM0 - PCA Channel 0 Capture/Compare Mode]
 	/***********************************************************************
@@ -242,10 +178,10 @@ void enter_DefaultMode_from_RESET(void)
 	 - Disable PWM function
 	 - Disable toggle function
 	 ***********************************************************************/
-	PCA0CPM0 = PCA0CPM0_CAPN__ENABLED | PCA0CPM0_ECCF__DISABLED
-			| PCA0CPM0_MAT__DISABLED | PCA0CPM0_PWM16__8_BIT
-			| PCA0CPM0_CAPP__ENABLED | PCA0CPM0_ECOM__DISABLED
-			| PCA0CPM0_PWM__DISABLED | PCA0CPM0_TOG__DISABLED;
+	PCA0CPM0 = CAPN__ENABLED | ECCF__DISABLED
+			| MAT__DISABLED | PWM16__8_BIT
+			| CAPP__ENABLED | ECOM__DISABLED
+			| PWM__DISABLED | TOG__DISABLED;
 
 
 	// $[EIE1 - Extended Interrupt Enable 1]
@@ -259,9 +195,9 @@ void enter_DefaultMode_from_RESET(void)
 	 - Disable all SMB0 interrupts
 	 - Enable interrupt requests generated by the TF3L or TF3H flags
 	 ***********************************************************************/
-	EIE1 = EIE1_EADC0__DISABLED | EIE1_EWADC0__DISABLED | EIE1_ECP0__DISABLED
-			| EIE1_ECP1__DISABLED | EIE1_EMAT__DISABLED | EIE1_EPCA0__ENABLED
-			| EIE1_ESMB0__DISABLED | EIE1_ET3__ENABLED;
+	EIE1 = EADC0__DISABLED | EWADC0__DISABLED | ECP0__DISABLED
+			| ECP1__DISABLED | EMAT__DISABLED | EPCA0__ENABLED
+			| ESMB0__DISABLED | ET3__ENABLED;
 
 	/***********************************************************************
 	 - Enable each interrupt according to its individual mask setting
@@ -273,7 +209,7 @@ void enter_DefaultMode_from_RESET(void)
 	 - Enable interrupt requests generated by the TF2L or TF2H flags
 	 - Enable UART0 interrupt
 	 ***********************************************************************/
-	IE = IE_EA__ENABLED | IE_EX0__DISABLED | IE_EX1__DISABLED
-			| IE_ESPI0__DISABLED | IE_ET0__DISABLED | IE_ET1__DISABLED
-			| IE_ET2__ENABLED | IE_ES0__ENABLED;
+	IE = EA__ENABLED | EX0__DISABLED | EX1__DISABLED
+			| ESPI0__DISABLED | ET0__DISABLED | ET1__DISABLED
+			| ET2__ENABLED | ES0__ENABLED;
 }

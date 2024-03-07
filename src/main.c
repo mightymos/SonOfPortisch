@@ -7,12 +7,11 @@
 // Includes
 //-----------------------------------------------------------------------------
 // SFR declarations
-// FIXME: eventually it seems like we would like to use definitions shipped with compiler
-#include <SI_EFM8BB1_Register_Enums.h> 
-//#include <EFM8BB1.h>
+#include <stdint.h>
+#include <EFM8BB1.h>
 
-#include "efm8_config.h"
-
+//#include "efm8_config.h"
+#define EFM8PDL_PCA0_USE_ISR	1
 
 // for printf_tiny()
 //#include <stdio.h>
@@ -40,10 +39,10 @@ volatile static bool ignoreUARTFlag = false;
 
 // sdcc manual section 3.8.1 general information
 // requires interrupt definition to appear or be included in main
-void UART0_ISR(void) __interrupt (UART0_IRQn);
-void PCA0_ISR(void)   __interrupt (PCA0_IRQn);
-void TIMER2_ISR(void) __interrupt (TIMER2_IRQn);
-//void TIMER3_ISR(void) __interrupt (TIMER3_IRQn);
+void UART0_ISR(void) __interrupt (4);
+void TIMER2_ISR(void) __interrupt (5);
+void PCA0_ISR(void)   __interrupt (11);
+//void TIMER3_ISR(void) __interrupt (14);
 
 //-----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -55,7 +54,7 @@ void TIMER2_ISR(void) __interrupt (TIMER2_IRQn);
 unsigned char __sdcc_external_startup(void)
 {
     // pg. 218, sec. 20.3 disable watchdog timer
-    IE_EA = 0;
+    EA = 0;
     WDTCN = 0xDE;
     WDTCN = 0xAD;
     
@@ -477,9 +476,9 @@ void main (void)
 					switch(uart_command)
 					{
 						case RF_CODE_RFIN:
-							PCA0CPM0 &= ~PCA0CPM0_ECCF__ENABLED;
+							PCA0CPM0 &= ~ECCF__ENABLED;
 							uart_put_RF_Data_Standard(RF_CODE_RFIN);
-							PCA0CPM0 |= PCA0CPM0_ECCF__ENABLED;
+							PCA0CPM0 |= ECCF__ENABLED;
 							break;
 
 						case RF_CODE_SNIFFING_ON:
@@ -491,15 +490,15 @@ void main (void)
 					RF_DATA_STATUS = 0;
 
 					// enable interrupt for RF receiving
-					PCA0CPM0 |= PCA0CPM0_ECCF__ENABLED;
+					PCA0CPM0 |= ECCF__ENABLED;
 				}
 				else
 				{
 					// disable interrupt for RF receiving while reading buffer
-					PCA0CPM0 &= ~PCA0CPM0_ECCF__ENABLED;
+					PCA0CPM0 &= ~ECCF__ENABLED;
 					result = buffer_out(&bucket);
 					// FIXME: reenable (should store previous and just restore that?)
-					PCA0CPM0 |= PCA0CPM0_ECCF__ENABLED;
+					PCA0CPM0 |= ECCF__ENABLED;
 					// handle new received buckets
 					if (result)
                     {
@@ -514,7 +513,7 @@ void main (void)
 				{
 					// disable interrupt for RF receiving while uart transfer
 					//FIXME: want to move outside of buried function
-					PCA0CPM0 &= ~PCA0CPM0_ECCF__ENABLED;
+					PCA0CPM0 &= ~ECCF__ENABLED;
 					
 					uart_put_RF_buckets(RF_CODE_SNIFFING_ON_BUCKET);
 
@@ -522,7 +521,7 @@ void main (void)
 					RF_DATA_STATUS = 0;
 
 					// enable interrupt for RF receiving
-					PCA0CPM0 |= PCA0CPM0_ECCF__ENABLED;
+					PCA0CPM0 |= ECCF__ENABLED;
 				}
 				else
 				{

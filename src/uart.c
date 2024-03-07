@@ -5,8 +5,9 @@
  *      Author:
  */
 
-#include <SI_EFM8BB1_Register_Enums.h>
-
+//#include <SI_EFM8BB1_Register_Enums.h>
+#include <stdint.h>
+#include <EFM8BB1.h>
 
 #include "efm8_config.h"
 
@@ -48,19 +49,19 @@ bool static volatile gTXFinished = true;
 //}
 
 
-void UART0_ISR(void) __interrupt (UART0_IRQn)
+void UART0_ISR(void) __interrupt (4)
 {
     // UART0 TX Interrupt
-    #define UART0_TX_IF SCON0_TI__BMASK
+    #define UART0_TX_IF TI__BMASK
     // UART0 RX Interrupt
-    #define UART0_RX_IF SCON0_RI__BMASK
+    #define UART0_RX_IF RI__BMASK
 
 	// buffer and clear flags immediately so we don't miss an interrupt while processing
 	uint8_t flags = SCON0 & (UART0_RX_IF | UART0_TX_IF);
 	SCON0 &= ~flags;
 
 	// receiving byte
-	if ((flags & SCON0_RI__SET))
+	if ((flags & RI__SET))
 	{
         // store received data in buffer
     	UART_RX_Buffer[UART_RX_Buffer_Position] = UART0_read();
@@ -74,7 +75,7 @@ void UART0_ISR(void) __interrupt (UART0_IRQn)
 	}
 
 	// transmit byte
-	if ((flags & SCON0_TI__SET))
+	if ((flags & TI__SET))
 	{
 		if (UART_Buffer_Write_Len > 0)
 		{
@@ -96,18 +97,18 @@ void UART0_ISR(void) __interrupt (UART0_IRQn)
 
 void UART0_init(UART0_RxEnable_t rxen, UART0_Width_t width, UART0_Multiproc_t mce)
 {
-    SCON0 &= ~(SCON0_SMODE__BMASK | SCON0_MCE__BMASK | SCON0_REN__BMASK);
+    SCON0 &= ~(SMODE__BMASK | MCE__BMASK | REN__BMASK);
     SCON0 = mce | rxen | width;
 }
 
 void UART0_initStdio(void)
 {
-    SCON0 |= SCON0_REN__RECEIVE_ENABLED | SCON0_TI__SET;
+    SCON0 |= REN__RECEIVE_ENABLED | TI__SET;
 }
 
 void UART0_initTxPolling(void)
 {
-    SCON0_TI = 1;
+    TI = 1;
 }
 
 void UART0_write(uint8_t value)
@@ -125,8 +126,8 @@ uint8_t UART0_read(void)
     int putchar (int c)
     {
         // assumes UART is initialized
-        while (!SCON0_TI);
-        SCON0_TI = 0;
+        while (!TI);
+        TI = 0;
         SBUF0 = c;
         return c;
     }

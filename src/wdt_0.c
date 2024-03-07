@@ -15,10 +15,10 @@ void WDT0_start(void)
 void WDT0_stop(void)
 {
     bool ea = IE_EA;
-    IE_EA = 0;
+    EA = 0;
     WDTCN = 0xDE;
     WDTCN = 0xAD;
-    IE_EA = ea;
+    EA = ea;
 }
 
 void WDT0_feed(void)
