@@ -311,12 +311,14 @@ void main (void)
 #if (SNIFFING_ON_AT_STARTUP)
 	// set desired sniffing type to PT2260
 	sniffing_mode = STANDARD;
+	//sniffing_mode = ADVANCED;
 	PCA0_DoSniffing();
 	rf_state = RF_IDLE;
 
-	// FIXME: hack since we remove last_sniffing_command
+	// FIXME: add comment
 	idle_uart_command = RF_CODE_RFIN;
 	uart_command = RF_CODE_RFIN;
+	//uart_command = RF_CODE_SNIFFING_ON_BUCKET;
 #else
 	PCA0_StopSniffing();
 	rf_state = RF_IDLE;

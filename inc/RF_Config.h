@@ -10,12 +10,13 @@
  *  Also a option is not including the 0xB1 bucket sniffing as this is only needed to define new protocols
  */
 
+
 #define INCLUDE_BUCKET_SNIFFING					1
 
 // typical protocols, disable here!             Enable	Remarks
 #define EFM8BB1_SUPPORT_PT226X_PROTOCOL			1		// PT2260, EV1527,... original RF bridge protocol
-#define EFM8BB1_SUPPORT_HT6P20X_PROTOCOL		1		// HT6P20X chips
-#define EFM8BB1_SUPPORT_HT12_PROTOCOL			1		// HT12A/HT12E chips
+#define EFM8BB1_SUPPORT_HT6P20X_PROTOCOL		0		// HT6P20X chips
+#define EFM8BB1_SUPPORT_HT12_PROTOCOL			0		// HT12A/HT12E chips
 
 // more protocols, enable here!                 Enable  Remarks
 #define EFM8BB1_SUPPORT_Rohrmotor24_PROTOCOL	0		// Rohrmotor24
@@ -35,3 +36,23 @@
 #define EFM8BB1_SUPPORT_BY302_PROTOCOL			0		// Byron BY302 Doorbell, Issue #102
 #define EFM8BB1_SUPPORT_DT_5514_PROTOCOL		0		// 5514 SILENT Dual Tech, Issue #104
 #define EFM8BB1_SUPPORT_H13726_PROTOCOL			0		// Auriol H13726 Weather Station, Issue #106
+
+// Enabled Protocols
+//(xram size)
+//(flash size)
+//
+//One
+//(247)
+//7409
+//
+//Two
+//(251)
+//7775
+//
+//Three
+//(255)
+//7907
+//
+//Four
+//(259) exceeds maximum
+//8059
