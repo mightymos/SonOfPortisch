@@ -224,7 +224,7 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration,
 
 			// FIXME: it can be confusing to bury things like this in functions
 			// disable interrupt for RF receiving while uart transfer
-			//PCA0CPM0 &= ~PCA0CPM0_ECCF__ENABLED;
+			//PCA0CPM0 &= ~ECCF__ENABLED;
 
 			// set status
 			RF_DATA_STATUS = i;
