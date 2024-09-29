@@ -415,10 +415,10 @@ void SetTimer0Overflow(uint8_t T0_Overflow)
 	TH0 = T0_Overflow;
 }
 
-uint8_t PCA0_DoSniffing(void)
+void PCA0_DoSniffing(void)
 {
 	// FIXME:
-	uint8_t ret = 0;
+	//uint8_t ret = 0;
 
     // FIXME: possible to remove to save code size?
 	memset(status, 0, sizeof(PROTOCOL_STATUS) * NUM_OF_PROTOCOLS);
@@ -442,7 +442,7 @@ uint8_t PCA0_DoSniffing(void)
 	RF_DATA_STATUS = 0;
 
 
-	return ret;
+	//return ret;
 }
 
 void PCA0_StopSniffing(void)

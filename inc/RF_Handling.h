@@ -63,7 +63,7 @@ extern __xdata uint8_t bucket_count;
 
 extern bool buffer_out(uint16_t* bucket);
 extern void HandleRFBucket(uint16_t duration, bool high_low);
-extern uint8_t PCA0_DoSniffing(void);
+extern void PCA0_DoSniffing(void);
 extern void PCA0_StopSniffing(void);
 extern void SendRFBuckets(uint16_t* buckets, uint8_t* rfdata, uint8_t data_len);
 extern void SendBuckets(

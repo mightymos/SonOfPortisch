@@ -73,9 +73,9 @@
 #define TDATA  P0_0
 // Sonoff Bridge
 // Sonoff with black case
-#define LED    P1_0
+//#define LED    P1_0
 // EFM8BB1LCK board (uncomment only one LED line)
-//#define LED    P1_4
+#define LED    P1_4
 #define RDATA  P1_3
 #define BUZZER P1_6
 

@@ -30,7 +30,7 @@
 // uart state machine
 __xdata uart_state_t uart_state = IDLE;
 __xdata uart_command_t uart_command = NONE;
-__xdata uart_command_t idle_uart_command;
+__xdata uart_command_t last_sniffing_command;
 __xdata uint8_t uartPacket[10];
 
 
@@ -100,15 +100,13 @@ void serial_loopback(void)
 
 
 
-void uart_state_machine(const unsigned int rxdata)
+void uart_state_machine(const unsigned int rxdata, rf_state_t* rf_state)
 {
 	// debug: echo sent character
 	//uart_putc(rxdata & 0xff);
 
 	// FIXME: add comment
 	//idleResetCount = 0;
-
-	__xdata rf_state_t rf_state;
 
     __xdata uint8_t tr_repeats = 0;
 
@@ -150,8 +148,8 @@ void uart_state_machine(const unsigned int rxdata)
 					break;
 				case RF_DO_BEEP:
 					// stop sniffing while handling received data
-					//PCA0_StopSniffing();
-					//rf_state = RF_IDLE;
+					PCA0_StopSniffing();
+					*rf_state = RF_IDLE;
 					uart_state = RECEIVING;
 					position = 0;
 					packetLength = 2;
@@ -159,18 +157,19 @@ void uart_state_machine(const unsigned int rxdata)
 				case RF_ALTERNATIVE_FIRMWARE:
 					break;
 				case RF_CODE_SNIFFING_ON:
-					//sniffing_mode = ADVANCED;
-					//PCA0_DoSniffing();
-					//last_sniffing_command = RF_CODE_SNIFFING_ON;
-					//rf_state = RF_IDLE;
+					sniffing_mode = ADVANCED;
+					PCA0_DoSniffing();
+					last_sniffing_command = RF_CODE_SNIFFING_ON;
+					*rf_state = RF_IDLE;
 					break;
 				case RF_CODE_SNIFFING_OFF:
 					// set desired RF protocol PT2260
-					//sniffing_mode = STANDARD;
+					sniffing_mode = STANDARD;
 					// re-enable default RF_CODE_RFIN sniffing
-					//PCA0_DoSniffing();
-					//last_sniffing_command = RF_CODE_RFIN;
-					//rf_state = RF_IDLE;
+					PCA0_DoSniffing();
+					uart_command          = RF_CODE_RFIN;
+					last_sniffing_command = RF_CODE_RFIN;
+					*rf_state = RF_IDLE;
 					break;
 				case RF_CODE_RFOUT_NEW:
 					//tr_repeats = RF_TRANSMIT_REPEATS;
@@ -179,16 +178,18 @@ void uart_state_machine(const unsigned int rxdata)
 					//uart_state = RECEIVE_LEN;
 					break;
 				case RF_CODE_SNIFFING_ON_BUCKET:
-					//last_sniffing_command = PCA0_DoSniffing();
-					//rf_state = RF_IDLE;
+					PCA0_DoSniffing();
+					last_sniffing_command = RF_CODE_SNIFFING_ON_BUCKET;
+					*rf_state = RF_IDLE;
 					break;
 				case RF_CODE_LEARN_NEW:
 					break;
 				case RF_CODE_ACK:
 					// re-enable default RF_CODE_RFIN sniffing
-					//last_sniffing_command = PCA0_DoSniffing();
+					PCA0_DoSniffing();
+					uart_command = last_sniffing_command;
 					uart_state = IDLE;
-					rf_state = RF_IDLE;
+					*rf_state = RF_IDLE;
 					break;
 
 				// unknown command
@@ -242,6 +243,9 @@ void uart_state_machine(const unsigned int rxdata)
 						// send acknowledge
 						uart_put_command(RF_CODE_ACK);
 					case RF_CODE_ACK:
+						// FIXME:
+						// original enabled or disabled uart, need to comment on this
+						// as I recall we use a ring buffer now to avoid need to disable
 						break;
 					case RF_CODE_RFOUT_BUCKET:
 						tr_repeats = uartPacket[1] + 1;
@@ -260,7 +264,7 @@ void main (void)
 	// for buzzer (milliseconds)
 	//const uint16_t startupDelay = 100;
 	// longer for LED
-	__code uint16_t startupDelay = 3000;
+	const uint16_t startupDelay = 3000;
 
 	// changed by external hardware, so must specify volatile type so not optimized out
 	volatile unsigned int rxdata = UART_NO_DATA;
@@ -312,12 +316,23 @@ void main (void)
 	// set desired sniffing type to PT2260
 	sniffing_mode = STANDARD;
 	//sniffing_mode = ADVANCED;
+
+	// original dosniffing function operated as follows
+	// note: often return value is assigned to last_command in main
+	// ret = dosniffing(active)
+	// ret = last_command;
+	//
+	// uart_command = active;
+	// last_command = active;
+	//
+	// return ret;
 	PCA0_DoSniffing();
 	rf_state = RF_IDLE;
 
 	// FIXME: add comment
-	idle_uart_command = RF_CODE_RFIN;
 	uart_command = RF_CODE_RFIN;
+	last_sniffing_command = RF_CODE_RFIN;
+	//uart_command = RF_CODE_SNIFFING_ON;
 	//uart_command = RF_CODE_SNIFFING_ON_BUCKET;
 #else
 	PCA0_StopSniffing();
@@ -414,7 +429,7 @@ void main (void)
 		}
 		else
 		{
-			uart_state_machine(rxdata);
+			uart_state_machine(rxdata, &rf_state);
 		}
 
 		/*------------------------------------------
@@ -506,7 +521,7 @@ void main (void)
 				// send acknowledge
 				// send uart command
 				uart_put_command(RF_CODE_ACK);
-				uart_command = idle_uart_command;
+				uart_command = last_sniffing_command;
 				break;
 
 			// host was requesting the firmware version
@@ -514,7 +529,7 @@ void main (void)
 
 				// send firmware version
 				uart_put_command(FIRMWARE_VERSION);
-				uart_command = idle_uart_command;
+				uart_command = last_sniffing_command;
 				break;
 
 			default:
