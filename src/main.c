@@ -30,7 +30,7 @@
 // uart state machine
 __xdata uart_state_t uart_state = IDLE;
 __xdata uart_command_t uart_command = NONE;
-__xdata uart_command_t last_sniffing_command;
+__xdata uart_command_t last_sniffing_command = NONE;
 __xdata uint8_t uartPacket[10];
 
 

@@ -112,18 +112,17 @@ bool CheckRFSyncBucket(uint16_t duration, uint16_t bucket)
 	return CheckRFBucket(duration, bucket, delta);
 }
 
-bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration,
-		uint16_t *pulses,
-		uint8_t* bit0, uint8_t bit0_size,
-		uint8_t* bit1, uint8_t bit1_size,
-		uint8_t bit_count)
+bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses, uint8_t* bit0, uint8_t bit0_size, uint8_t* bit1, uint8_t bit1_size, uint8_t bit_count)
 {
 	uint8_t last_bit = 0;
+	uint8_t count;
 
 	// do init before first bit received
-	if (BITS_GET(status[i]) == 0)
+	count = (uint8_t)status[i].bit_count;
+	if (count == 0)
 	{
-		ABP_RESET(status[i]);
+		//ABP_RESET(status[i]);
+		status[i].actual_bit_of_byte = 8;
 		memset(RF_DATA, 0, sizeof(RF_DATA));
 		crc = 0x00;
 	}
@@ -170,43 +169,60 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration,
 	if ((BIT0_GET(status[i]) == 0) && (BIT1_GET(status[i]) == 0))
 	{
 		led_off();
-		START_CLEAR(status[i]);
+		//START_CLEAR(status[i]);
+		status[i].status = 0;
+		status[i].bit_count = 0;
+		status[i].actual_bit_of_byte = 0;
 		return false;
 	}
 
 	// on the last bit do not check the last bucket
 	// because maybe this is not correct because a
 	// repeat delay
-	if (BITS_GET(status[i]) == bit_count - 1)
+	count = (uint8_t)status[i].bit_count;
+	if (count == bit_count - 1)
 		last_bit = 1;
 
 	// check if bit 0 is finished
 	if (BIT0_GET(status[i]) == bit0_size - last_bit)
 	{
 		led_on();
-		BITS_CLEAR(status[i]);
-		BITS_INC(status[i]);
-		ABP_DEC(status[i]);
+		//BITS_CLEAR(status[i]);
+		status[i].status &= 0xF00F;
+		//BITS_INC(status[i]);
+		status[i].bit_count += 1;
+		//ABP_DEC(status[i]);
+		status[i].actual_bit_of_byte -= 1;
 	}
 	// check if bit 1 is finished
 	else if (BIT1_GET(status[i]) == bit1_size - last_bit)
 	{
 		led_on();
-		BITS_CLEAR(status[i]);
-		BITS_INC(status[i]);
-		ABP_DEC(status[i]);
-		RF_DATA[(BITS_GET(status[i]) - 1) >> 3] |= (1 << ABP_GET(status[i]));
+		//BITS_CLEAR(status[i]);
+		status[i].status &= 0xF00F;
+		//BITS_INC(status[i]);
+		status[i].bit_count += 1;
+		//ABP_DEC(status[i]);
+		status[i].actual_bit_of_byte -= 1;
+		// FIXME: eliminate more macros
+		//RF_DATA[(BITS_GET(status[i]) - 1) >> 3] |= (1 << ABP_GET(status[i]));
+		count = (uint8_t)status[i].bit_count;
+		RF_DATA[(count - 1) >> 3] |= (1 << (uint8_t)((status[i]).actual_bit_of_byte));
 	}
 
 	// 8 bits are done, compute crc of data
-	if (ABP_GET(status[i]) == 0)
+	//if (ABP_GET(status[i]) == 0)
+	if ((uint8_t)(status[i].actual_bit_of_byte) == 0)
 	{
-		crc = Compute_CRC8_Simple_OneByte(crc ^ RF_DATA[(BITS_GET(status[i]) - 1) >> 3]);
-		ABP_RESET(status[i]);
+		count = (uint8_t)status[i].bit_count;
+		crc = Compute_CRC8_Simple_OneByte(crc ^ RF_DATA[(count - 1) >> 3]);
+		//ABP_RESET(status[i]);
+		status[i].actual_bit_of_byte = 8;
 	}
 
 	// check if all bit got collected
-	if (BITS_GET(status[i]) >= bit_count)
+	count = (uint8_t)status[i].bit_count;
+	if (count >= bit_count)
 	{
 		// check if timeout timer for crc is finished
 		if (IsTimer2Finished())
@@ -232,7 +248,12 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration,
 		}
 
 		led_off();
-		START_CLEAR(status[i]);
+
+		//START_CLEAR(status[i]);
+		status[i].status = 0;
+		status[i].bit_count = 0;
+		status[i].actual_bit_of_byte = 0;
+		
 		return true;
 	}
 
@@ -242,6 +263,8 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration,
 void HandleRFBucket(uint16_t duration, bool high_low)
 {
 	uint8_t i = 0;
+	bool result;
+	//uint8_t count;
 
 	// if noise got received stop all running decodings
 	if (duration < MIN_BUCKET_LENGTH)
@@ -249,7 +272,10 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 		// compiler will optimize this out if NUM_OF_PROTOCOLS = 1
 		for (i = 0; i < NUM_OF_PROTOCOLS; i++)
 		{
-			START_CLEAR(status[i]);
+			//START_CLEAR(status[i]);
+			status[i].status = 0;
+			status[i].bit_count = 0;
+			status[i].actual_bit_of_byte = 0;
 		}
 
 		led_off();
@@ -281,11 +307,7 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 			// if sync is finished check if bit0 or bit1 is starting
 			else if (START_GET(status[0]) == 2)
 			{
-				DecodeBucket(0, high_low, duration,
-						buckets,
-						PROTOCOL_DATA[0].bit0.dat, PROTOCOL_DATA[0].bit0.size,
-						PROTOCOL_DATA[0].bit1.dat, PROTOCOL_DATA[0].bit1.size,
-						PROTOCOL_DATA[0].bit_count);
+				DecodeBucket(0, high_low, duration, buckets, PROTOCOL_DATA[0].bit0.dat, PROTOCOL_DATA[0].bit0.size, PROTOCOL_DATA[0].bit1.dat, PROTOCOL_DATA[0].bit1.size, PROTOCOL_DATA[0].bit_count);
 			}
 			break;
 
@@ -307,18 +329,18 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 					}
 					else
 					{
-						START_CLEAR(status[i]);
+						//START_CLEAR(status[i]);
+						status[i].status = 0;
+						status[i].bit_count = 0;
+						status[i].actual_bit_of_byte = 0;
 						continue;
 					}
 				}
 				// if sync is finished check if bit0 or bit1 is starting
 				else if (START_GET(status[i]) == PROTOCOL_DATA[i].start.size)
 				{
-					if (DecodeBucket(i, high_low, duration,
-							PROTOCOL_DATA[i].buckets.dat,
-							PROTOCOL_DATA[i].bit0.dat, PROTOCOL_DATA[i].bit0.size,
-							PROTOCOL_DATA[i].bit1.dat, PROTOCOL_DATA[i].bit1.size,
-							PROTOCOL_DATA[i].bit_count))
+					result = DecodeBucket(i, high_low, duration, PROTOCOL_DATA[i].buckets.dat, PROTOCOL_DATA[i].bit0.dat, PROTOCOL_DATA[i].bit0.size, PROTOCOL_DATA[i].bit1.dat, PROTOCOL_DATA[i].bit1.size, PROTOCOL_DATA[i].bit_count);
+					if (result)
 						return;
 				}
 			}
@@ -510,13 +532,7 @@ void SendRFBuckets(uint16_t* buckets, uint8_t* rfdata, uint8_t data_len)
 
 #endif
 
-void SendBuckets(uint16_t *pulses,
-		uint8_t* start, uint8_t start_size,
-		uint8_t* bit0, uint8_t bit0_size,
-		uint8_t* bit1, uint8_t bit1_size,
-		uint8_t* end, uint8_t end_size,
-		uint8_t bit_count,
-		uint8_t* rfdata)
+void SendBuckets(uint16_t *pulses, uint8_t* start, uint8_t start_size, uint8_t* bit0, uint8_t bit0_size, uint8_t* bit1, uint8_t bit1_size, uint8_t* end, uint8_t end_size, uint8_t bit_count, uint8_t* rfdata)
 {
 	uint8_t i, a;
 	uint8_t actual_byte = 0;
@@ -565,15 +581,7 @@ void SendBuckets(uint16_t *pulses,
 
 void SendBucketsByIndex(uint8_t index, uint8_t* rfdata)
 {
-	SendBuckets(
-			PROTOCOL_DATA[index].buckets.dat,
-			PROTOCOL_DATA[index].start.dat, PROTOCOL_DATA[index].start.size,
-			PROTOCOL_DATA[index].bit0.dat, PROTOCOL_DATA[index].bit0.size,
-			PROTOCOL_DATA[index].bit1.dat, PROTOCOL_DATA[index].bit1.size,
-			PROTOCOL_DATA[index].end.dat, PROTOCOL_DATA[index].end.size,
-			PROTOCOL_DATA[index].bit_count,
-			rfdata
-			);
+	SendBuckets(PROTOCOL_DATA[index].buckets.dat, PROTOCOL_DATA[index].start.dat, PROTOCOL_DATA[index].start.size, PROTOCOL_DATA[index].bit0.dat, PROTOCOL_DATA[index].bit0.size, PROTOCOL_DATA[index].bit1.dat, PROTOCOL_DATA[index].bit1.size, PROTOCOL_DATA[index].end.dat, PROTOCOL_DATA[index].end.size, PROTOCOL_DATA[index].bit_count, rfdata);
 }
 
 #if INCLUDE_BUCKET_SNIFFING == 1
