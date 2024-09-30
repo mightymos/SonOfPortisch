@@ -181,7 +181,9 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 	// repeat delay
 	count = (uint8_t)status[i].bit_count;
 	if (count == bit_count - 1)
+	{
 		last_bit = 1;
+	}
 
 	// check if bit 0 is finished
 	if (BIT0_GET(status[i]) == bit0_size - last_bit)
@@ -270,6 +272,8 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 	if (duration < MIN_BUCKET_LENGTH)
 	{
 		// compiler will optimize this out if NUM_OF_PROTOCOLS = 1
+		// FIXME: this or something related seems to cause failure to even attempt advanced sniffing
+		//        therefore for now at least two protocols should be enabled
 		for (i = 0; i < NUM_OF_PROTOCOLS; i++)
 		{
 			//START_CLEAR(status[i]);
@@ -307,11 +311,13 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 			// if sync is finished check if bit0 or bit1 is starting
 			else if (START_GET(status[0]) == 2)
 			{
+				// we place this all on one line so that debugger does not get confused regarding line numbers
 				DecodeBucket(0, high_low, duration, buckets, PROTOCOL_DATA[0].bit0.dat, PROTOCOL_DATA[0].bit0.size, PROTOCOL_DATA[0].bit1.dat, PROTOCOL_DATA[0].bit1.size, PROTOCOL_DATA[0].bit_count);
 			}
 			break;
 
 		case ADVANCED:
+			// FIXME: see note above for similar loop, this gets optimized out if only one protocol
 			// check each protocol for each bucket
 			for (i = 0; i < NUM_OF_PROTOCOLS; i++)
 			{
