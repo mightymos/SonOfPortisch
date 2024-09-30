@@ -37,9 +37,9 @@
 
 //#define BITS_CLEAR(x) ((x).status &= 0xF00F)
 
-#define END_GET(x) (uint8_t)((x).status & 0x0F)
-#define END_INC(x) ((x).status = END_GET(x) | ((x).status & 0xFFF0))
-#define END_CLEAR(x) ((x).status &= 0xFFF0)
+//#define END_GET(x) (uint8_t)((x).status & 0x0F)
+//#define END_INC(x) ((x).status = END_GET(x) | ((x).status & 0xFFF0))
+//#define END_CLEAR(x) ((x).status &= 0xFFF0)
 
 //#define BITS_GET(x) (uint8_t)((x).bit_count)
 //#define BITS_INC(x) ((x).bit_count += 1)
@@ -56,7 +56,7 @@
 
 #define HIGH(x) ((x) | 0x08)
 #define LOW(x) ((x) & 0x07)
-#define BUCKET_NR(x) ((x) & 0x07)
+//#define BUCKET_NR(x) ((x) & 0x07)
 #define BUCKET_STATE(x) (bool)(((x) & 0x08) >> 3)
 
 // USER PROTOTYPES
