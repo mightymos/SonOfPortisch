@@ -777,7 +777,7 @@ void Bucket_Received(uint16_t duration, bool high_low, rf_state_t* rf_state)
 
 					// disable interrupt for RF receiving while uart transfer
 					//FIXME: want to move outside of buried function
-					//PCA0CPM0 &= ~PCA0CPM0_ECCF__ENABLED;
+					PCA0CPM0 &= ~ECCF__ENABLED;
 
 					// add sync bucket number to data
 					RF_DATA[0] |= ((bucket_count << 4) | ((bucket_sync & 0x8000) >> 8));

@@ -175,7 +175,7 @@ void uart_state_machine(const unsigned int rxdata, rf_state_t* rf_state)
 					//tr_repeats = RF_TRANSMIT_REPEATS;
 					// no break
 				case RF_CODE_RFOUT_BUCKET:
-					//uart_state = RECEIVE_LEN;
+					uart_state = RECEIVE_LEN;
 					break;
 				case RF_CODE_SNIFFING_ON_BUCKET:
 					PCA0_DoSniffing();
@@ -505,7 +505,7 @@ void main (void)
 					}
 				}
 
-			break;
+				break;
 
 			// do a beep
 			case RF_DO_BEEP:
@@ -535,7 +535,7 @@ void main (void)
 			default:
 				// FIXME: not sure if this makes sense
 				uart_command = NONE;
-			break;
+				break;
 		} //switch(uart_command)
 	} //while (1)
 }
