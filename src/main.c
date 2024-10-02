@@ -276,7 +276,7 @@ void main (void)
     //__xdata uint16_t index = 0;
 
 	// FIXME: add comment
-    __xdata uint16_t idleResetCount = 0;
+    uint16_t idleResetCount = 0;
 
 	// prefer bool type in internel ram to take advantage of bit addressable locations
 	bool result;
@@ -501,7 +501,7 @@ void main (void)
 					result = buffer_out(&bucket);
 					if (result)
 					{
-						Bucket_Received(bucket & 0x7FFF, (bool)((bucket & 0x8000) >> 15), &rf_state);
+						Bucket_Received(bucket & 0x7FFF, (bool)((bucket & 0x8000) >> 15));
 					}
 				}
 

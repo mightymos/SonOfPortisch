@@ -304,7 +304,7 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 
 void HandleRFBucket(uint16_t duration, bool high_low)
 {
-	uint8_t i = 0;
+	uint8_t i;
 	
 	uint8_t index;
 	uint8_t count;
@@ -547,6 +547,8 @@ void PCA0_StopSniffing(void)
 bool SendSingleBucket(bool high_low, uint16_t bucket_time)
 {
 	// switch to high_low
+	//LED = high_low;
+	//T_DATA = high_low;
     if (high_low)
     {
         led_on();
@@ -556,8 +558,6 @@ bool SendSingleBucket(bool high_low, uint16_t bucket_time)
         tdata_off();
     }
 
-	//LED = high_low;
-	//T_DATA = high_low;
 	
 	// FIXME: remove need for Timer3 resource
     //InitTimer3_us(10, bucket_time);
@@ -699,18 +699,21 @@ bool findBucket(uint16_t duration, uint8_t *index)
 	return false;
 }
 
-void Bucket_Received(uint16_t duration, bool high_low, rf_state_t* rf_state)
+void Bucket_Received(uint16_t duration, bool high_low)
 {
+	//FIXME: should be a global that controls radio output state
+	rf_state_t rf_state;
+
 	uint8_t bucket_index;
 
 	// if pulse is too short reset status
 	if (duration < MIN_BUCKET_LENGTH)
 	{
-		*rf_state = RF_IDLE;
+		rf_state = RF_IDLE;
 		return;
 	}
 
-	switch (*rf_state)
+	switch (rf_state)
 	{
 		// check if we maybe receive a sync
 		case RF_IDLE:
@@ -720,7 +723,7 @@ void Bucket_Received(uint16_t duration, bool high_low, rf_state_t* rf_state)
 			{
 				bucket_sync = duration | ((uint16_t)high_low << 15);
 				bucket_count_sync_1 = 0;
-				*rf_state = RF_BUCKET_REPEAT;
+				rf_state = RF_BUCKET_REPEAT;
 			}
 			break;
 
@@ -738,11 +741,11 @@ void Bucket_Received(uint16_t duration, bool high_low, rf_state_t* rf_state)
 					bucket_count_sync_2 = 0;
 					crc = 0x00;
 					RF_DATA[0] = 0;
-					*rf_state = RF_BUCKET_IN_SYNC;
+					rf_state = RF_BUCKET_IN_SYNC;
 				}
 				else
 				{
-					*rf_state = RF_IDLE;
+					rf_state = RF_IDLE;
 				}
 			}
 			// check if duration is longer than sync bucket restart
@@ -760,7 +763,7 @@ void Bucket_Received(uint16_t duration, bool high_low, rf_state_t* rf_state)
 			// no more buckets are possible, reset
 			if (bucket_count_sync_1 >= RF_DATA_BUFFERSIZE << 1)
 			{
-				*rf_state = RF_IDLE;
+				rf_state = RF_IDLE;
 			}
 
 			break;
@@ -784,7 +787,7 @@ void Bucket_Received(uint16_t duration, bool high_low, rf_state_t* rf_state)
 					if (bucket_count > ARRAY_LENGTH(buckets))
 					{
 						// restart sync
-						*rf_state = RF_IDLE;
+						rf_state = RF_IDLE;
 					}
 				}
 
@@ -805,7 +808,7 @@ void Bucket_Received(uint16_t duration, bool high_low, rf_state_t* rf_state)
 					if (actual_byte > RF_DATA_BUFFERSIZE)
 					{
 						// restart sync
-						*rf_state = RF_IDLE;
+						rf_state = RF_IDLE;
 					}
 				}
 
@@ -840,13 +843,14 @@ void Bucket_Received(uint16_t duration, bool high_low, rf_state_t* rf_state)
 				}
 
 				led_off();
-				*rf_state = RF_IDLE;
+
+				rf_state = RF_IDLE;
 			}
 			// next bucket after receiving all data buckets was not a sync bucket, restart
 			else
 			{
 				// restart sync
-				*rf_state = RF_IDLE;
+				rf_state = RF_IDLE;
 			}
 			break;
 	}

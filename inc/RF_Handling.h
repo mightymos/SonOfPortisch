@@ -75,6 +75,6 @@ extern void SendBuckets(
 		uint8_t bit_count,
 		uint8_t* rfdata);
 extern void SendBucketsByIndex(uint8_t index, uint8_t* rfdata);
-extern void Bucket_Received(uint16_t duration, bool high_low, rf_state_t* rf_state);
+extern void Bucket_Received(uint16_t duration, bool high_low);
 
 #endif // INC_RF_HANDLING_H_
