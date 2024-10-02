@@ -23,17 +23,17 @@
 
 #define ARRAY_LENGTH(array) (sizeof((array))/sizeof((array)[0]))
 
-#define START_GET(x) (uint8_t)(((x).status >> 12) & 0x0F)
-#define START_INC(x) ((x).status = ((START_GET(x) + 1) << 12) | ((x).status & 0x0FFF))
+//#define START_GET(x) (uint8_t)(((x).status >> 12) & 0x0F)
+//#define START_INC(x) ((x).status = ((START_GET(x) + 1) << 12) | ((x).status & 0x0FFF))
 //#define START_CLEAR(x) ((x).status = 0, (x).bit_count = 0, (x).actual_bit_of_byte = 0)
 
-#define BIT0_GET(x) (uint8_t)(((x).status >> 8) & 0x0F)
-#define BIT0_INC(x) ((x).status = ((BIT0_GET(x) + 1) << 8) | ((x).status & 0xF0FF))
-#define BIT0_CLEAR(x) ((x).status &= 0xF0FF)
+//#define BIT0_GET(x) (uint8_t)(((x).status >> 8) & 0x0F)
+//#define BIT0_INC(x) ((x).status = ((BIT0_GET(x) + 1) << 8) | ((x).status & 0xF0FF))
+//#define BIT0_CLEAR(x) ((x).status &= 0xF0FF)
 
-#define BIT1_GET(x) (uint8_t)(((x).status >> 4) & 0x0F)
-#define BIT1_INC(x) ((x).status = ((BIT1_GET(x) + 1) << 4) | ((x).status & 0xFF0F))
-#define BIT1_CLEAR(x) ((x).status &= 0xFF0F)
+//#define BIT1_GET(x) (uint8_t)(((x).status >> 4) & 0x0F)
+//#define BIT1_INC(x) ((x).status = ((BIT1_GET(x) + 1) << 4) | ((x).status & 0xFF0F))
+//#define BIT1_CLEAR(x) ((x).status &= 0xFF0F)
 
 //#define BITS_CLEAR(x) ((x).status &= 0xF00F)
 
@@ -56,8 +56,9 @@
 
 #define HIGH(x) ((x) | 0x08)
 #define LOW(x) ((x) & 0x07)
+
 //#define BUCKET_NR(x) ((x) & 0x07)
-#define BUCKET_STATE(x) (bool)(((x) & 0x08) >> 3)
+//#define BUCKET_STATE(x) (bool)(((x) & 0x08) >> 3)
 
 // USER PROTOTYPES
 //SI_SBIT(LED,    SFR_P1, 0);		// LED

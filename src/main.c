@@ -534,7 +534,7 @@ void main (void)
 
 			default:
 				// FIXME: not sure if this makes sense
-				uart_command = NONE;
+				uart_command = last_sniffing_command;
 				break;
 		} //switch(uart_command)
 	} //while (1)
