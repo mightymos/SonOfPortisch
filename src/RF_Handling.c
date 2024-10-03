@@ -432,7 +432,7 @@ void buffer_in(uint16_t bucket)
 bool buffer_out(uint16_t* bucket)
 {
 	//FIXME: may need to do this type of save outside of function call
-	//uint8_t backup_PCA0CPM0 = PCA0CPM0;
+	uint8_t backup_PCA0CPM0 = PCA0CPM0;
 
 	// check if buffer is empty
 	if (buffer_buckets_write == buffer_buckets_read)
@@ -454,7 +454,7 @@ bool buffer_out(uint16_t* bucket)
 	}
 
 	// reset register
-	//PCA0CPM0 = backup_PCA0CPM0;
+	PCA0CPM0 = backup_PCA0CPM0;
 
 	return true;
 }
@@ -672,10 +672,16 @@ bool probablyFooter(uint16_t duration)
 
 bool matchesFooter(uint16_t duration, bool high_low)
 {
-	if (!((bucket_sync & 0x8000) >> 15) && high_low)
-		return false;
+	bool result;
 
-	return CheckRFSyncBucket(duration, bucket_sync & 0x7FFF);
+	if (!((bucket_sync & 0x8000) >> 15) && high_low)
+	{
+		return false;
+	}
+
+	result = CheckRFSyncBucket(duration, bucket_sync & 0x7FFF);
+
+	return result;
 }
 
 bool findBucket(uint16_t duration, uint8_t *index)
