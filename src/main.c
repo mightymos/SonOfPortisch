@@ -223,7 +223,7 @@ void uart_state_machine(const unsigned int rxdata)
 			uartPacket[position] = rxdata & 0xFF;
 			position++;
 			
-			// FIXME: why did we change logic here as compared with portisch?
+			// FIXME: we should probably check for buffer overflow as portisch did
 			if (position >= packetLength)
 			{
 				uart_state = SYNC_FINISH;
