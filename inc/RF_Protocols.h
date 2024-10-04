@@ -38,6 +38,10 @@
 
 typedef struct PROTOCOL_STATUS
 {
+	// upper nibble of upper byte is sync
+	// lower nibble of upper byte is bit0
+	// upper nibble of lower byte is bit1
+	// lower nibble of lower byte is end
 	uint16_t status;
 	uint8_t bit_count;
 	uint8_t actual_bit_of_byte;
@@ -320,6 +324,9 @@ __code static uint8_t PROTOCOL_BIT0(H13726)[]  = { LOW(1), HIGH(0) };
 __code static uint8_t PROTOCOL_BIT1(H13726)[]  = { LOW(2), HIGH(0) };
 #endif
 
+//////////////////////////////////////////////////////////////////////////////////
+// use the protocols defined above to pack into one big array
+//////////////////////////////////////////////////////////////////////////////////
 __code static struct BUCKET_PROTOCOL_DATA PROTOCOL_DATA[] =
 {
 #if EFM8BB1_SUPPORT_PT226X_PROTOCOL == 1

@@ -20,6 +20,8 @@
 #include "serial.h"
 #include "uart.h"
 
+//  global available to rf_handling.c and main.c
+__xdata rf_state_t rf_state;
 
 // FIXME: add comment
 __xdata uint8_t RF_DATA[RF_DATA_BUFFERSIZE];
@@ -36,9 +38,10 @@ __xdata uint16_t SYNC_LOW = 0x00;
 __xdata uint16_t BIT_HIGH = 0x00;
 __xdata uint16_t BIT_LOW  = 0x00;
 
-
+// FIXME: add comment
 bool actual_byte_high_nibble = false;
 
+// FIXME: add comment
 __xdata uint8_t actual_byte = 0;
 
 // status of each protocol
@@ -121,12 +124,27 @@ bool CheckRFSyncBucket(uint16_t duration, uint16_t bucket)
 	return CheckRFBucket(duration, bucket, delta);
 }
 
+// i is the considered protocol
+// high_low is the measured pin value
+// duration is the measured pulse width
+// pulses is the available buckets (candidate pulse widths)
+// bit 0 is
+// bit 1 is
+// bit_count is
 bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses, uint8_t* bit0, uint8_t bit0_size, uint8_t* bit1, uint8_t bit1_size, uint8_t bit_count)
 {
 	uint8_t last_bit = 0;
+
 	uint8_t index;
 	uint8_t count;
 	bool result;
+
+	// DEBUG:
+	//__xdata volatile uint16_t debugpulse;
+
+	//DEBUG
+	//debugpulse = pulses[0];
+	//debugpulse = pulses[1];
 
 	// do init before first bit received
 	index = (uint8_t)status[i].bit_count;
@@ -142,17 +160,22 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 
 	// start decoding of the bits in sync of the buckets
 
-	// bit 0
+	// FIXME: look up which bucket corresponds to bit 0 as designated in RF_Protocols.h?
+	// FIXME: does bit0 refer to logic zero or just the first bit of manchester encoding?
 	index = (uint8_t)((status[i].status >> 8) & 0x0F);
-	if (CheckRFSyncBucket(duration, pulses[bit0[index] & 0x07]))
+
+	// this essentially compares the measured duration to the expected duration
+	result = CheckRFSyncBucket(duration, pulses[bit0[index] & 0x07]);
+	if (result)
 	{
 		// decode only if high/low does match
 		result = (bool)((bit0[index] & 0x08) >> 3);
 		if (result == high_low)
 		{
-			//if (BIT0_GET(status[i]) == 0)
+			// check if this is a sync pulse
 			if (index == 0)
 			{
+				// store the measured timing for later output to uart
 				BIT_LOW = duration;
 			}
 
@@ -169,7 +192,8 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 
 	// bit 1
 	index = (uint8_t)((status[i].status >> 4) & 0x0F);
-	if (CheckRFSyncBucket(duration, pulses[bit1[index] & 0x07]))
+	result = CheckRFSyncBucket(duration, pulses[bit1[index] & 0x07]);
+	if (result)
 	{
 		// decode only if high/low does match
 		//if (BUCKET_STATE(bit1[BIT1_GET(status[i])]) == high_low)
@@ -194,6 +218,7 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 
 	index = (uint8_t)((status[i].status >> 8) & 0x0F);
 	count = (uint8_t)((status[i].status >> 4) & 0x0F);
+
 	// check if any bucket got decoded, if not restart
 	if ((index == 0) && (count == 0))
 	{
@@ -242,6 +267,10 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 		
 		//RF_DATA[(BITS_GET(status[i]) - 1) >> 3] |= (1 << ABP_GET(status[i]));
 		index = (uint8_t)status[i].bit_count;
+
+		// shifting by three essentially divides by eight
+		// so bit index is converted to a byte index
+		// and we set the bit there since we confirmed a logic one measured
 		RF_DATA[(index - 1) >> 3] |= (1 << (uint8_t)((status[i]).actual_bit_of_byte));
 	}
 
@@ -262,7 +291,7 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 	//}
 
 
-	// check if all bit got collected
+	// check if all bits got collected
 	index = (uint8_t)status[i].bit_count;
 	if (index >= bit_count)
 	{
@@ -308,6 +337,11 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 	
 	uint8_t index;
 	uint8_t count;
+	uint16_t pulsewidth;
+
+	// DEBUG:
+	//volatile uint16_t debugbucket;
+	//volatile uint8_t startsize;
 
 	bool result;
 	
@@ -316,7 +350,7 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 	{
 		// compiler will optimize this out if NUM_OF_PROTOCOLS = 1
 		// FIXME: this or something related seems to cause failure to even attempt advanced sniffing
-		//        therefore for now at least two protocols should be enabled
+		//        therefore for now at least two protocols should be enabled?
 		for (i = 0; i < NUM_OF_PROTOCOLS; i++)
 		{
 			//START_CLEAR(status[i]);
@@ -326,6 +360,7 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 		}
 
 		led_off();
+
 		return;
 	}
 
@@ -333,15 +368,18 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 	switch(sniffing_mode)
 	{
 		case STANDARD:
-			// check if protocol was not started
+			
+			// 0 or 1 means we are looking for a sync pulse width, 2 means we are looking at data bits
 			index = (uint8_t)(status[0].status >> 12) & 0x0F;
+
+			// check if protocol is now starting (i.e., zero means it has not previously started)
 			if (index == 0)
 			{
-				// if PT226x standard sniffing calculate the pulse time by the longer sync bucket
+				// if PT226x standard sniffing, calculate the pulse time by the longer sync bucket
 				// this will enable receive PT226x in a range of PT226x_SYNC_MIN <-> 32767µs
 				if (duration > PT226x_SYNC_MIN && !high_low) // && (duration < PT226x_SYNC_MAX))
 				{
-					// increment start because of the skipped first high bucket
+					// increment start twice because of the skipped first high bucket
 					//START_INC(status[0]);
 					count = (uint8_t)(status[0].status >> 12) & 0x0F;
 					status[0].status = ((count + 1) << 12) | (status[0].status & 0x0FFF);
@@ -350,9 +388,10 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 					count = (uint8_t)(status[0].status >> 12) & 0x0F;
 					status[0].status = ((count + 1) << 12) | (status[0].status & 0x0FFF);
 
+					// stores measured sync time, for later sending over uart
 					SYNC_LOW = duration;
 
-                    //
+                    // standard time assumes all other pulse widths are divisible by a common factor
 					buckets[0] = duration / 31;
 					buckets[1] = buckets[0] * 3;
 					buckets[2] = duration;
@@ -361,7 +400,10 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 			// if sync is finished check if bit0 or bit1 is starting
 			else if (index == 2)
 			{
-				// we place this all on one line so that debugger does not get confused regarding line numbers
+				// DEBUG: because debugger watch does not work with pointers
+				//debugbucket = buckets[0];
+
+				// we place all arguments on one line so that debugger does not get confused regarding line numbers
 				DecodeBucket(0, high_low, duration, buckets, PROTOCOL_DATA[0].bit0.dat, PROTOCOL_DATA[0].bit0.size, PROTOCOL_DATA[0].bit1.dat, PROTOCOL_DATA[0].bit1.size, PROTOCOL_DATA[0].bit_count);
 			}
 			break;
@@ -373,16 +415,23 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 			{
 				// protocol started, check if sync is finished
 				index = (uint8_t)(status[i].status >> 12) & 0x0F;
+
+				//
 				if (index < PROTOCOL_DATA[i].start.size)
 				{
 					result = (bool)((PROTOCOL_DATA[i].start.dat[index] & 0x08) >> 3);
+
 					// check if sync bucket high/low is matching
 					//if (BUCKET_STATE(PROTOCOL_DATA[i].start.dat[index]) != high_low)
 					if (result != high_low)
 						continue;
 
 					count = (uint8_t)((status[i].status >> 12) & 0x0F);
-					if (CheckRFSyncBucket(duration, PROTOCOL_DATA[i].buckets.dat[PROTOCOL_DATA[i].start.dat[count] & 0x07]))
+					pulsewidth = PROTOCOL_DATA[i].buckets.dat[PROTOCOL_DATA[i].start.dat[count] & 0x07];
+
+					result = CheckRFSyncBucket(duration, pulsewidth);
+
+					if (result)
 					{
 						//START_INC(status[i]);
 						status[i].status = ((count + 1) << 12) | (status[i].status & 0x0FFF);
@@ -401,6 +450,14 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 				// if sync is finished check if bit0 or bit1 is starting
 				else if (index == PROTOCOL_DATA[i].start.size)
 				{
+					// DEBUG: because debugger watch does not work with pointers
+					//debugbucket = PROTOCOL_DATA[i].buckets.dat[0];
+					//debugbucket = PROTOCOL_DATA[i].buckets.dat[1];
+					//debugbucket = PROTOCOL_DATA[i].buckets.dat[2];
+
+					//startsize = PROTOCOL_DATA[i].start.size;
+
+					// decode bucket is probably working because it works during standard mode
 					result = DecodeBucket(i, high_low, duration, PROTOCOL_DATA[i].buckets.dat, PROTOCOL_DATA[i].bit0.dat, PROTOCOL_DATA[i].bit0.size, PROTOCOL_DATA[i].bit1.dat, PROTOCOL_DATA[i].bit1.size, PROTOCOL_DATA[i].bit_count);
 					if (result)
 						return;
@@ -431,31 +488,36 @@ void buffer_in(uint16_t bucket)
 
 bool buffer_out(uint16_t* bucket)
 {
-	//FIXME: may need to do this type of save outside of function call
+	// this saves flags and especially state of interrupt (i.e. enabled)
+	// FIXME: why not just explicitly enable it when needed?
 	uint8_t backup_PCA0CPM0 = PCA0CPM0;
 
 	// check if buffer is empty
 	if (buffer_buckets_write == buffer_buckets_read)
 	{
+		// therefore, indicate nothing was read from buffer (because nothing is available)
 		return false;
 	}
 
 	// disable interrupt for RF receiving while reading buffer
 	PCA0CPM0 &= ~ECCF__ENABLED;
 
-
+	// if not empty, go ahead and read a measured duration from buffer
 	*bucket = buffer_buckets[buffer_buckets_read];
+
+	// increment "read" pointer
 	buffer_buckets_read++;
 
-
+	// check for wraparound of "read" pointer
 	if (buffer_buckets_read >= BUFFER_BUCKETS_SIZE)
 	{
 		buffer_buckets_read = 0;
 	}
 
-	// reset register
+	// restore register
 	PCA0CPM0 = backup_PCA0CPM0;
 
+	// indicate we read from buffer
 	return true;
 }
 
@@ -707,9 +769,9 @@ bool findBucket(uint16_t duration, uint8_t *index)
 
 void Bucket_Received(uint16_t duration, bool high_low)
 {
-	//FIXME: should be a global that controls radio output state
-	rf_state_t rf_state;
+	// rf_state is a global variable
 
+	// FIXME: add comment
 	uint8_t bucket_index;
 
 	// if pulse is too short reset status
@@ -737,7 +799,7 @@ void Bucket_Received(uint16_t duration, bool high_low)
 		case RF_BUCKET_REPEAT:
 			if (matchesFooter(duration, high_low))
 			{
-				// check if a minimum of buckets where between two sync pulses
+				// check if a minimum of buckets were between two sync pulses
 				if (bucket_count_sync_1 > 4)
 				{
 					led_on();

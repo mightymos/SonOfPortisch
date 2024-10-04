@@ -40,6 +40,8 @@ typedef enum
 
 #define RF_DATA_RECEIVED_MASK	0x80
 
+extern __xdata rf_state_t rf_state;
+
 extern __xdata uint8_t RF_DATA[RF_DATA_BUFFERSIZE];
 // RF_DATA_STATUS
 // Bit 7:	1 Data received, 0 nothing received
@@ -47,12 +49,14 @@ extern __xdata uint8_t RF_DATA[RF_DATA_BUFFERSIZE];
 extern __xdata uint8_t RF_DATA_STATUS;
 extern __xdata rf_sniffing_mode_t sniffing_mode;
 
+// for standard pulse widths
 extern __xdata uint16_t SYNC_LOW;
 extern __xdata uint16_t BIT_HIGH;
 extern __xdata uint16_t BIT_LOW;
 
 extern __xdata uint8_t actual_byte;
 
+// a bucket is basically a pulse width
 extern __xdata uint16_t buckets[7];
 
 #if INCLUDE_BUCKET_SNIFFING == 1

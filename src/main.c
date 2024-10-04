@@ -29,12 +29,9 @@
 
 // uart state machine
 __xdata uart_state_t uart_state = IDLE;
-__xdata uart_command_t uart_command = NONE;
-__xdata uart_command_t last_sniffing_command = NONE;
+__xdata uart_command_t uart_command;
+__xdata uart_command_t last_sniffing_command;
 __xdata uint8_t uartPacket[10];
-
-// FIXME: this should be a global available to rf_handling.c
-rf_state_t rf_state = RF_IDLE;
 
 
 // sdcc manual section 3.8.1 general information
@@ -462,6 +459,8 @@ void main (void)
 					// handle new received buckets
 					if (result)
                     {
+						// the actual bit value read from pin is stored in the most significant bit of duration
+						// so it is masked out of the first passed variable (duration) and passed into the second variable (high_low)
 						HandleRFBucket(bucket & 0x7FFF, (bool)((bucket & 0x8000) >> 15));
                     }
 				}
