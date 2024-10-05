@@ -337,6 +337,8 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 	
 	uint8_t index;
 	uint8_t count;
+	// FIXME: variable name
+	uint8_t index_second;
 	uint16_t pulsewidth;
 
 	// DEBUG:
@@ -424,10 +426,26 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 					// check if sync bucket high/low is matching
 					//if (BUCKET_STATE(PROTOCOL_DATA[i].start.dat[index]) != high_low)
 					if (result != high_low)
+					{
 						continue;
+					}
 
+					// FIXME: comment this section
 					count = (uint8_t)((status[i].status >> 12) & 0x0F);
-					pulsewidth = PROTOCOL_DATA[i].buckets.dat[PROTOCOL_DATA[i].start.dat[count] & 0x07];
+					index_second = PROTOCOL_DATA[i].start.dat[count] & 0x07;
+					pulsewidth = PROTOCOL_DATA[i].buckets.dat[index_second];
+
+					// DEBUG
+					//uart_putc(RF_CODE_START);
+					//uart_putc(index_second);
+					//uart_putc(RF_CODE_STOP);
+
+					//uart_putc(RF_CODE_START);
+					//uart_putc((pulsewidth >> 8) & 0xFF);
+					//uart_putc(pulsewidth & 0xFF);
+					//uart_putc(RF_CODE_STOP);
+
+
 
 					result = CheckRFSyncBucket(duration, pulsewidth);
 
@@ -444,6 +462,7 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 						status[i].status = 0;
 						status[i].bit_count = 0;
 						status[i].actual_bit_of_byte = 0;
+
 						continue;
 					}
 				}
@@ -459,8 +478,11 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 
 					// decode bucket is probably working because it works during standard mode
 					result = DecodeBucket(i, high_low, duration, PROTOCOL_DATA[i].buckets.dat, PROTOCOL_DATA[i].bit0.dat, PROTOCOL_DATA[i].bit0.size, PROTOCOL_DATA[i].bit1.dat, PROTOCOL_DATA[i].bit1.size, PROTOCOL_DATA[i].bit_count);
+					
 					if (result)
+					{
 						return;
+					}
 				}
 			}
 			break;
