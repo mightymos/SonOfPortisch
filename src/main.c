@@ -459,7 +459,7 @@ void main (void)
 					// handle new received buckets
 					if (result)
                     {
-						// the actual bit value read from pin is stored in the most significant bit of duration
+						// the actual bit value read from pin is stored in the most significant bit of the bucket
 						// so it is masked out of the first passed variable (duration) and passed into the second variable (high_low)
 						HandleRFBucket(bucket & 0x7FFF, (bool)((bucket & 0x8000) >> 15));
                     }

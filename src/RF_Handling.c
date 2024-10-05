@@ -247,31 +247,33 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 	if (index == bit0_size - last_bit)
 	{
 		led_on();
-		//BITS_CLEAR(status[i]);
+
 		status[i].status &= 0xF00F;
-		//BITS_INC(status[i]);
 		status[i].bit_count += 1;
-		//ABP_DEC(status[i]);
 		status[i].actual_bit_of_byte -= 1;
 	}
 	// check if bit 1 is finished
 	else if (count == bit1_size - last_bit)
 	{
 		led_on();
-		//BITS_CLEAR(status[i]);
+
 		status[i].status &= 0xF00F;
-		//BITS_INC(status[i]);
 		status[i].bit_count += 1;
-		//ABP_DEC(status[i]);
 		status[i].actual_bit_of_byte -= 1;
 		
 		//RF_DATA[(BITS_GET(status[i]) - 1) >> 3] |= (1 << ABP_GET(status[i]));
-		index = (uint8_t)status[i].bit_count;
+		index = status[i].bit_count;
 
 		// shifting by three essentially divides by eight
 		// so bit index is converted to a byte index
 		// and we set the bit there since we confirmed a logic one measured
 		RF_DATA[(index - 1) >> 3] |= (1 << (uint8_t)((status[i]).actual_bit_of_byte));
+
+		// DEBUG
+		uart_putc(RF_CODE_START);
+		uart_putc(index);
+		uart_putc(RF_DATA[(index - 1) >> 3]);
+		uart_putc(RF_CODE_STOP);
 	}
 
 	// 8 bits are done, compute crc of data
@@ -280,15 +282,11 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 	if (index == 0)
 	{
 		index = (uint8_t)status[i].bit_count;
+
 		crc = Compute_CRC8_Simple_OneByte(crc ^ RF_DATA[(index - 1) >> 3]);
-		//ABP_RESET(status[i]);
+
 		status[i].actual_bit_of_byte = 8;
-	} //else {
-		// DEBUG:
-		//uart_putc(RF_CODE_START);
-		//uart_putc((uint8_t)(status[i].actual_bit_of_byte));
-		//uart_putc(RF_CODE_STOP);
-	//}
+	}
 
 
 	// check if all bits got collected
@@ -333,7 +331,8 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 
 void HandleRFBucket(uint16_t duration, bool high_low)
 {
-	uint8_t i;
+	// FIXME: in original this is initialized, but does it matter?
+	uint8_t i = 0;
 	
 	uint8_t index;
 	uint8_t count;
@@ -438,13 +437,9 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 					// DEBUG
 					//uart_putc(RF_CODE_START);
 					//uart_putc(index_second);
-					//uart_putc(RF_CODE_STOP);
-
-					//uart_putc(RF_CODE_START);
 					//uart_putc((pulsewidth >> 8) & 0xFF);
 					//uart_putc(pulsewidth & 0xFF);
 					//uart_putc(RF_CODE_STOP);
-
 
 
 					result = CheckRFSyncBucket(duration, pulsewidth);
@@ -478,7 +473,7 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 
 					// decode bucket is probably working because it works during standard mode
 					result = DecodeBucket(i, high_low, duration, PROTOCOL_DATA[i].buckets.dat, PROTOCOL_DATA[i].bit0.dat, PROTOCOL_DATA[i].bit0.size, PROTOCOL_DATA[i].bit1.dat, PROTOCOL_DATA[i].bit1.size, PROTOCOL_DATA[i].bit_count);
-					
+
 					if (result)
 					{
 						return;
