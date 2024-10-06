@@ -212,3 +212,27 @@ void uart_putc(uint8_t txdata)
 	UART_TX_Buffer_Position++;
 	UART_Buffer_Write_Len++;
 }
+
+//-----------------------------------------
+// avoid puts() naming to avoid conflict with printf/stdio/putchar
+void putstring(const char *s)
+{
+   while (*s) uart_putc(*s++);
+}
+
+//-----------------------------------------
+void puthex(unsigned char v)
+{
+   unsigned char c;
+   v &= 0x0f;
+   if (v<10) c = '0'+v;
+   else c = 'A'-10+v;
+   uart_putc(c);
+}
+
+//-----------------------------------------
+void puthex2(const unsigned char x)
+{
+   puthex(x >> 4);
+   puthex(x);
+}

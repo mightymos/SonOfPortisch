@@ -17,8 +17,8 @@
 // Global Constants
 //-----------------------------------------------------------------------------
 
-#define UART_RX_BUFFER_SIZE	32
-#define UART_TX_BUFFER_SIZE	32
+#define UART_RX_BUFFER_SIZE	 4
+#define UART_TX_BUFFER_SIZE	64
 
 /*
 ** high byte error return code of uart_getc()
@@ -78,6 +78,10 @@ bool is_uart_tx_buffer_empty(void);
 
 extern unsigned int uart_getc(void);
 extern void         uart_putc(uint8_t txdata);
+
+void putstring(const char *s);
+void puthex(unsigned char v);
+void puthex2(const unsigned char x);
 
 
 #endif // INC_UART_H_

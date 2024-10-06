@@ -114,6 +114,8 @@ bool CheckRFBucket(uint16_t duration, uint16_t bucket, uint16_t delta)
 	return (((bucket - delta) < duration) && (duration < (bucket + delta)));
 }
 
+// duration would typically be the measured pulse width
+// bucket would typically be the protocol defined width to be compared
 bool CheckRFSyncBucket(uint16_t duration, uint16_t bucket)
 {
 	uint16_t delta = compute_delta(bucket);
@@ -149,7 +151,7 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 	// do init before first bit received
 	index = (uint8_t)status[i].bit_count;
 
-	//if (BITS_GET(status[i]) == 0)
+	//
 	if (index == 0)
 	{
 		//ABP_RESET(status[i]);
@@ -165,10 +167,11 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 	index = (uint8_t)((status[i].status >> 8) & 0x0F);
 
 	// this essentially compares the measured duration to the expected duration
+	// we examine only the lower three bits because the logic level is stored in the upper most bit
 	result = CheckRFSyncBucket(duration, pulses[bit0[index] & 0x07]);
 	if (result)
 	{
-		// decode only if high/low does match
+		// decode only if high or low does match
 		result = (bool)((bit0[index] & 0x08) >> 3);
 		if (result == high_low)
 		{
@@ -196,7 +199,6 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 	if (result)
 	{
 		// decode only if high/low does match
-		//if (BUCKET_STATE(bit1[BIT1_GET(status[i])]) == high_low)
 		result = (bool)((bit1[index] & 0x08) >> 3);
 		if (result == high_low)
 		{
@@ -270,10 +272,10 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 		RF_DATA[(index - 1) >> 3] |= (1 << (uint8_t)((status[i]).actual_bit_of_byte));
 
 		// DEBUG
-		uart_putc(RF_CODE_START);
-		uart_putc(index);
-		uart_putc(RF_DATA[(index - 1) >> 3]);
-		uart_putc(RF_CODE_STOP);
+		//uart_putc(RF_CODE_START);
+		//uart_putc(index);
+		//uart_putc(RF_DATA[(index - 1) >> 3]);
+		//uart_putc(RF_CODE_STOP);
 	}
 
 	// 8 bits are done, compute crc of data
@@ -331,13 +333,12 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 
 void HandleRFBucket(uint16_t duration, bool high_low)
 {
-	// FIXME: in original this is initialized, but does it matter?
+	// FIXME: in original this is uninitialized, but does it matter?
 	uint8_t i = 0;
 	
 	uint8_t index;
 	uint8_t count;
-	// FIXME: variable name
-	uint8_t index_second;
+
 	uint16_t pulsewidth;
 
 	// DEBUG:
@@ -349,9 +350,7 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 	// if noise got received stop all running decodings
 	if (duration < MIN_BUCKET_LENGTH)
 	{
-		// compiler will optimize this out if NUM_OF_PROTOCOLS = 1
-		// FIXME: this or something related seems to cause failure to even attempt advanced sniffing
-		//        therefore for now at least two protocols should be enabled?
+		// this will be optimized out if only one protocol exists
 		for (i = 0; i < NUM_OF_PROTOCOLS; i++)
 		{
 			//START_CLEAR(status[i]);
@@ -401,8 +400,6 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 			// if sync is finished check if bit0 or bit1 is starting
 			else if (index == 2)
 			{
-				// DEBUG: because debugger watch does not work with pointers
-				//debugbucket = buckets[0];
 
 				// we place all arguments on one line so that debugger does not get confused regarding line numbers
 				DecodeBucket(0, high_low, duration, buckets, PROTOCOL_DATA[0].bit0.dat, PROTOCOL_DATA[0].bit0.size, PROTOCOL_DATA[0].bit1.dat, PROTOCOL_DATA[0].bit1.size, PROTOCOL_DATA[0].bit_count);
@@ -410,44 +407,50 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 			break;
 
 		case ADVANCED:
-			// FIXME: see note above for similar loop, this gets optimized out if only one protocol
-			// check each protocol for each bucket
+
+			// this will be optimized out if only one protocol exists
 			for (i = 0; i < NUM_OF_PROTOCOLS; i++)
 			{
-				// protocol started, check if sync is finished
+				// track which pulse width we should be on for sync starting from zero
+				// in other words, protocol started
 				index = (uint8_t)(status[i].status >> 12) & 0x0F;
 
-				//
+				// check if sync is finished
 				if (index < PROTOCOL_DATA[i].start.size)
 				{
+					// bit 3 of the byte stores the expected logic level
 					result = (bool)((PROTOCOL_DATA[i].start.dat[index] & 0x08) >> 3);
 
-					// check if sync bucket high/low is matching
-					//if (BUCKET_STATE(PROTOCOL_DATA[i].start.dat[index]) != high_low)
+					// check if sync bucket high or low matches
 					if (result != high_low)
 					{
 						continue;
 					}
 
-					// FIXME: comment this section
-					count = (uint8_t)((status[i].status >> 12) & 0x0F);
-					index_second = PROTOCOL_DATA[i].start.dat[count] & 0x07;
-					pulsewidth = PROTOCOL_DATA[i].buckets.dat[index_second];
 
-					// DEBUG
-					//uart_putc(RF_CODE_START);
-					//uart_putc(index_second);
-					//uart_putc((pulsewidth >> 8) & 0xFF);
-					//uart_putc(pulsewidth & 0xFF);
-					//uart_putc(RF_CODE_STOP);
+					// get index into bucket array of bucket associated with currently considered start pulse width
+					count = PROTOCOL_DATA[i].start.dat[index] & 0x07;
+					// get the actual start pulse width now
+					pulsewidth = PROTOCOL_DATA[i].buckets.dat[count];
 
+					// DEBUG:
+					//uart_putc(':');
+					//puthex2((pulsewidth >> 8) & 0xff);
+					//puthex2(pulsewidth & 0xff);
 
 					result = CheckRFSyncBucket(duration, pulsewidth);
 
 					if (result)
 					{
-						//START_INC(status[i]);
-						status[i].status = ((count + 1) << 12) | (status[i].status & 0x0FFF);
+						// increment the index into the start pulse width by one
+						status[i].status = ((index + 1) << 12) | (status[i].status & 0x0FFF);
+
+
+						// DEBUG:
+						//uart_putc(':');
+						//puthex2(count);
+						//puthex2((duration >> 8) & 0xff);
+						//puthex2(duration & 0xff);
 						
 						continue;
 					}
@@ -465,14 +468,19 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 				else if (index == PROTOCOL_DATA[i].start.size)
 				{
 					// DEBUG: because debugger watch does not work with pointers
-					//debugbucket = PROTOCOL_DATA[i].buckets.dat[0];
-					//debugbucket = PROTOCOL_DATA[i].buckets.dat[1];
-					//debugbucket = PROTOCOL_DATA[i].buckets.dat[2];
-
-					//startsize = PROTOCOL_DATA[i].start.size;
+					//uart_putc(RF_CODE_START);
+					uart_putc(':');
+					puthex2(index);
+					puthex2((duration >> 8) & 0xff);
+					puthex2(duration & 0xff);
+					//uart_putc(RF_CODE_STOP);
 
 					// decode bucket is probably working because it works during standard mode
 					result = DecodeBucket(i, high_low, duration, PROTOCOL_DATA[i].buckets.dat, PROTOCOL_DATA[i].bit0.dat, PROTOCOL_DATA[i].bit0.size, PROTOCOL_DATA[i].bit1.dat, PROTOCOL_DATA[i].bit1.size, PROTOCOL_DATA[i].bit_count);
+
+					// DEBUG: 
+					//uart_putc('\r');
+					//uart_putc('\n');
 
 					if (result)
 					{
@@ -484,6 +492,7 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 	}	// switch(sniffing_mode)
 }
 
+// places measured pulse width durations in an array
 void buffer_in(uint16_t bucket)
 {
 	// check if writing next byte into circular buffer will catch up to read position, and if so bail out
@@ -503,6 +512,7 @@ void buffer_in(uint16_t bucket)
 	}
 }
 
+// read out measured pulse width durations that have been stored in an array
 bool buffer_out(uint16_t* bucket)
 {
 	// this saves flags and especially state of interrupt (i.e. enabled)
@@ -542,6 +552,8 @@ void PCA0_channel0EventCb(void)
 {
     //
 	uint16_t current_capture_value = PCA0CP0 * 10;
+	uint16_t logic_mask;
+
 	uint8_t flags = PCA0MD;
 
 	// clear counter
@@ -554,8 +566,9 @@ void PCA0_channel0EventCb(void)
 	// FIXME: additional comments; if bucket is not noise add it to buffer
 	if (current_capture_value < 0x8000)
 	{
-		// FIXME: add comment
-		buffer_in(current_capture_value | ((uint16_t)(!rdata_level()) << 15));
+		// FIXME: changed from original logic - why was rdata inverted?
+		logic_mask = (uint16_t)(rdata_level()) << 15;
+		buffer_in(current_capture_value | logic_mask);
 	}
 	else
 	{
@@ -784,6 +797,7 @@ bool findBucket(uint16_t duration, uint8_t *index)
 	return false;
 }
 
+// this is used for the sniffing on bucket mode (i.e., 0xB1)
 void Bucket_Received(uint16_t duration, bool high_low)
 {
 	// rf_state is a global variable

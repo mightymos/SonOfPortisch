@@ -26,10 +26,7 @@ void enter_DefaultMode_from_RESET(void)
 
 
 	// FIXME: correctly handle LED on sonoff different from LED on EFM8BB1LCK board
-	P1MDOUT = B0__PUSH_PULL | B1__OPEN_DRAIN
-			| B2__OPEN_DRAIN | B3__OPEN_DRAIN
-			| B4__PUSH_PULL | B5__PUSH_PULL
-			| B6__PUSH_PULL | B7__PUSH_PULL;
+	P1MDOUT = B0__PUSH_PULL | B1__OPEN_DRAIN | B2__OPEN_DRAIN | B3__OPEN_DRAIN | B4__PUSH_PULL | B5__PUSH_PULL | B6__PUSH_PULL | B7__PUSH_PULL;
 
 	// $[P1SKIP - Port 1 Skip]
 	/***********************************************************************
@@ -41,9 +38,7 @@ void enter_DefaultMode_from_RESET(void)
 	 - P1.5 pin is skipped by the crossbar
 	 - P1.6 pin is skipped by the crossbar
 	 ***********************************************************************/
-	P1SKIP = B0__SKIPPED | B1__SKIPPED | B2__SKIPPED
-			| B3__NOT_SKIPPED | B4__SKIPPED | B5__SKIPPED
-			| B6__SKIPPED | B7__SKIPPED;
+	P1SKIP = B0__SKIPPED | B1__SKIPPED | B2__SKIPPED | B3__NOT_SKIPPED | B4__SKIPPED | B5__SKIPPED | B6__SKIPPED | B7__SKIPPED;
 
 
 	// $[XBR2 - Port I/O Crossbar 2]
@@ -65,9 +60,7 @@ void enter_DefaultMode_from_RESET(void)
 	 - Asynchronous CP1 unavailable at Port pin
 	 - SYSCLK unavailable at Port pin
 	 ***********************************************************************/
-	XBR0 = URT0E__ENABLED | SPI0E__DISABLED | SMB0E__DISABLED
-			| CP0E__DISABLED | CP0AE__DISABLED | CP1E__DISABLED
-			| CP1AE__DISABLED | SYSCKE__DISABLED;
+	XBR0 = URT0E__ENABLED | SPI0E__DISABLED | SMB0E__DISABLED | CP0E__DISABLED | CP0AE__DISABLED | CP1E__DISABLED | CP1AE__DISABLED | SYSCKE__DISABLED;
 
 	// $[XBR1 - Port I/O Crossbar 1]
 	/***********************************************************************
