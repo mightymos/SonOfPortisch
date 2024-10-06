@@ -82,14 +82,14 @@ typedef struct BUCKET_PROTOCOL_DATA
 /*
  * PT2260, EV1527,... original RF bridge protocol
  * http://www.princeton.com.tw/Portals/0/Product/PT2260_4.pdf
- * FIXME: changed this to match Atmel-9164-Manchester-Coding-Basics
+ * FIXME: why does manchester encoding logic not match this (Atmel-9164-Manchester-Coding-Basics)?
  */
 #if EFM8BB1_SUPPORT_PT226X_PROTOCOL == 1
 #define PT226X
 __code static uint16_t PROTOCOL_BUCKETS(PT226X)[] = { 350, 1050, 10850 };
 __code static uint8_t  PROTOCOL_START(PT226X)[]   = { HIGH(0), LOW(2) };
 __code static uint8_t  PROTOCOL_BIT0(PT226X)[]    = { HIGH(0), LOW(1) };
-__code static uint8_t  PROTOCOL_BIT1(PT226X)[]    = { LOW(1),  HIGH(0) };
+__code static uint8_t  PROTOCOL_BIT1(PT226X)[]    = { HIGH(1), LOW(0) };
 #endif
 
 /*
