@@ -147,6 +147,11 @@ inline void debug_pin0_toggle(void)
 	DEBUG_PIN0 = !DEBUG_PIN0;
 }
 
+inline void set_debug_pin0(const bool pin)
+{
+	DEBUG_PIN0 = pin;
+}
+
 inline void debug_pin1_on(void)
 {
 	DEBUG_PIN1 = 1;
@@ -162,6 +167,10 @@ inline void debug_pin1_toggle(void)
 	DEBUG_PIN1 = !DEBUG_PIN1;
 }
 
+inline void set_debug_pin1(const bool pin)
+{
+	DEBUG_PIN1 = pin;
+}
 
 inline void enable_global_interrupts(void)
 {

@@ -116,6 +116,7 @@ bool CheckRFBucket(uint16_t duration, uint16_t bucket, uint16_t delta)
 
 // duration would typically be the measured pulse width
 // bucket would typically be the protocol defined width to be compared
+// returns a match (within tolerance) as true, otherwise false
 bool CheckRFSyncBucket(uint16_t duration, uint16_t bucket)
 {
 	uint16_t delta = compute_delta(bucket);
@@ -142,19 +143,17 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 	bool result;
 
 	// DEBUG:
-	//__xdata volatile uint16_t debugpulse;
+	//uart_putc('^');
+	//puthex2(high_low);
+	//puthex2((duration >> 8) & 0xff);
+	//puthex2(duration & 0xff);
 
-	//DEBUG
-	//debugpulse = pulses[0];
-	//debugpulse = pulses[1];
-
-	// do init before first bit received
+	// do init before first data bit received
 	index = (uint8_t)status[i].bit_count;
 
-	//
+	// clear
 	if (index == 0)
 	{
-		//ABP_RESET(status[i]);
 		status[i].actual_bit_of_byte = 8;
 		memset(RF_DATA, 0, sizeof(RF_DATA));
 		crc = 0x00;
@@ -162,8 +161,7 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 
 	// start decoding of the bits in sync of the buckets
 
-	// FIXME: look up which bucket corresponds to bit 0 as designated in RF_Protocols.h?
-	// FIXME: does bit0 refer to logic zero or just the first bit of manchester encoding?
+	// check for possible logic bit0
 	index = (uint8_t)((status[i].status >> 8) & 0x0F);
 
 	// this essentially compares the measured duration to the expected duration
@@ -171,29 +169,33 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 	result = CheckRFSyncBucket(duration, pulses[bit0[index] & 0x07]);
 	if (result)
 	{
+
+		// DEBUG:
+		//set_debug_pin1(high_low);
+
 		// decode only if high or low does match
 		result = (bool)((bit0[index] & 0x08) >> 3);
 		if (result == high_low)
 		{
-			// check if this is a sync pulse
+			// check if this is an initial data pulse and extract time
 			if (index == 0)
 			{
 				// store the measured timing for later output to uart
 				BIT_LOW = duration;
 			}
 
-			//BIT0_INC(status[i]);
+			// increment bit0 status
 			status[i].status = ((index + 1) << 8) | (status[i].status & 0xF0FF);
 		}
 	}
 	// bucket does not match bit, reset status
 	else
 	{
-		//BIT0_CLEAR(status[i]);
+		// clear bit0 status
 		status[i].status &= 0xF0FF;
 	}
 
-	// bit 1
+	// check for possible logic bit1
 	index = (uint8_t)((status[i].status >> 4) & 0x0F);
 	result = CheckRFSyncBucket(duration, pulses[bit1[index] & 0x07]);
 	if (result)
@@ -207,14 +209,17 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 				BIT_HIGH = duration;
 			}
 
-			//BIT1_INC(status[i]);
+			// increment bit1 status
 			status[i].status = ((index + 1) << 4) | (status[i].status & 0xFF0F);
+
+			// DEBUG:
+			//set_debug_pin1(high_low);
 		}
 	}
 	// bucket does not match bit, reset status
 	else
 	{
-		//BIT1_CLEAR(status[i]);
+		// clear bit1 status
 		status[i].status &= 0xFF0F;
 	}
 
@@ -226,17 +231,17 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 	{
 		led_off();
 
-		//START_CLEAR(status[i]);
+		// clear status
 		status[i].status = 0;
 		status[i].bit_count = 0;
 		status[i].actual_bit_of_byte = 0;
 		
+		// indicates failure to decode anything
 		return false;
 	}
 
 	// on the last bit do not check the last bucket
-	// because maybe this is not correct because a
-	// repeat delay
+	// because it may not be correct due to a repeat delay
 	index = (uint8_t)status[i].bit_count;
 	if (index == bit_count - 1)
 	{
@@ -254,16 +259,16 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 		status[i].bit_count += 1;
 		status[i].actual_bit_of_byte -= 1;
 	}
-	// check if bit 1 is finished
 	else if (count == bit1_size - last_bit)
 	{
+		// check if bit 1 is finished
 		led_on();
 
 		status[i].status &= 0xF00F;
 		status[i].bit_count += 1;
 		status[i].actual_bit_of_byte -= 1;
 		
-		//RF_DATA[(BITS_GET(status[i]) - 1) >> 3] |= (1 << ABP_GET(status[i]));
+		// 
 		index = status[i].bit_count;
 
 		// shifting by three essentially divides by eight
@@ -272,14 +277,12 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 		RF_DATA[(index - 1) >> 3] |= (1 << (uint8_t)((status[i]).actual_bit_of_byte));
 
 		// DEBUG
-		//uart_putc(RF_CODE_START);
 		//uart_putc(index);
 		//uart_putc(RF_DATA[(index - 1) >> 3]);
-		//uart_putc(RF_CODE_STOP);
 	}
 
 	// 8 bits are done, compute crc of data
-	//if (ABP_GET(status[i]) == 0)
+	// FIXME: why compute crc?
 	index = (uint8_t)(status[i].actual_bit_of_byte);
 	if (index == 0)
 	{
@@ -311,7 +314,7 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 
 			// FIXME: it can be confusing to bury things like this in functions
 			// disable interrupt for RF receiving while uart transfer
-			PCA0CPM0 &= ~ECCF__ENABLED;
+			//PCA0CPM0 &= ~ECCF__ENABLED;
 
 			// set status
 			RF_DATA_STATUS = i;
@@ -320,14 +323,16 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 
 		led_off();
 
-		//START_CLEAR(status[i]);
+		// clear status
 		status[i].status = 0;
 		status[i].bit_count = 0;
 		status[i].actual_bit_of_byte = 0;
 		
+		// FIXME: this tells the calling logic to stop checking because we successfully decoded
 		return true;
 	}
 
+	// FIXME: this tells the calling logic to keep decoding (not necessarily failure)?
 	return false;
 }
 
@@ -364,6 +369,9 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 		return;
 	}
 
+	// DEBUG:
+	//set_debug_pin1(high_low);
+
 	// handle the buckets by standard or advanced decoding
 	switch(sniffing_mode)
 	{
@@ -379,6 +387,10 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 				// this will enable receive PT226x in a range of PT226x_SYNC_MIN <-> 32767µs
 				if (duration > PT226x_SYNC_MIN && !high_low) // && (duration < PT226x_SYNC_MAX))
 				{
+					// DEBUG:
+					//debug_pin1_off();
+
+
 					// increment start twice because of the skipped first high bucket
 					//START_INC(status[0]);
 					count = (uint8_t)(status[0].status >> 12) & 0x0F;
@@ -445,21 +457,28 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 						// increment the index into the start pulse width by one
 						status[i].status = ((index + 1) << 12) | (status[i].status & 0x0FFF);
 
+						// DEBUG:
+						set_debug_pin1(high_low);
 
 						// DEBUG:
 						//uart_putc(':');
 						//puthex2(count);
 						//puthex2((duration >> 8) & 0xff);
 						//puthex2(duration & 0xff);
+						//puthex2((status[i].status >> 8) & 0xff);
+						//puthex2(status[i].status & 0xff);
 						
 						continue;
 					}
 					else
 					{
-						//START_CLEAR(status[i]);
+						// clear status
 						status[i].status = 0;
 						status[i].bit_count = 0;
 						status[i].actual_bit_of_byte = 0;
+
+						// DEBUG:
+						debug_pin1_off();
 
 						continue;
 					}
@@ -473,7 +492,7 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 					puthex2(index);
 					puthex2((duration >> 8) & 0xff);
 					puthex2(duration & 0xff);
-					//uart_putc(RF_CODE_STOP);
+					//uart_putc(RF_CODE_STOP);e
 
 					// decode bucket is probably working because it works during standard mode
 					result = DecodeBucket(i, high_low, duration, PROTOCOL_DATA[i].buckets.dat, PROTOCOL_DATA[i].bit0.dat, PROTOCOL_DATA[i].bit0.size, PROTOCOL_DATA[i].bit1.dat, PROTOCOL_DATA[i].bit1.size, PROTOCOL_DATA[i].bit_count);
@@ -482,9 +501,13 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 					//uart_putc('\r');
 					//uart_putc('\n');
 
+					// FIXME: add comment
 					if (result)
 					{
 						return;
+					} else {
+						// DEBUG:
+						uart_putc('?');
 					}
 				}
 			}
@@ -517,7 +540,7 @@ bool buffer_out(uint16_t* bucket)
 {
 	// this saves flags and especially state of interrupt (i.e. enabled)
 	// FIXME: why not just explicitly enable it when needed?
-	uint8_t backup_PCA0CPM0 = PCA0CPM0;
+	//uint8_t backup_PCA0CPM0 = PCA0CPM0;
 
 	// check if buffer is empty
 	if (buffer_buckets_write == buffer_buckets_read)
@@ -527,7 +550,7 @@ bool buffer_out(uint16_t* bucket)
 	}
 
 	// disable interrupt for RF receiving while reading buffer
-	PCA0CPM0 &= ~ECCF__ENABLED;
+	//PCA0CPM0 &= ~ECCF__ENABLED;
 
 	// if not empty, go ahead and read a measured duration from buffer
 	*bucket = buffer_buckets[buffer_buckets_read];
@@ -542,7 +565,7 @@ bool buffer_out(uint16_t* bucket)
 	}
 
 	// restore register
-	PCA0CPM0 = backup_PCA0CPM0;
+	//PCA0CPM0 = backup_PCA0CPM0;
 
 	// indicate we read from buffer
 	return true;
@@ -553,6 +576,7 @@ void PCA0_channel0EventCb(void)
     //
 	uint16_t current_capture_value = PCA0CP0 * 10;
 	uint16_t logic_mask;
+	bool pin;
 
 	uint8_t flags = PCA0MD;
 
@@ -567,8 +591,12 @@ void PCA0_channel0EventCb(void)
 	if (current_capture_value < 0x8000)
 	{
 		// FIXME: changed from original logic - why was rdata inverted?
-		logic_mask = (uint16_t)(rdata_level()) << 15;
+		pin = rdata_level();
+		logic_mask = (uint16_t)(pin) << 15;
 		buffer_in(current_capture_value | logic_mask);
+
+		//DEBUG:
+		set_debug_pin0(pin);
 	}
 	else
 	{
@@ -746,8 +774,6 @@ void SendBuckets(uint16_t *pulses, uint8_t* start, uint8_t start_size, uint8_t* 
 
 	led_off();
 
-	// FIXME:
-	//rf_state = RF_FINISHED;
 }
 
 void SendBucketsByIndex(uint8_t index, uint8_t* rfdata)
@@ -930,7 +956,8 @@ void Bucket_Received(uint16_t duration, bool high_low)
 
 					// disable interrupt for RF receiving while uart transfer
 					//FIXME: want to move outside of buried function
-					PCA0CPM0 &= ~ECCF__ENABLED;
+					// I do not think this is as important anymore because uart and rf no longer share a memory buffer
+					//PCA0CPM0 &= ~ECCF__ENABLED;
 
 					// add sync bucket number to data
 					RF_DATA[0] |= ((bucket_count << 4) | ((bucket_sync & 0x8000) >> 8));
