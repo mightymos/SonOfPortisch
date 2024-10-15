@@ -13,6 +13,7 @@
 
 #include "RF_Config.h"
 
+
 // 112 byte == 896 bits, so a RF signal with maximum of 896 bits is possible
 // for bucket transmission, this depends on the number of buckets.
 // E.g. 4 buckets have a total overhead of 11, allowing 101 bits (high/low pairs)
@@ -21,6 +22,9 @@
 #else
     #define RF_DATA_BUFFERSIZE		32
 #endif
+
+// stores pulse durations written by interrupt (both noise and legitimate)
+#define BUFFER_BUCKETS_SIZE 4
 
 typedef enum
 {
@@ -70,14 +74,7 @@ extern void HandleRFBucket(uint16_t duration, bool high_low);
 extern void PCA0_DoSniffing(void);
 extern void PCA0_StopSniffing(void);
 extern void SendRFBuckets(uint16_t* buckets, uint8_t* rfdata, uint8_t data_len);
-extern void SendBuckets(
-		uint16_t *pulses,
-		uint8_t* start, uint8_t start_size,
-		uint8_t* bit0, uint8_t bit0_size,
-		uint8_t* bit1, uint8_t bit1_size,
-		uint8_t* end, uint8_t end_size,
-		uint8_t bit_count,
-		uint8_t* rfdata);
+extern void SendBuckets(uint16_t *pulses, uint8_t* start, uint8_t start_size, uint8_t* bit0, uint8_t bit0_size, uint8_t* bit1, uint8_t bit1_size, uint8_t* end, uint8_t end_size, uint8_t bit_count, uint8_t* rfdata);
 extern void SendBucketsByIndex(uint8_t index, uint8_t* rfdata);
 extern void Bucket_Received(uint16_t duration, bool high_low);
 

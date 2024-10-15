@@ -19,7 +19,7 @@
 
 #define SYSCLK	24500000
 
-#define FIRMWARE_VERSION		0x03
+#define FIRMWARE_VERSION 0x03
 
 #define ARRAY_LENGTH(array) (sizeof((array))/sizeof((array)[0]))
 

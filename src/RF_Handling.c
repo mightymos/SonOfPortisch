@@ -63,7 +63,7 @@ __xdata uint8_t bucket_count_sync_2;
 #endif
 
 
-#define BUFFER_BUCKETS_SIZE 4
+
 __xdata uint16_t buffer_buckets[BUFFER_BUCKETS_SIZE] = {0};
 
 // use separate read and write "pointers" into circular buffer
@@ -488,7 +488,7 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 				{
 					// DEBUG: because debugger watch does not work with pointers
 					//uart_putc(RF_CODE_START);
-					uart_putc(':');
+					uart_putc('^');
 					puthex2(index);
 					puthex2((duration >> 8) & 0xff);
 					puthex2(duration & 0xff);
@@ -667,8 +667,6 @@ void PCA0_StopSniffing(void)
 bool SendSingleBucket(bool high_low, uint16_t bucket_time)
 {
 	// switch to high_low
-	//LED = high_low;
-	//T_DATA = high_low;
     if (high_low)
     {
         led_on();

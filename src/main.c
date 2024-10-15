@@ -35,6 +35,14 @@ __xdata uint8_t uartPacket[10];
 
 __xdata uint8_t tr_repeats = 0;
 
+
+// DEBUG
+// 0b 11011110 10101101 10111110
+// PT2260 differentiates bit encoding using pulse duration
+// Manchester encoding also alternates pulse levels
+//const bool logic_dummy[50] = {true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false};
+//const uint16_t bucket_dummy[50] = {350, 10850, 350, 1050, 350, 1050, 350, 1050, 350, 1050, 350, 1050, 350, 1050, 350, 1050, 350, 1050, 350, 1050, 350, 1050, 350, 1050, 350, 1050, 350, 1050, 350, 1050, 350, 1050, 350, 1050, 350, 1050, 350, 1050, 350, 1050, 350, 1050, 350, 1050, 350, 1050, 350, 1050, 350, 1050};
+
 // sdcc manual section 3.8.1 general information
 // requires interrupt definition to appear or be included in main
 void UART0_ISR(void) __interrupt (4);
@@ -99,7 +107,7 @@ void serial_loopback(void)
 
 #endif
 
-#if 1
+#if 0
 void display_protocols(void)
 {
 	uint8_t i;
@@ -292,6 +300,7 @@ void uart_state_machine(const unsigned int rxdata)
 	}
 }
 
+// returns finished transmitting as true, otherwise false
 bool radio_state_machine(void)
 {
 	const uint16_t buckets_dummy[3] = {350, 1050, 10850};
@@ -310,8 +319,6 @@ bool radio_state_machine(void)
 			// byte 0..1:	Tsyn
 			// byte 2..3:	Tlow
 			// byte 4..5:	Thigh
-			// byte 6..7:	24bit Data
-
 			//buckets[0] = *(uint16_t *)&RF_DATA[2];
 			//buckets[1] = *(uint16_t *)&RF_DATA[4];
 			//buckets[2] = *(uint16_t *)&RF_DATA[0];
@@ -443,7 +450,9 @@ void main (void)
 
 	// DEBUG:
 	putstring("boot\r\n");
-	display_protocols();
+	
+	// DEBUG: output stored protocols just to confirm they are as expected
+	//display_protocols();
 
 	while (true)
 	{
@@ -497,7 +506,9 @@ void main (void)
 			// but seems to reset uart if it sits in non-idle state
 			// for too long without receiving any more data
 			if (uart_state == IDLE)
+			{
 				idleResetCount = 0;
+			}
 			else
 			{
 				idleResetCount += 1;
@@ -552,7 +563,7 @@ void main (void)
 					// FIXME: I am trying to move low level interrupt manipulation out of the rf handling logic
 					// but I need to be sure I am doing the correct opertions still
 					// disable interrupt for radio receiving
-					// because we do not want the buffer written while we are trying to read it
+					// because we do not want the buffer written to while we are trying to read it
 					PCA0CPM0 &= ~ECCF__ENABLED;
 
 					//
@@ -567,6 +578,7 @@ void main (void)
 						// the actual bit value read from pin is stored in the most significant bit of the bucket
 						// so it is masked out of the first passed variable (duration) and passed into the second variable (high_low)
 						HandleRFBucket(bucket & 0x7FFF, (bool)((bucket & 0x8000) >> 15));
+						
                     }
 				}
 				break;
@@ -626,6 +638,7 @@ void main (void)
 				// send firmware version
 				uart_put_command(FIRMWARE_VERSION);
 				uart_command = last_sniffing_command;
+
 				break;
 
 			default:
