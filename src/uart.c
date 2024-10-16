@@ -15,6 +15,7 @@
  #define EFM8PDL_UART0_USE_POLLED 1
 #endif
 
+#include "delay.h"
 #include "globals.h"
 #include "RF_Handling.h"
 #include "RF_Protocols.h"
@@ -209,8 +210,30 @@ void uart_putc(uint8_t txdata)
     }
 
 	UART_TX_Buffer[UART_TX_Buffer_Position] = txdata;
+
+	// increment "pointer"
 	UART_TX_Buffer_Position++;
+
+	// track number of bytes in buffer
 	UART_Buffer_Write_Len++;
+
+	// FIXME: need to consider handling overflow more carefully
+	if (UART_Buffer_Write_Len == UART_TX_BUFFER_SIZE)
+	{
+		while (1)
+		{
+			// we overflowed buffer
+			//UART_TX_Buffer_Position = 0;
+			//UART_Buffer_Write_Len = 0;
+		
+			// enter an infinite loop
+			// watchdog, if enabled, should also trigger
+			led_on();
+			efm8_delay_ms(250);
+			led_off();
+			efm8_delay_ms(250);
+		}
+	}
 }
 
 //-----------------------------------------

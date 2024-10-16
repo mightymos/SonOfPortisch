@@ -7,6 +7,8 @@
 #include "wdt_0.h"
 #include "assert.h"
 
+#include <stdbool.h>
+
 void WDT0_start(void)
 {
     WDTCN = 0xA5;
@@ -14,15 +16,21 @@ void WDT0_start(void)
 
 void WDT0_stop(void)
 {
-    bool ea = IE_EA;
+    bool flag = EA;
+
     EA = 0;
     WDTCN = 0xDE;
     WDTCN = 0xAD;
-    EA = ea;
+
+    EA = flag;
 }
 
 void WDT0_feed(void)
 {
+	// examples
+	//(1/80000)*4^(0+3) =  0.0008 secs
+	//(1/80000)*4^(7+3) = 13.1072 secs
+	// default is divide by 8, so 10 kHz
     WDTCN = 0xA5;
 }
 

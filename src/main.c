@@ -25,7 +25,7 @@
 
 #include "pca_0.h"
 //#include "uart_0.h"
-//#include "wdt_0.h"
+#include "wdt_0.h"
 
 // uart state machine
 __xdata uart_state_t uart_state = IDLE;
@@ -59,6 +59,9 @@ void PCA0_ISR(void)   __interrupt (11);
 //-----------------------------------------------------------------------------
 unsigned char __sdcc_external_startup(void)
 {
+	// FIXME: we need to figure out if this is necessary
+	// sometimes initialization xram takes a long time and so even if watchdog is to be used
+	// first thing we should disable it and then re-enable later
     // pg. 218, sec. 20.3 disable watchdog timer
     EA = 0;
     WDTCN = 0xDE;
@@ -189,8 +192,9 @@ void uart_state_machine(const unsigned int rxdata)
 					packetLength = 9;
 					break;
 				case RF_DO_BEEP:
+					// FIXME: disabled because we no longer share uart and radio buffers
 					// stop sniffing while handling received data
-					PCA0_StopSniffing();
+					//PCA0_StopSniffing();
 					rf_state = RF_IDLE;
 					uart_state = RECEIVING;
 					position = 0;
@@ -370,6 +374,7 @@ void main (void)
 
 	// FIXME: add comment
     uint16_t idleResetCount = 0;
+	uint16_t uartTestCount  = 0;
 
 	// prefer bool type in internel ram to take advantage of bit addressable locations
 	bool result;
@@ -408,18 +413,18 @@ void main (void)
 	// start sniffing if enabled by default
 #if (SNIFFING_ON_AT_STARTUP)
 	// set desired sniffing type to PT2260
-	//sniffing_mode = STANDARD;
-	sniffing_mode = ADVANCED;
+	sniffing_mode = STANDARD;
+	//sniffing_mode = ADVANCED;
 
 	PCA0_DoSniffing();
 
 	rf_state = RF_IDLE;
 
 	// FIXME: add comment
-	//uart_command          = RF_CODE_RFIN;
-	//last_sniffing_command = RF_CODE_RFIN;
-	uart_command          = RF_CODE_SNIFFING_ON;
-	last_sniffing_command = RF_CODE_SNIFFING_ON;
+	uart_command          = RF_CODE_RFIN;
+	last_sniffing_command = RF_CODE_RFIN;
+	//uart_command          = RF_CODE_SNIFFING_ON;
+	//last_sniffing_command = RF_CODE_SNIFFING_ON;
 #else
 	PCA0_StopSniffing();
 	rf_state = RF_IDLE;
@@ -441,7 +446,6 @@ void main (void)
 	enable_global_interrupts();
     
     
-
     // startup
     //requires code and memory space, which is in short supply
     //but good to check that polled uart is working
@@ -454,10 +458,13 @@ void main (void)
 	// DEBUG: output stored protocols just to confirm they are as expected
 	//display_protocols();
 
+	// enable watchdog (we might have previously disabled right after startup)
+	WDT0_start();
+
 	while (true)
 	{
 		// reset Watch Dog Timer
-		//WDT0_feed();
+		WDT0_feed();
 
 
 
@@ -496,6 +503,21 @@ void main (void)
         
 #endif
 
+#if 1
+		uartTestCount += 1;
+		if (uartTestCount > 60000)
+		{
+			uart_putc('^');
+			puthex2(0xDE);
+			puthex2(0xAD);
+			puthex2(0xBE);
+			puthex2(0xEF);
+			uart_putc('\r');
+			uart_putc('\n');
+
+			uartTestCount = 0;
+		}
+#endif
 
 
 		if (rxdata == UART_NO_DATA)

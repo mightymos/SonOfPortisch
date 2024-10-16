@@ -9,7 +9,9 @@
 
 
 #include "efm8_config.h"
-#include "SI_EFM8BB1_Register_Enums.h"
+
+#include <stdint.h>
+#include <EFM8BB1.h>
 
 /**************************************************************************//**
  * @addtogroup wdt_0 WDT0 Driver

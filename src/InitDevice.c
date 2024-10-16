@@ -81,15 +81,26 @@ void enter_DefaultMode_from_RESET(void)
 	CLKSEL = CLKSL__HFOSC | CLKDIV__SYSCLK_DIV_1;
 
 
-	// FIXME: what is this timer used for?
+	// timer 0 is used as clock source for programmable capture module
+	// however, a dedicated clock source also exists for PCA
+	// FIXME: not sure why initialized to 0xA0, later we load it with 0x0B in DoSniffing()
+	// for timer at 100000Hz, 10µs interval
     // FIXME: what are the shifts used for?
 	//TH0 = (0xA0 << TH0_TH0__SHIFT);
-    TH0 = 0xA0;
+    //TH0 = 0xA0;
+	TH0 = 0x0B;
     
-	// FIXME:
+
     // sec. 19.3.1 Baud Rate Generation uart0 baud rate is set by timer 1 in 8-bit auto-reload mode
+	// FIXME: what is shift for?
     //TH1 = (0xCB << TH1_TH1__SHIFT);
+	// e.g. for 19200 baud
+	//1/(((24500000/12))/(256-0xCB)) = 0.00002595918367346939
+	// (1/ans)/2 = 19261.00628930817610062893
     TH1 = 0xCB;
+
+	// 37808 (close to 38400 baud)
+	//TH1 = 0xE5;
 
 	// FIXME: we removed timer3 resource to save on code space
 
@@ -106,6 +117,10 @@ void enter_DefaultMode_from_RESET(void)
 	//***********************************************************************/
 	CKCON0 = SCA__SYSCLK_DIV_12 | T0M__SYSCLK | T2MH__EXTERNAL_CLOCK | T2ML__SYSCLK | T3MH__EXTERNAL_CLOCK | T3ML__SYSCLK | T1M__PRESCALE;
 
+	// low frequency oscillator divide by 1 (i.e., 80 kHz)
+	// used by watchdog timer
+	// (it can also be used with timer3)
+	LFO0CN |= OSCLD__DIVIDE_BY_1;
 
 	/***********************************************************************
 	 - Mode 2, 8-bit Counter/Timer with Auto-Reload
@@ -156,9 +171,8 @@ void enter_DefaultMode_from_RESET(void)
 	 ***********************************************************************/
 	//PCA0POL = CEX0POL__INVERT | CEX1POL__DEFAULT | CEX2POL__DEFAULT;
 	// FIXME: changed this from original Portisch, need to understand better
-	// FIXME: we do not use PCA as output (used to measure radio receiver pulses)
-	//        so does this even matter?
-	PCA0POL = CEX0POL__DEFAULT | CEX1POL__DEFAULT | CEX2POL__DEFAULT;
+	// FIXME: we do not use PCA as output (used to measure radio receiver pulses) so does this even matter?
+	//PCA0POL = CEX0POL__DEFAULT | CEX1POL__DEFAULT | CEX2POL__DEFAULT;
 
 
 	// FIXME: comment

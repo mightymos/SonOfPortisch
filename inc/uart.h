@@ -18,7 +18,7 @@
 //-----------------------------------------------------------------------------
 
 #define UART_RX_BUFFER_SIZE	32
-#define UART_TX_BUFFER_SIZE	32
+#define UART_TX_BUFFER_SIZE	96
 
 /*
 ** high byte error return code of uart_getc()
