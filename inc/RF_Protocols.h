@@ -45,11 +45,11 @@ typedef struct PROTOCOL_STATUS
 	// lower nibble of upper byte is bit0
 	// upper nibble of lower byte is bit1
 	// lower nibble of lower byte is end
-	uint16_t status;
-	//uint8_t sync_status;
-	//uint8_t bit0_status;
-	//uint8_t bit1_status;
-	//uint8_t end_status;
+	//uint16_t status;
+	uint8_t sync_status;
+	uint8_t bit0_status;
+	uint8_t bit1_status;
+	uint8_t end_status;
 	uint8_t bit_count;
 	uint8_t actual_bit_of_byte;
 } PROTOCOL_STATUS;

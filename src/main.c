@@ -503,7 +503,8 @@ void main (void)
         
 #endif
 
-#if 1
+#if 0
+		// periodically sends out a string over uart to test functionality
 		uartTestCount += 1;
 		if (uartTestCount > 60000)
 		{

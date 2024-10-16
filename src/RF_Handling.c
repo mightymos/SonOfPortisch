@@ -144,7 +144,7 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 
 
 	// do init before first data bit received
-	index = (uint8_t)status[i].bit_count;
+	index = status[i].bit_count;
 
 	// clear
 	if (index == 0)
@@ -157,7 +157,7 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 	// start decoding of the bits in sync of the buckets
 
 	// check for possible logic bit0
-	index = (uint8_t)((status[i].status >> 8) & 0x0F);
+	index = status[i].bit0_status;
 
 	// this essentially compares the measured duration to the expected duration
 	// we examine only the lower three bits because the logic level is stored in the upper most bit
@@ -177,18 +177,18 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 			}
 
 			// increment bit0 status
-			status[i].status = ((index + 1) << 8) | (status[i].status & 0xF0FF);
+			status[i].bit0_status++;
 		}
 	}
 	// bucket does not match bit, reset status
 	else
 	{
 		// clear bit0 status
-		status[i].status &= 0xF0FF;
+		status[i].bit0_status = 0;
 	}
 
 	// check for possible logic bit1
-	index = (uint8_t)((status[i].status >> 4) & 0x0F);
+	index = status[i].bit1_status;
 	result = CheckRFSyncBucket(duration, pulses[bit1[index] & 0x07]);
 	if (result)
 	{
@@ -202,7 +202,7 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 			}
 
 			// increment bit1 status
-			status[i].status = ((index + 1) << 4) | (status[i].status & 0xFF0F);
+			status[i].bit1_status++;
 
 		}
 	}
@@ -210,11 +210,11 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 	else
 	{
 		// clear bit1 status
-		status[i].status &= 0xFF0F;
+		status[i].bit1_status = 0;
 	}
 
-	index = (uint8_t)((status[i].status >> 8) & 0x0F);
-	count = (uint8_t)((status[i].status >> 4) & 0x0F);
+	index = status[i].bit0_status;
+	count = status[i].bit1_status;
 
 	// check if any bucket got decoded, if not restart
 	if ((index == 0) && (count == 0))
@@ -222,7 +222,11 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 		led_off();
 
 		// clear status
-		status[i].status = 0;
+		status[i].sync_status = 0;
+		status[i].bit0_status = 0;
+		status[i].bit1_status = 0;
+		status[i].end_status  = 0;
+
 		status[i].bit_count = 0;
 		status[i].actual_bit_of_byte = 0;
 		
@@ -232,20 +236,23 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 
 	// on the last bit do not check the last bucket
 	// because it may not be correct due to a repeat delay
-	index = (uint8_t)status[i].bit_count;
+	index = status[i].bit_count;
 	if (index == bit_count - 1)
 	{
 		last_bit = 1;
 	}
 
 	// check if bit 0 is finished
-	index = (uint8_t)((status[i].status >> 8) & 0x0F);
-	count = (uint8_t)((status[i].status >> 4) & 0x0F);
+	index = status[i].bit0_status;
+	count = status[i].bit1_status;
 	if (index == bit0_size - last_bit)
 	{
 		led_on();
 
-		status[i].status &= 0xF00F;
+		//
+		status[i].bit0_status = 0;
+		status[i].bit1_status = 0;
+
 		status[i].bit_count += 1;
 		status[i].actual_bit_of_byte -= 1;
 	}
@@ -254,7 +261,10 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 		// check if bit 1 is finished
 		led_on();
 
-		status[i].status &= 0xF00F;
+		//
+		status[i].bit0_status = 0;
+		status[i].bit1_status = 0;
+
 		status[i].bit_count += 1;
 		status[i].actual_bit_of_byte -= 1;
 		
@@ -264,16 +274,16 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 		// shifting by three essentially divides by eight
 		// so bit index is converted to a byte index
 		// and we set the bit there since we confirmed a logic one measured
-		RF_DATA[(index - 1) >> 3] |= (1 << (uint8_t)((status[i]).actual_bit_of_byte));
+		RF_DATA[(index - 1) >> 3] |= (1 << (status[i]).actual_bit_of_byte);
 
 	}
 
 	// 8 bits are done, compute crc of data
 	// FIXME: why compute crc?
-	index = (uint8_t)(status[i].actual_bit_of_byte);
+	index = status[i].actual_bit_of_byte;
 	if (index == 0)
 	{
-		index = (uint8_t)status[i].bit_count;
+		index = status[i].bit_count;
 
 		crc = Compute_CRC8_Simple_OneByte(crc ^ RF_DATA[(index - 1) >> 3]);
 
@@ -282,7 +292,7 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 
 
 	// check if all bits got collected
-	index = (uint8_t)status[i].bit_count;
+	index = status[i].bit_count;
 	if (index >= bit_count)
 	{
 		// check if timeout timer for crc is finished
@@ -311,7 +321,12 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses,
 		led_off();
 
 		// clear status
-		status[i].status = 0;
+		//
+		status[i].sync_status = 0;
+		status[i].bit0_status = 0;
+		status[i].bit1_status = 0;
+		status[i].end_status  = 0;
+
 		status[i].bit_count = 0;
 		status[i].actual_bit_of_byte = 0;
 		
@@ -346,8 +361,12 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 		// this will be optimized out if only one protocol exists
 		for (i = 0; i < NUM_OF_PROTOCOLS; i++)
 		{
-			//START_CLEAR(status[i]);
-			status[i].status = 0;
+			// clear status
+			status[i].sync_status = 0;
+			status[i].bit0_status = 0;
+			status[i].bit1_status = 0;
+			status[i].end_status  = 0;
+
 			status[i].bit_count = 0;
 			status[i].actual_bit_of_byte = 0;
 		}
@@ -363,8 +382,8 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 	{
 		case STANDARD:
 			
-			// 0 or 1 means we are looking for a sync pulse width, 2 means we are looking at data bits
-			index = (uint8_t)(status[0].status >> 12) & 0x0F;
+			// 0 means we are looking for a sync pulse width, 2 means we are looking at data bits
+			index = status[0].sync_status;
 
 			// check if protocol is now starting (i.e., zero means it has not previously started)
 			if (index == 0)
@@ -375,11 +394,8 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 				if ((duration > PT226x_SYNC_MIN) && !high_low)
 				{
 					// increment start twice because of the skipped first high bucket
-					count = (uint8_t)(status[0].status >> 12) & 0x0F;
-					status[0].status = ((count + 1) << 12) | (status[0].status & 0x0FFF);
-
-					count = (uint8_t)(status[0].status >> 12) & 0x0F;
-					status[0].status = ((count + 1) << 12) | (status[0].status & 0x0FFF);
+					status[0].sync_status++;
+					status[0].sync_status++;
 
 					// stores measured sync time, for later sending over uart
 					SYNC_LOW = duration;
@@ -395,16 +411,16 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 			else if (index == 2)
 			{
 				// DEBUG:
-				//uart_putc('^');
-				//puthex2(0xDE);
-				//puthex2(0xAD);
-				//puthex2(0xBE);
-				//puthex2(0xEF);
+				uart_putc('^');
+				puthex2(0xDE);
+				puthex2(0xAD);
+				puthex2(0xBE);
+				puthex2(0xEF);
 				//puthex2(index);
 				//puthex2((duration >> 8) & 0xff);
 				//puthex2(duration & 0xff);
-				//uart_putc('\r');
-				//uart_putc('\n');
+				uart_putc('\r');
+				uart_putc('\n');
 
 
 				// we place all arguments on one line so that debugger does not get confused regarding line numbers
@@ -421,7 +437,7 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 			{
 				// track which pulse width we should be on for sync starting from zero
 				// in other words, protocol started
-				index = (uint8_t)(status[i].status >> 12) & 0x0F;
+				index = status[i].sync_status;
 
 				// check if sync is finished
 				if (index < PROTOCOL_DATA[i].start.size)
@@ -447,14 +463,18 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 					if (result)
 					{
 						// increment the index into the start pulse width by one
-						status[i].status = ((index + 1) << 12) | (status[i].status & 0x0FFF);
+						status[i].sync_status++;
 						
 						continue;
 					}
 					else
 					{
 						// clear status
-						status[i].status = 0;
+						status[i].sync_status = 0;
+						status[i].bit0_status = 0;
+						status[i].bit1_status = 0;
+						status[i].end_status  = 0;
+
 						status[i].bit_count = 0;
 						status[i].actual_bit_of_byte = 0;
 
