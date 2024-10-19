@@ -494,8 +494,6 @@ bool SendSingleBucket(bool high_low, uint16_t bucket_time)
         led_off();
         tdata_off();
     }
-	//LED = high_low;
-	//T_DATA = high_low;
 	
 	// FIXME: remove need for Timer3 resource
     //InitTimer3_us(10, bucket_time);

@@ -317,8 +317,9 @@ void main (void)
 
 	// FIXME: add comment
 	idle_uart_command = RF_CODE_RFIN;
-	uart_command = RF_CODE_RFIN;
-	//uart_command = RF_CODE_SNIFFING_ON_BUCKET;
+	uart_command      = RF_CODE_RFIN;
+	//idle_uart_command = RF_CODE_SNIFFING_ON;
+	//uart_command = RF_CODE_SNIFFING_ON;
 #else
 	PCA0_StopSniffing();
 	rf_state = RF_IDLE;
@@ -434,7 +435,9 @@ void main (void)
 					switch(uart_command)
 					{
 						case RF_CODE_RFIN:
+							// we no longer share a buffer between radio and uart, however need to avoid writing to radio buffer while reading it
 							PCA0CPM0 &= ~ECCF__ENABLED;
+							//we read RF_DATA[] so do not want decoding writing to it while trying to read it
 							uart_put_RF_Data_Standard(RF_CODE_RFIN);
 							PCA0CPM0 |= ECCF__ENABLED;
 							break;
@@ -452,11 +455,12 @@ void main (void)
 				}
 				else
 				{
-					// disable interrupt for RF receiving while reading buffer
+					// disable interrupt for radio receiving while reading buffer
 					PCA0CPM0 &= ~ECCF__ENABLED;
 					result = buffer_out(&bucket);
 					// FIXME: reenable (should store previous and just restore that?)
 					PCA0CPM0 |= ECCF__ENABLED;
+
 					// handle new received buckets
 					if (result)
                     {
@@ -469,9 +473,10 @@ void main (void)
 				// check if a RF signal got decoded
 				if ((RF_DATA_STATUS & RF_DATA_RECEIVED_MASK) != 0)
 				{
-					// disable interrupt for RF receiving during uart transfer
+					//
 					PCA0CPM0 &= ~ECCF__ENABLED;
 					
+					//
 					uart_put_RF_buckets(RF_CODE_SNIFFING_ON_BUCKET);
 
 					// clear RF status
