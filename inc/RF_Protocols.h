@@ -38,7 +38,11 @@
 
 typedef struct PROTOCOL_STATUS
 {
-	uint16_t status;
+	//uint16_t status;
+	uint8_t sync_status;
+	uint8_t bit0_status;
+	uint8_t bit1_status;
+	uint8_t end_status;
 	uint8_t bit_count;
 	uint8_t actual_bit_of_byte;
 } PROTOCOL_STATUS;

@@ -260,7 +260,7 @@ void main (void)
 	// for buzzer (milliseconds)
 	//const uint16_t startupDelay = 100;
 	// longer for LED
-	__code uint16_t startupDelay = 3000;
+	const uint16_t startupDelay = 3000;
 
 	// changed by external hardware, so must specify volatile type so not optimized out
 	volatile unsigned int rxdata = UART_NO_DATA;
