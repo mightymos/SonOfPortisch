@@ -411,18 +411,19 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 			else if (index == 2)
 			{
 				// DEBUG:
-				uart_putc('^');
-				puthex2(0xDE);
-				puthex2(0xAD);
-				puthex2(0xBE);
-				puthex2(0xEF);
+				//uart_putc('^');
+				//puthex2(0x12);
+				//puthex2(0x34);
+				//puthex2(0x56);
+				//puthex2(0x78);
 				//puthex2(index);
 				//puthex2((duration >> 8) & 0xff);
 				//puthex2(duration & 0xff);
-				uart_putc('\r');
-				uart_putc('\n');
+				//uart_putc('\r');
+				//uart_putc('\n');
 
-
+				// FIXME: remove this, only included for debugging
+				status[0].sync_status = 0;
 				// we place all arguments on one line so that debugger does not get confused regarding line numbers
 				DecodeBucket(0, high_low, duration, buckets, PROTOCOL_DATA[0].bit0.dat, PROTOCOL_DATA[0].bit0.size, PROTOCOL_DATA[0].bit1.dat, PROTOCOL_DATA[0].bit1.size, PROTOCOL_DATA[0].bit_count);
 			}

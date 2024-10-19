@@ -503,16 +503,16 @@ void main (void)
         
 #endif
 
-#if 0
+#if 1
 		// periodically sends out a string over uart to test functionality
 		uartTestCount += 1;
 		if (uartTestCount > 60000)
 		{
 			uart_putc('^');
-			puthex2(0xDE);
-			puthex2(0xAD);
-			puthex2(0xBE);
-			puthex2(0xEF);
+			puthex2(0x12);
+			puthex2(0x34);
+			puthex2(0x56);
+			puthex2(0x78);
 			uart_putc('\r');
 			uart_putc('\n');
 
