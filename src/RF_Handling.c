@@ -131,10 +131,10 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration,
 	// start decoding of the bits in sync of the buckets
 
 	// bit 0
-	if (CheckRFSyncBucket(duration, pulses[BUCKET_NR(bit0[status[i].bit0_status])]))
+	if (CheckRFSyncBucket(duration, pulses[bit0[status[i].bit0_status] & 0x07]))
 	{
 		// decode only if high/low does match
-		if (BUCKET_STATE(bit0[status[i].bit0_status]) == high_low)
+		if (((bit0[status[i].bit0_status] & 0x08) >> 3) == high_low)
 		{
 			if (status[i].bit0_status == 0)
 				BIT_LOW = duration;
@@ -149,10 +149,10 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration,
 	}
 
 	// bit 1
-	if (CheckRFSyncBucket(duration, pulses[BUCKET_NR(bit1[status[i].bit1_status])]))
+	if (CheckRFSyncBucket(duration, pulses[bit1[status[i].bit1_status] & 0x07]))
 	{
 		// decode only if high/low does match
-		if (BUCKET_STATE(bit1[status[i].bit1_status]) == high_low)
+		if (((bit1[status[i].bit1_status] & 0x08) >> 3) == high_low)
 		{
 			if (status[i].bit1_status == 0)
 				BIT_HIGH = duration;
@@ -319,10 +319,10 @@ void HandleRFBucket(uint16_t duration, bool high_low)
 				if (status[i].sync_status < PROTOCOL_DATA[i].start.size)
 				{
 					// check if sync bucket high/low is matching
-					if (BUCKET_STATE(PROTOCOL_DATA[i].start.dat[status[i].sync_status]) != high_low)
+					if (((PROTOCOL_DATA[i].start.dat[status[i].sync_status] & 0x08) >> 3) != high_low)
 						continue;
 
-					if (CheckRFSyncBucket(duration, PROTOCOL_DATA[i].buckets.dat[BUCKET_NR(PROTOCOL_DATA[i].start.dat[status[i].sync_status])]))
+					if (CheckRFSyncBucket(duration, PROTOCOL_DATA[i].buckets.dat[PROTOCOL_DATA[i].start.dat[status[i].sync_status] & 0x07]))
 					{
 						status[i].sync_status += 1;
 						continue;
@@ -541,7 +541,7 @@ void SendBuckets(uint16_t *pulses, uint8_t* start, uint8_t start_size, uint8_t* 
 
 	// transmit sync bucket(s)
 	for (i = 0; i < start_size; i++)
-		SendSingleBucket(BUCKET_STATE(start[i]), pulses[BUCKET_NR(start[i])]);
+		SendSingleBucket(((start[i] & 0x08) >> 3), pulses[start[i] & 0x07]);
 
 	// transmit bit bucket(s)
 	for (i = 0; i < bit_count; i++)
@@ -551,14 +551,14 @@ void SendBuckets(uint16_t *pulses, uint8_t* start, uint8_t start_size, uint8_t* 
 		{
 			for (a = 0; a < bit0_size; a++)
 			{
-				SendSingleBucket(BUCKET_STATE(bit0[a]), pulses[BUCKET_NR(bit0[a])]);
+				SendSingleBucket(((bit0[a] & 0x08) >> 3), pulses[bit0[a] & 0x07]);
 			}
 		}
 		else
 		{	// send bit 1
 			for (a = 0; a < bit1_size; a++)
 			{
-				SendSingleBucket(BUCKET_STATE(bit1[a]), pulses[BUCKET_NR(bit1[a])]);
+				SendSingleBucket(((bit1[a] & 0x08) >> 3), pulses[bit1[a] & 0x07]);
 			}
 		}
 
@@ -574,7 +574,7 @@ void SendBuckets(uint16_t *pulses, uint8_t* start, uint8_t start_size, uint8_t* 
 	// transmit end bucket(s)
 	for (i = 0; i < end_size; i++)
 	{
-		SendSingleBucket(BUCKET_STATE(end[i]), pulses[BUCKET_NR(end[i])]);
+		SendSingleBucket(((end[i] & 0x08) >> 3), pulses[end[i] & 0x07]);
 	}
 
 	led_off();

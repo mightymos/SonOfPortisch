@@ -23,6 +23,8 @@
 
 #define ARRAY_LENGTH(array) (sizeof((array))/sizeof((array)[0]))
 
+// initially we removed macros because of concern that SDCC compiler might be misinterpreting them
+// but also they make the code very difficult to read and save just a couple bytes per protocol
 //#define START_GET(x) (uint8_t)(((x).status >> 12) & 0x0F)
 //#define START_INC(x) ((x).status = ((START_GET(x) + 1) << 12) | ((x).status & 0x0FFF))
 //#define START_CLEAR(x) ((x).status = 0, (x).bit_count = 0, (x).actual_bit_of_byte = 0)
@@ -48,6 +50,10 @@
 //#define ABP_DEC(x) ((x).actual_bit_of_byte -= 1)
 //#define ABP_RESET(x) ((x).actual_bit_of_byte = 8)
 
+//#define BUCKET_NR(x) ((x) & 0x07)
+//#define BUCKET_STATE(x) (bool)(((x) & 0x08) >> 3)
+
+// used to help with defining stored protocol constants
 #define PROTOCOL_BUCKETS(X) X ## _buckets
 #define PROTOCOL_START(X) X ## _start
 #define PROTOCOL_BIT0(X) X ## _bit0
@@ -56,8 +62,6 @@
 
 #define HIGH(x) ((x) | 0x08)
 #define LOW(x) ((x) & 0x07)
-#define BUCKET_NR(x) ((x) & 0x07)
-#define BUCKET_STATE(x) (bool)(((x) & 0x08) >> 3)
 
 // USER PROTOTYPES
 //SI_SBIT(LED,    SFR_P1, 0);		// LED
