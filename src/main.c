@@ -255,7 +255,7 @@ void uart_state_machine(const unsigned int rxdata)
 
 bool radio_state_machine(void)
 {
-	bool result = false;
+	bool completed = false;
 
 	// do transmit of the data
 	switch(rf_state)
@@ -274,6 +274,9 @@ bool radio_state_machine(void)
 			buckets[2] = *(uint16_t *)&RF_DATA[0];
 
 			SendBuckets(buckets,PROTOCOL_DATA[0].start.dat, PROTOCOL_DATA[0].start.size,PROTOCOL_DATA[0].bit0.dat, PROTOCOL_DATA[0].bit0.size,PROTOCOL_DATA[0].bit1.dat, PROTOCOL_DATA[0].bit1.size,PROTOCOL_DATA[0].end.dat, PROTOCOL_DATA[0].end.size,PROTOCOL_DATA[0].bit_count,RF_DATA + 6);
+			
+			rf_state = RF_FINISHED;
+			
 			break;
 
 		// wait until data got transfered
@@ -286,14 +289,14 @@ bool radio_state_machine(void)
 				// send uart command
 				uart_put_command(RF_CODE_ACK);
 
-				result = true;
+				completed = true;
 			} else {
 				rf_state = RF_IDLE;
 			}
 			break;
 	}
 
-	return result;
+	return completed;
 }
 
 //-----------------------------------------------------------------------------
@@ -518,11 +521,12 @@ void main (void)
 				// FIXME: might not be the correct place to do this
 				if (radio_state_machine())
 				{
-					uart_command = last_sniffing_command;
 
 					// FIXME: need to examine this logic
 					// restart sniffing in its previous mode
 					PCA0_DoSniffing();
+
+					uart_command = last_sniffing_command;
 				}
 				break;
 			case RF_CODE_SNIFFING_ON_BUCKET:
