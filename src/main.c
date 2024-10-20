@@ -159,18 +159,18 @@ void uart_state_machine(const unsigned int rxdata)
 				case RF_ALTERNATIVE_FIRMWARE:
 					break;
 				case RF_CODE_SNIFFING_ON:
-					//sniffing_mode = ADVANCED;
-					//PCA0_DoSniffing();
-					//last_sniffing_command = RF_CODE_SNIFFING_ON;
-					//rf_state = RF_IDLE;
+					sniffing_mode = ADVANCED;
+					PCA0_DoSniffing();
+					last_sniffing_command = RF_CODE_SNIFFING_ON;
+					rf_state = RF_IDLE;
 					break;
 				case RF_CODE_SNIFFING_OFF:
 					// set desired RF protocol PT2260
-					//sniffing_mode = STANDARD;
+					sniffing_mode = STANDARD;
 					// re-enable default RF_CODE_RFIN sniffing
-					//PCA0_DoSniffing();
-					//last_sniffing_command = RF_CODE_RFIN;
-					//rf_state = RF_IDLE;
+					PCA0_DoSniffing();
+					last_sniffing_command = RF_CODE_RFIN;
+					rf_state = RF_IDLE;
 					break;
 				case RF_CODE_RFOUT_NEW:
 					//tr_repeats = RF_TRANSMIT_REPEATS;
