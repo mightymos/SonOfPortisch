@@ -73,16 +73,17 @@
 //__sbit __at (0x93) R_DATA;
 //__sbit __at (0x96) BUZZER;
 
-
+// FIXME: handle pins that vary on different hardware
 #define TDATA  P0_0
-// Sonoff Bridge
-// Sonoff with black case
+//(uncomment only one LED line)
+// Sonoff Bridge (i.e., black case)
 //#define LED    P1_0
-// EFM8BB1LCK board (uncomment only one LED line)
+// EFM8BB1LCK development board
 #define LED    P1_4
 #define RDATA  P1_3
 #define BUZZER P1_6
 
+//
 #define DEBUG_PIN0 P1_5
 #define DEBUG_PIN1 P1_6
 

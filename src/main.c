@@ -257,6 +257,17 @@ bool radio_state_machine(void)
 {
 	bool completed = false;
 
+	// FIXME:
+	uint16_t buckets_dummy[3] = {350, 1050, 10850};
+	uint8_t  packet_dummy[3]  = {0xDE, 0xAD, 0xBE};
+
+	// helps allow sendbuckets call to be more readable
+	uint8_t start_size;
+	uint8_t bit0_size;
+	uint8_t bit1_size;
+	uint8_t end_size;
+	uint8_t bitcount;
+
 	// do transmit of the data
 	switch(rf_state)
 	{
@@ -269,11 +280,16 @@ bool radio_state_machine(void)
 			// byte 2..3:	Tlow
 			// byte 4..5:	Thigh
 			// byte 6..8:	24bit Data
-			buckets[0] = *(uint16_t *)&RF_DATA[2];
-			buckets[1] = *(uint16_t *)&RF_DATA[4];
-			buckets[2] = *(uint16_t *)&RF_DATA[0];
+			//buckets[0] = *(uint16_t *)&RF_DATA[2];
+			//buckets[1] = *(uint16_t *)&RF_DATA[4];
+			//buckets[2] = *(uint16_t *)&RF_DATA[0];
+			start_size = PROTOCOL_DATA[0].start.size;
+			bit0_size  = PROTOCOL_DATA[0].bit0.size;
+			bit1_size  = PROTOCOL_DATA[0].bit1.size;
+			end_size   = PROTOCOL_DATA[0].end.size;
+			bitcount   = PROTOCOL_DATA[0].bit_count;
 
-			SendBuckets(buckets,PROTOCOL_DATA[0].start.dat, PROTOCOL_DATA[0].start.size,PROTOCOL_DATA[0].bit0.dat, PROTOCOL_DATA[0].bit0.size,PROTOCOL_DATA[0].bit1.dat, PROTOCOL_DATA[0].bit1.size,PROTOCOL_DATA[0].end.dat, PROTOCOL_DATA[0].end.size,PROTOCOL_DATA[0].bit_count,RF_DATA + 6);
+			SendBuckets(buckets_dummy, PROTOCOL_DATA[0].start.dat, start_size, PROTOCOL_DATA[0].bit0.dat, bit0_size, PROTOCOL_DATA[0].bit1.dat, bit1_size,PROTOCOL_DATA[0].end.dat, end_size, bitcount, packet_dummy);
 			
 			rf_state = RF_FINISHED;
 			
@@ -514,18 +530,19 @@ void main (void)
 				}
 				break;
 			case RF_CODE_RFOUT:
+
 				// only do the job if all data got received by UART
 				if (uart_state != IDLE)
 					break;
 
-				// FIXME: might not be the correct place to do this
+				// if statement allows repeat transmissions
 				if (radio_state_machine())
 				{
-
 					// FIXME: need to examine this logic
 					// restart sniffing in its previous mode
 					PCA0_DoSniffing();
 
+					// change back to previous command (i.e., not rfout)
 					uart_command = last_sniffing_command;
 				}
 				break;

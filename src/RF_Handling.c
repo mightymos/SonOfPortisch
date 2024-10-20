@@ -496,11 +496,16 @@ bool SendSingleBucket(bool high_low, uint16_t bucket_time)
         tdata_off();
     }
 	
-	// FIXME: remove need for Timer3 resource
+	// FIXME: remove need for Timer3 resource?
     //InitTimer3_us(10, bucket_time);
 	// wait until timer has finished
 	//WaitTimer3Finished();
-	efm8_delay_us(bucket_time);
+	// FIXME: nop style delay seems to basically work (with first protocol)
+	// but delays measured at receiver are inaccurate due to delay_us inaccuracy
+	//efm8_delay_us(bucket_time);
+	// FIXME: so maybe just use timer2 instead
+	InitTimer2_us(10, bucket_time);
+	WaitTimer2Finished();
 
 	return !high_low;
 }
