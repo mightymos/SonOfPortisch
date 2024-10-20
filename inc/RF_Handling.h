@@ -40,6 +40,8 @@ typedef enum
 
 #define RF_DATA_RECEIVED_MASK	0x80
 
+extern __xdata rf_state_t rf_state;
+
 extern __xdata uint8_t RF_DATA[RF_DATA_BUFFERSIZE];
 // RF_DATA_STATUS
 // Bit 7:	1 Data received, 0 nothing received
@@ -68,6 +70,6 @@ extern void PCA0_StopSniffing(void);
 extern void SendRFBuckets(uint16_t* buckets, uint8_t* rfdata, uint8_t data_len);
 extern void SendBuckets(uint16_t *pulses,uint8_t* start, uint8_t start_size,uint8_t* bit0, uint8_t bit0_size,uint8_t* bit1, uint8_t bit1_size,uint8_t* end, uint8_t end_size,uint8_t bit_count,uint8_t* rfdata);
 extern void SendBucketsByIndex(uint8_t index, uint8_t* rfdata);
-extern void Bucket_Received(uint16_t duration, bool high_low, rf_state_t* rf_state);
+extern void Bucket_Received(uint16_t duration, bool high_low);
 
 #endif // INC_RF_HANDLING_H_

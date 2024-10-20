@@ -30,9 +30,12 @@
 // uart state machine
 __xdata uart_state_t uart_state = IDLE;
 __xdata uart_command_t uart_command = NONE;
-__xdata uart_command_t idle_uart_command;
+__xdata uart_command_t last_sniffing_command;
 __xdata uint8_t uartPacket[10];
 
+// used for count down radio transmissions
+
+__xdata uint8_t tr_repeats = 0;
 
 // sdcc manual section 3.8.1 general information
 // requires interrupt definition to appear or be included in main
@@ -108,9 +111,6 @@ void uart_state_machine(const unsigned int rxdata)
 	// FIXME: add comment
 	//idleResetCount = 0;
 
-	__xdata rf_state_t rf_state;
-
-    __xdata uint8_t tr_repeats = 0;
 
 	// need to specify volatile so optimizer does not remove
 	// given that it is set by external data input to uart
@@ -141,12 +141,12 @@ void uart_state_machine(const unsigned int rxdata)
 					break;
 				case RF_CODE_RFOUT:
 					// stop sniffing while handling received data
-					//PCA0_StopSniffing();
-					//rf_state = RF_IDLE;
-					//uart_state = RECEIVING;
-					//tr_repeats = RF_TRANSMIT_REPEATS;
-					//position = 0;
-					//packetLength = 9;
+					PCA0_StopSniffing();
+					rf_state = RF_IDLE;
+					uart_state = RECEIVING;
+					tr_repeats = RF_TRANSMIT_REPEATS;
+					position = 0;
+					packetLength = 9;
 					break;
 				case RF_DO_BEEP:
 					// stop sniffing while handling received data
@@ -219,6 +219,7 @@ void uart_state_machine(const unsigned int rxdata)
 			uartPacket[position] = rxdata & 0xFF;
 			position++;
 
+			// FIXME: should look for buffer overflow as Portisch did
 			if (position >= packetLength)
 			{
 				uart_state = SYNC_FINISH;
@@ -252,6 +253,49 @@ void uart_state_machine(const unsigned int rxdata)
 	}
 }
 
+bool radio_state_machine(void)
+{
+	bool result = false;
+
+	// do transmit of the data
+	switch(rf_state)
+	{
+		// init and start RF transmit
+		case RF_IDLE:
+			tr_repeats--;
+			PCA0_StopSniffing();
+
+			// byte 0..1:	Tsyn
+			// byte 2..3:	Tlow
+			// byte 4..5:	Thigh
+			// byte 6..8:	24bit Data
+			buckets[0] = *(uint16_t *)&RF_DATA[2];
+			buckets[1] = *(uint16_t *)&RF_DATA[4];
+			buckets[2] = *(uint16_t *)&RF_DATA[0];
+
+			SendBuckets(buckets,PROTOCOL_DATA[0].start.dat, PROTOCOL_DATA[0].start.size,PROTOCOL_DATA[0].bit0.dat, PROTOCOL_DATA[0].bit0.size,PROTOCOL_DATA[0].bit1.dat, PROTOCOL_DATA[0].bit1.size,PROTOCOL_DATA[0].end.dat, PROTOCOL_DATA[0].end.size,PROTOCOL_DATA[0].bit_count,RF_DATA + 6);
+			break;
+
+		// wait until data got transfered
+		case RF_FINISHED:
+			if (tr_repeats == 0)
+			{
+				// disable RF transmit
+				tdata_off();
+
+				// send uart command
+				uart_put_command(RF_CODE_ACK);
+
+				result = true;
+			} else {
+				rf_state = RF_IDLE;
+			}
+			break;
+	}
+
+	return result;
+}
+
 //-----------------------------------------------------------------------------
 // main() Routine
 // ----------------------------------------------------------------------------
@@ -265,11 +309,9 @@ void main (void)
 	// changed by external hardware, so must specify volatile type so not optimized out
 	volatile unsigned int rxdata = UART_NO_DATA;
 
-
-	rf_state_t rf_state = RF_IDLE;
+	// FIXME: add comment
     uint16_t bucket = 0;
     
-    //__xdata uint16_t index = 0;
 
 	// FIXME: add comment
     __xdata uint16_t idleResetCount = 0;
@@ -316,10 +358,10 @@ void main (void)
 	rf_state = RF_IDLE;
 
 	// FIXME: add comment
-	idle_uart_command = RF_CODE_RFIN;
-	uart_command      = RF_CODE_RFIN;
-	//idle_uart_command = RF_CODE_SNIFFING_ON;
-	//uart_command = RF_CODE_SNIFFING_ON;
+	last_sniffing_command = RF_CODE_RFIN;
+	uart_command          = RF_CODE_RFIN;
+	//last_sniffing_command = RF_CODE_SNIFFING_ON;
+	//uart_command          = RF_CODE_SNIFFING_ON;
 #else
 	PCA0_StopSniffing();
 	rf_state = RF_IDLE;
@@ -468,6 +510,21 @@ void main (void)
                     }
 				}
 				break;
+			case RF_CODE_RFOUT:
+				// only do the job if all data got received by UART
+				if (uart_state != IDLE)
+					break;
+
+				// FIXME: might not be the correct place to do this
+				if (radio_state_machine())
+				{
+					uart_command = last_sniffing_command;
+
+					// FIXME: need to examine this logic
+					// restart sniffing in its previous mode
+					PCA0_DoSniffing();
+				}
+				break;
 			case RF_CODE_SNIFFING_ON_BUCKET:
 
 				// check if a RF signal got decoded
@@ -491,7 +548,7 @@ void main (void)
 					result = buffer_out(&bucket);
 					if (result)
 					{
-						Bucket_Received(bucket & 0x7FFF, (bool)((bucket & 0x8000) >> 15), &rf_state);
+						Bucket_Received(bucket & 0x7FFF, (bool)((bucket & 0x8000) >> 15));
 					}
 				}
 
@@ -511,7 +568,7 @@ void main (void)
 				// send acknowledge
 				// send uart command
 				uart_put_command(RF_CODE_ACK);
-				uart_command = idle_uart_command;
+				uart_command = last_sniffing_command;
 				break;
 
 			// host was requesting the firmware version
@@ -519,7 +576,7 @@ void main (void)
 
 				// send firmware version
 				uart_put_command(FIRMWARE_VERSION);
-				uart_command = idle_uart_command;
+				uart_command = last_sniffing_command;
 				break;
 
 			default:
