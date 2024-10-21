@@ -54,8 +54,7 @@ extern void uart_put_command(uint8_t command);
 extern void uart_put_RF_Data_Standard(uint8_t command);
 extern void uart_put_RF_Data_Advanced(uint8_t command, uint8_t protocol_index);
 
-#if INCLUDE_BUCKET_SNIFFING == 1
+// bucket sniffing
 extern void uart_put_RF_buckets(uint8_t Command);
-#endif
 
-#endif
+#endif // INC_SERIAL_H

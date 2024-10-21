@@ -8,7 +8,6 @@
 #define __PCA_0_H__
 
 
-#include "efm8_config.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <EFM8BB1.h>
@@ -125,9 +124,7 @@
   #define IS_DOXYGEN 0
 #endif
 
-#ifndef EFM8PDL_PCA0_USE_ISR
-  #define EFM8PDL_PCA0_USE_ISR 1
-#endif
+
 
 // Runtime API
 /**************************************************************************//**
@@ -490,7 +487,7 @@ void PCA0_resetChannel(PCA0_Channel_t channel);
 //=========================================================
 // ISR API
 //=========================================================
-#if (EFM8PDL_PCA0_USE_ISR == 1) || IS_DOXYGEN
+
 /**************************************************************************//**
  * @def void PCA0_ISR()
  * @brief PCA Interrupt handler (not a callback).
@@ -498,14 +495,14 @@ void PCA0_resetChannel(PCA0_Channel_t channel);
  * This ISR is provided by the library when EFM8PDL_PCA0_USE_ISR = "1".
  *
  *****************************************************************************/
-#endif //EFM8PDL_PCA0_USE_ISR
+
 
 // Callbacks
 /**************************************************************************//**
  * @addtogroup pca0_callback User Callbacks
  * @{
  *****************************************************************************/
-#if (EFM8PDL_PCA0_USE_ISR == 1) || IS_DOXYGEN
+
 
 /***************************************************************************//**
  * @addtogroup pca0_callbacks_isr ISR API
@@ -596,7 +593,6 @@ extern void PCA0_channel2EventCb(void);
  * @warning NOT SUPPORTED ON THIS DEVICE
  *****************************************************************************/
 
-#endif //EFM8PDL_PCA0_USE_ISR
 /** @} (end addtogroup pca0_callbacks_isr ISR API) */
 /** @} (end addtogroup pca0_callback User Callbacks) */
 /** @} (end addtogroup PCA0 Driver) */

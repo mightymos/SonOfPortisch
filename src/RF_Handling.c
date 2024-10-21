@@ -16,6 +16,8 @@
 #include "RF_Protocols.h"
 #include "pca_0.h"
 
+// FIXME: not clear why this is four as opposed to anything else
+#define BUFFER_BUCKETS_SIZE 4
 
 // FIXME: add comment
 __xdata uint8_t RF_DATA[RF_DATA_BUFFERSIZE];
@@ -49,15 +51,14 @@ uint8_t crc = 0;
 // -1 because of the bucket_sync
 __xdata uint16_t buckets[7];
 
-#if INCLUDE_BUCKET_SNIFFING == 1
+// bucket sniffing
 __xdata uint16_t bucket_sync;
 __xdata uint8_t bucket_count = 0;
 __xdata uint8_t bucket_count_sync_1;
 __xdata uint8_t bucket_count_sync_2;
-#endif
 
 
-#define BUFFER_BUCKETS_SIZE 4
+// stores measured durations temporarily
 __xdata uint16_t buffer_buckets[BUFFER_BUCKETS_SIZE] = {0};
 
 // use separate read and write "pointers" into circular buffer
@@ -516,8 +517,6 @@ bool SendSingleBucket(bool high_low, uint16_t bucket_time)
 //-----------------------------------------------------------------------------
 // Send generic signal based on n time bucket pairs (high/low timing)
 //-----------------------------------------------------------------------------
-#if INCLUDE_BUCKET_SNIFFING == 1
-
 void SendRFBuckets(uint16_t* buckets, uint8_t* rfdata, uint8_t data_len)
 {
 	// start transmit of the buckets with a high bucket
@@ -538,7 +537,6 @@ void SendRFBuckets(uint16_t* buckets, uint8_t* rfdata, uint8_t data_len)
 	led_off();
 }
 
-#endif
 
 void SendBuckets(uint16_t *pulses, uint8_t* start, uint8_t start_size, uint8_t* bit0, uint8_t bit0_size, uint8_t* bit1, uint8_t bit1_size, uint8_t* end, uint8_t end_size, uint8_t bit_count, uint8_t* rfdata)
 {
@@ -592,8 +590,9 @@ void SendBucketsByIndex(uint8_t index, uint8_t* rfdata)
 	SendBuckets(PROTOCOL_DATA[index].buckets.dat,PROTOCOL_DATA[index].start.dat, PROTOCOL_DATA[index].start.size,PROTOCOL_DATA[index].bit0.dat, PROTOCOL_DATA[index].bit0.size, PROTOCOL_DATA[index].bit1.dat, PROTOCOL_DATA[index].bit1.size, PROTOCOL_DATA[index].end.dat, PROTOCOL_DATA[index].end.size,PROTOCOL_DATA[index].bit_count,rfdata);
 }
 
-#if INCLUDE_BUCKET_SNIFFING == 1
 
+// probablyFooter(), matchesFooter(), findBucket(), and Bucket_Received()
+// are all related to bucket sniffing feature
 bool probablyFooter(uint16_t duration)
 {
 	return duration >= MIN_FOOTER_LENGTH;
@@ -780,5 +779,3 @@ void Bucket_Received(uint16_t duration, bool high_low)
 			break;
 	}
 }
-
-#endif

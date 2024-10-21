@@ -76,8 +76,8 @@ void uart_put_RF_Data_Advanced(uint8_t command, uint8_t protocol_index)
 }
 
 
-#if INCLUDE_BUCKET_SNIFFING == 1
 
+// for bucket sniffing
 void uart_put_RF_buckets(uint8_t command)
 {
 	uint8_t index = 0;
@@ -128,5 +128,3 @@ void uart_put_RF_buckets(uint8_t command)
 	uart_putc(RF_CODE_STOP);
 
 }
-
-#endif

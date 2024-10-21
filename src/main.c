@@ -10,8 +10,6 @@
 #include <stdint.h>
 #include <EFM8BB1.h>
 
-#include "efm8_config.h"
-
 // for printf_tiny()
 //#include <stdio.h>
 
@@ -386,23 +384,16 @@ void main (void)
 
 
 
-// baud rate is 19200, 8 data bits, 1 stop bit, no parity
-#if defined(EFM8PDL_UART0_USE_POLLED)
-	#if EFM8PDL_UART0_USE_POLLED
-    	// basically sets TI flag so putchar() does not get stuck in an infinite loop
-    	UART0_initStdio();
-	#else
-		// enable uart
-		UART0_init(UART0_RX_ENABLE, UART0_WIDTH_8, UART0_MULTIPROC_DISABLE);
-	#endif
-#else
-	#error Please define EFM8PDL_UART0_USE_POLLED as 0 or 1.
-#endif
+	// baud rate is 19200, 8 data bits, 1 stop bit, no parity
+	// polled version basicallys sets TI flag so putchar() does not get stuck in an infinite loop
+	//UART0_initStdio();
+
+	// enable uart
+	UART0_init(UART0_RX_ENABLE, UART0_WIDTH_8, UART0_MULTIPROC_DISABLE);
     
 
 
-	// start sniffing if enabled by default
-#if (SNIFFING_ON_AT_STARTUP)
+	// start sniffing be default
 	// set desired sniffing type to PT2260
 	sniffing_mode = STANDARD;
 	//sniffing_mode = ADVANCED;
@@ -414,10 +405,12 @@ void main (void)
 	uart_command          = RF_CODE_RFIN;
 	//last_sniffing_command = RF_CODE_SNIFFING_ON;
 	//uart_command          = RF_CODE_SNIFFING_ON;
-#else
-	PCA0_StopSniffing();
-	rf_state = RF_IDLE;
-#endif
+
+	
+	// alternative with no sniffing on startup
+	//PCA0_StopSniffing();
+	//rf_state = RF_IDLE;
+
 
 #if 1
     // startup buzzer (can be annoying during development)

@@ -5,12 +5,6 @@
  *      Author:
  */
 
-#include "efm8_config.h"
-
-#ifndef EFM8PDL_UART0_USE_POLLED
- #define EFM8PDL_UART0_USE_POLLED 1
-#endif
-
 #include "delay.h"
 #include "globals.h"
 #include "RF_Handling.h"
@@ -121,28 +115,25 @@ uint8_t UART0_read(void)
     return SBUF0;
 }
 
-#if EFM8PDL_UART0_USE_POLLED
 
-    int putchar (int c)
-    {
-        // assumes UART is initialized
-        while (!TI);
-        TI = 0;
-        SBUF0 = c;
-        return c;
-    }
+// polled version
+//int putchar (int c)
+//{
+//    // assumes UART is initialized
+//    while (!TI);
+//    TI = 0;
+//    SBUF0 = c;
+//    return c;
+//}
 
-#else
-
-    int putchar (int c)
-    {
-        // basically a wrapper
-        uart_putc(c);
-        
-        return c;
-    }
-
-#endif
+// interrupt version with buffer
+int putchar (int c)
+{
+    // basically a wrapper
+    uart_putc(c);
+    
+    return c;
+}
 
 
 bool is_uart_tx_finished(void)

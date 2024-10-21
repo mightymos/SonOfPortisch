@@ -232,7 +232,6 @@ void PCA0_halt(void)
 }
 
 
-#if EFM8PDL_PCA0_USE_ISR == 1
 
 void PCA0_ISR(void) __interrupt (11)
 {
@@ -269,6 +268,3 @@ void PCA0_ISR(void) __interrupt (11)
     PCA0_channel2EventCb();
   }
 }
-
-
-#endif //EFM8PDL_PCA0_USE_ISR

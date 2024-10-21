@@ -59,10 +59,9 @@ extern __xdata uint8_t actual_byte;
 
 extern __xdata uint16_t buckets[7];
 
-#if INCLUDE_BUCKET_SNIFFING == 1
+// bucket sniffing
 extern __xdata uint16_t bucket_sync;
 extern __xdata uint8_t bucket_count;
-#endif
 
 
 extern bool buffer_out(uint16_t* bucket);
