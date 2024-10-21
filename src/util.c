@@ -1,6 +1,6 @@
 #include "uart.h"
 
-void puts(const char *s)
+void putstring(const char *s)
 {
    while (*s) uart_putc(*s++);
 }

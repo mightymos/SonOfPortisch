@@ -22,6 +22,7 @@
 #include "RF_Protocols.h"
 #include "serial.h"
 #include "uart.h"
+#include "util.h"
 
 #include "pca_0.h"
 //#include "uart_0.h"
@@ -32,6 +33,10 @@ __xdata uart_state_t uart_state = IDLE;
 __xdata uart_command_t uart_command = NONE;
 __xdata uart_command_t last_sniffing_command;
 __xdata uint8_t uartPacket[10];
+
+// for transmission
+__xdata uint16_t pulsewidths[3];
+__xdata uint8_t  tr_packet[3];
 
 // used for count down radio transmissions
 
@@ -167,10 +172,11 @@ void uart_state_machine(const unsigned int rxdata)
 					rf_state = RF_IDLE;
 					break;
 				case RF_CODE_RFOUT_NEW:
-					//tr_repeats = RF_TRANSMIT_REPEATS;
-					// no break
+					tr_repeats = RF_TRANSMIT_REPEATS;
+					uart_state = RECEIVE_LEN;
+					break;
 				case RF_CODE_RFOUT_BUCKET:
-					//uart_state = RECEIVE_LEN;
+					uart_state = RECEIVE_LEN;
 					break;
 				case RF_CODE_SNIFFING_ON_BUCKET:
 					PCA0_DoSniffing();
@@ -212,12 +218,27 @@ void uart_state_machine(const unsigned int rxdata)
 		// Receiving UART data
 		case RECEIVING:
 			uartPacket[position] = rxdata & 0xFF;
+
+			// DEBUG:
+			//puthex2(uartPacket[position]);
+			//uart_putc(uartPacket[position]);
+			
 			position++;
 
 			// FIXME: should look for buffer overflow as Portisch did
-			if (position >= packetLength)
+			if (position == packetLength)
 			{
 				uart_state = SYNC_FINISH;
+
+				// FIXME: kind of a hack maybe, but only want to do conversion once ideally so do it here
+				// e.g. AA A5 2A 62 01 5E 04 1A D0 03 58 55
+				pulsewidths[0] = (uint16_t) (uartPacket[2] << 8) | uartPacket[3];
+				pulsewidths[1] = (uint16_t) (uartPacket[4] << 8) | uartPacket[5];
+				pulsewidths[2] = (uint16_t) (uartPacket[0] << 8) | uartPacket[1];
+
+				tr_packet[0] = uartPacket[6];
+				tr_packet[1] = uartPacket[7];
+				tr_packet[2] = uartPacket[8];
 			}
 			break;
 
@@ -240,6 +261,7 @@ void uart_state_machine(const unsigned int rxdata)
 					case RF_CODE_ACK:
 						break;
 					case RF_CODE_RFOUT_BUCKET:
+						// FIXME: I do not think the wiki defines this byte as indicating repeat
 						tr_repeats = uartPacket[1] + 1;
 						break;
 				}
@@ -253,11 +275,10 @@ bool radio_state_machine(void)
 	bool completed = false;
 
 	// DEBUG:
-	uint16_t buckets_dummy[3] = {350, 1050, 10850};
-	uint8_t  packet_dummy[3]  = {0xDE, 0xAD, 0xBE};
+	//const uint16_t pulsewidths_dummy[3] = {350, 1050, 10850};
+	//const uint8_t  packet_dummy[3]  = {0xDE, 0xAD, 0xBE};
 
-	// FIXME: need to troubleshoot sending data received by web interface
-	//uint16_t buckets[3];
+	//
 
 	// helps allow sendbuckets call to be more readable
 	uint8_t start_size;
@@ -271,16 +292,22 @@ bool radio_state_machine(void)
 	{
 		// init and start RF transmit
 		case RF_IDLE:
+
 			tr_repeats--;
+
 			PCA0_StopSniffing();
 
 			// byte 0..1:	Tsyn
 			// byte 2..3:	Tlow
 			// byte 4..5:	Thigh
 			// byte 6..8:	24bit Data
-			//buckets[0] = *(uint16_t *)&uartPacket[2];
-			//buckets[1] = *(uint16_t *)&uartPacket[4];
-			//buckets[2] = *(uint16_t *)&uartPacket[0];
+			// FIXME: based on putc(), I think this results in MSB first
+			//pulsewidths[0] = *(uint16_t *)&uartPacket[2];
+			//pulsewidths[1] = *(uint16_t *)&uartPacket[4];
+			//pulsewidths[2] = *(uint16_t *)&uartPacket[0];
+			//pulsewidths[0] = (uint16_t) (uartPacket[2] << 8) | uartPacket[3];
+			//pulsewidths[1] = (uint16_t) (uartPacket[4] << 8) | uartPacket[5];
+			//pulsewidths[2] = (uint16_t) (uartPacket[0] << 8) | uartPacket[1];
 			
 			// help make function call more readable
 			start_size = PROTOCOL_DATA[0].start.size;
@@ -289,10 +316,15 @@ bool radio_state_machine(void)
 			end_size   = PROTOCOL_DATA[0].end.size;
 			bitcount   = PROTOCOL_DATA[0].bit_count;
 
-			//puthex2((buckets[0] >> 8) & 0xff);
-			//puthex2((buckets[1] >> 8) & 0xff);
-			//puthex2((buckets[2] >> 8) & 0xff);
-			SendBuckets(buckets_dummy, PROTOCOL_DATA[0].start.dat, start_size, PROTOCOL_DATA[0].bit0.dat, bit0_size, PROTOCOL_DATA[0].bit1.dat, bit1_size,PROTOCOL_DATA[0].end.dat, end_size, bitcount, packet_dummy);
+			// DEBUG:
+			//uart_putc((pulsewidths[0] >> 8) & 0xff);
+			//uart_putc(pulsewidths[0] & 0xff);
+			//uart_putc((pulsewidths[1] >> 8) & 0xff);
+			//uart_putc(pulsewidths[1] & 0xff);
+			//uart_putc((pulsewidths[2] >> 8) & 0xff);
+			//uart_putc(pulsewidths[2] & 0xff);
+
+			SendBuckets(pulsewidths, PROTOCOL_DATA[0].start.dat, start_size, PROTOCOL_DATA[0].bit0.dat, bit0_size, PROTOCOL_DATA[0].bit1.dat, bit1_size,PROTOCOL_DATA[0].end.dat, end_size, bitcount, tr_packet);
 			
 			// ping pong between idle and finished state until we reach zero repeat index
 			rf_state = RF_FINISHED;
@@ -305,9 +337,6 @@ bool radio_state_machine(void)
 			{
 				// disable RF transmit
 				tdata_off();
-
-				// send uart command
-				uart_put_command(RF_CODE_ACK);
 
 				completed = true;
 			} else {
@@ -554,6 +583,9 @@ void main (void)
 				// if statement allows repeat transmissions
 				if (radio_state_machine())
 				{
+					// indicate completed all transmissions
+					uart_put_command(RF_CODE_ACK);
+
 					// FIXME: need to examine this logic
 					// restart sniffing in its previous mode
 					PCA0_DoSniffing();
@@ -562,6 +594,9 @@ void main (void)
 					uart_command = last_sniffing_command;
 				}
 				break;
+			// FIXME: need to add back in 0xA8 and 0xB0 command
+			// case RF_CODE_RFOUT_NEW:
+			// case RF_CODE_RFOUT_BUCKET:
 			case RF_CODE_SNIFFING_ON_BUCKET:
 
 				// check if a RF signal got decoded
@@ -599,6 +634,8 @@ void main (void)
 
 				// this is blocking unfortunately
 				buzzer_on();
+
+				// FIXME: need to check that MSB and LSB are swapped or not
 				efm8_delay_ms(*(uint16_t *)&uartPacket[1]);
 				buzzer_off();
 
