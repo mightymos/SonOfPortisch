@@ -105,18 +105,11 @@ void serial_loopback(void)
 
 void uart_state_machine(const unsigned int rxdata)
 {
-	// debug: echo sent character
-	//uart_putc(rxdata & 0xff);
+	//
+	static __xdata uint8_t packetLength = 0;
 
 	// FIXME: add comment
-	//idleResetCount = 0;
-
-
-	// need to specify volatile so optimizer does not remove
-	// given that it is set by external data input to uart
-	volatile __xdata uint8_t packetLength = 0;
-	// FIXME: add comment
-	__xdata uint8_t position = 0;
+	static __xdata uint8_t position = 0;
 
 	// state machine for UART
 	switch(uart_state)
@@ -169,6 +162,7 @@ void uart_state_machine(const unsigned int rxdata)
 					sniffing_mode = STANDARD;
 					// re-enable default RF_CODE_RFIN sniffing
 					PCA0_DoSniffing();
+					uart_command          = RF_CODE_RFIN;
 					last_sniffing_command = RF_CODE_RFIN;
 					rf_state = RF_IDLE;
 					break;
@@ -179,8 +173,9 @@ void uart_state_machine(const unsigned int rxdata)
 					//uart_state = RECEIVE_LEN;
 					break;
 				case RF_CODE_SNIFFING_ON_BUCKET:
-					//last_sniffing_command = PCA0_DoSniffing();
-					//rf_state = RF_IDLE;
+					PCA0_DoSniffing();
+					last_sniffing_command = RF_CODE_SNIFFING_ON_BUCKET;
+					rf_state = RF_IDLE;
 					break;
 				case RF_CODE_LEARN_NEW:
 					break;
@@ -257,9 +252,12 @@ bool radio_state_machine(void)
 {
 	bool completed = false;
 
-	// FIXME:
+	// DEBUG:
 	uint16_t buckets_dummy[3] = {350, 1050, 10850};
 	uint8_t  packet_dummy[3]  = {0xDE, 0xAD, 0xBE};
+
+	// FIXME: need to troubleshoot sending data received by web interface
+	//uint16_t buckets[3];
 
 	// helps allow sendbuckets call to be more readable
 	uint8_t start_size;
@@ -280,17 +278,23 @@ bool radio_state_machine(void)
 			// byte 2..3:	Tlow
 			// byte 4..5:	Thigh
 			// byte 6..8:	24bit Data
-			//buckets[0] = *(uint16_t *)&RF_DATA[2];
-			//buckets[1] = *(uint16_t *)&RF_DATA[4];
-			//buckets[2] = *(uint16_t *)&RF_DATA[0];
+			//buckets[0] = *(uint16_t *)&uartPacket[2];
+			//buckets[1] = *(uint16_t *)&uartPacket[4];
+			//buckets[2] = *(uint16_t *)&uartPacket[0];
+			
+			// help make function call more readable
 			start_size = PROTOCOL_DATA[0].start.size;
 			bit0_size  = PROTOCOL_DATA[0].bit0.size;
 			bit1_size  = PROTOCOL_DATA[0].bit1.size;
 			end_size   = PROTOCOL_DATA[0].end.size;
 			bitcount   = PROTOCOL_DATA[0].bit_count;
 
+			//puthex2((buckets[0] >> 8) & 0xff);
+			//puthex2((buckets[1] >> 8) & 0xff);
+			//puthex2((buckets[2] >> 8) & 0xff);
 			SendBuckets(buckets_dummy, PROTOCOL_DATA[0].start.dat, start_size, PROTOCOL_DATA[0].bit0.dat, bit0_size, PROTOCOL_DATA[0].bit1.dat, bit1_size,PROTOCOL_DATA[0].end.dat, end_size, bitcount, packet_dummy);
 			
+			// ping pong between idle and finished state until we reach zero repeat index
 			rf_state = RF_FINISHED;
 			
 			break;
@@ -409,6 +413,18 @@ void main (void)
     //printf_tiny("startup...\r\n");
     //uart_put_command(RF_CODE_ACK);
 
+	// FIXME: this is essentially our watchdog timer initialization
+	//        but it needs to be done with the abstraction layer
+	// instead of the default divide by 8, we do divide by 1 so that low frequency oscillator is at 80 kHz
+	// sec. 20.4.1 WDTCN watchdog timer control
+	// e.g., (1/80000)*4^(5+3) = 0.8192
+	// so that watchdog timer will reset if not fed every 819 millisecs
+	//LFO0CN |= OSCLD__DIVIDE_BY_1;
+
+	// we disabled watchdog at startup in case external ram needs to be cleared etc.
+	// now we re-enable
+	//WDT0_start();
+	
 	while (true)
 	{
 		// reset Watch Dog Timer

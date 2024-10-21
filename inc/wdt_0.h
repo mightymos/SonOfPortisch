@@ -7,9 +7,10 @@
 #ifndef __WDT_0_H__
 #define __WDT_0_H__
 
+#include <stdint.h>
 
 #include "efm8_config.h"
-#include "SI_EFM8BB1_Register_Enums.h"
+#include <EFM8BB1.h>
 
 /**************************************************************************//**
  * @addtogroup wdt_0 WDT0 Driver

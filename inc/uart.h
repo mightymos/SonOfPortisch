@@ -8,17 +8,21 @@
 #ifndef INC_UART_H_
 #define INC_UART_H_
 
+#include "RF_Config.h"
+
+#include <stdbool.h>
 #include <stdint.h>
 #include <EFM8BB1.h>
-
-#include "RF_Config.h"
 
 //-----------------------------------------------------------------------------
 // Global Constants
 //-----------------------------------------------------------------------------
 
 #define UART_RX_BUFFER_SIZE	32
-#define UART_TX_BUFFER_SIZE	32
+#define UART_TX_BUFFER_SIZE	64
+
+// DEBUG: set size to a low value to force transmit buffer to overflow, in order to test watchdog
+//#define UART_TX_BUFFER_SIZE	8
 
 /*
 ** high byte error return code of uart_getc()

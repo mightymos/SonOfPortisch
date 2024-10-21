@@ -13,14 +13,16 @@
 
 #include "RF_Config.h"
 
+// FIXME: not able to follow the math here
+// e.g., 101 is not divisible by 4, 11, 4+11, nor 4*11
 // 112 byte == 896 bits, so a RF signal with maximum of 896 bits is possible
 // for bucket transmission, this depends on the number of buckets.
 // E.g. 4 buckets have a total overhead of 11, allowing 101 bits (high/low pairs)
-#if INCLUDE_BUCKET_SNIFFING == 1
-    #define RF_DATA_BUFFERSIZE		112
-#else
-    #define RF_DATA_BUFFERSIZE		32
-#endif
+//#if INCLUDE_BUCKET_SNIFFING == 1
+//    #define RF_DATA_BUFFERSIZE		112
+//#else
+    #define RF_DATA_BUFFERSIZE		64
+//#endif
 
 typedef enum
 {

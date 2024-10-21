@@ -405,6 +405,8 @@ void PCA0_channel0EventCb(void)
 	uint16_t current_capture_value = PCA0CP0 * 10;
 	uint8_t flags = PCA0MD;
 
+	bool pin;
+
 	// clear counter
 	PCA0MD &= 0xBF;
 	PCA0H = 0x00;
@@ -416,7 +418,8 @@ void PCA0_channel0EventCb(void)
 	if (current_capture_value < 0x8000)
 	{
 		// FIXME: add comment
-		buffer_in(current_capture_value | ((uint16_t)(!rdata_level()) << 15));
+		pin = rdata_level();
+		buffer_in(current_capture_value | ((uint16_t)(!pin) << 15));
 	}
 	else
 	{

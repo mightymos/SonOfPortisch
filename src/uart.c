@@ -5,21 +5,21 @@
  *      Author:
  */
 
-//#include <SI_EFM8BB1_Register_Enums.h>
-#include <stdint.h>
-#include <EFM8BB1.h>
-
 #include "efm8_config.h"
 
 #ifndef EFM8PDL_UART0_USE_POLLED
  #define EFM8PDL_UART0_USE_POLLED 1
 #endif
 
+#include "delay.h"
 #include "globals.h"
 #include "RF_Handling.h"
 #include "RF_Protocols.h"
 #include "uart.h"
 
+#include <stdbool.h>
+#include <stdint.h>
+#include <EFM8BB1.h>
 
 //-----------------------------------------------------------------------------
 // Global Variables
@@ -209,6 +209,21 @@ void uart_putc(uint8_t txdata)
     }
 
 	UART_TX_Buffer[UART_TX_Buffer_Position] = txdata;
+
 	UART_TX_Buffer_Position++;
 	UART_Buffer_Write_Len++;
+
+	// FIXME: we have to decide if this is just useful for development, or for normal operation
+	// have we written more bytes than the transmit buffer can hold (without keeping up with reading out)?
+	if (UART_Buffer_Write_Len > UART_TX_BUFFER_SIZE)
+	{
+		// if overwritten buffer, go into infinite loop so watchdog resets processor
+		while (1)
+		{
+			led_on();
+			efm8_delay_ms(250);
+			led_off();
+			efm8_delay_ms(250);
+		}
+	}
 }
