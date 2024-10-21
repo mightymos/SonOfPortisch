@@ -37,7 +37,6 @@ __xdata uint16_t pulsewidths[3];
 __xdata uint8_t  tr_packet[3];
 
 // used for count down radio transmissions
-
 __xdata uint8_t tr_repeats = 0;
 
 // sdcc manual section 3.8.1 general information
@@ -303,9 +302,7 @@ bool radio_state_machine(void)
 			//pulsewidths[0] = *(uint16_t *)&uartPacket[2];
 			//pulsewidths[1] = *(uint16_t *)&uartPacket[4];
 			//pulsewidths[2] = *(uint16_t *)&uartPacket[0];
-			//pulsewidths[0] = (uint16_t) (uartPacket[2] << 8) | uartPacket[3];
-			//pulsewidths[1] = (uint16_t) (uartPacket[4] << 8) | uartPacket[5];
-			//pulsewidths[2] = (uint16_t) (uartPacket[0] << 8) | uartPacket[1];
+
 			
 			// help make function call more readable
 			start_size = PROTOCOL_DATA[0].start.size;
@@ -314,13 +311,6 @@ bool radio_state_machine(void)
 			end_size   = PROTOCOL_DATA[0].end.size;
 			bitcount   = PROTOCOL_DATA[0].bit_count;
 
-			// DEBUG:
-			//uart_putc((pulsewidths[0] >> 8) & 0xff);
-			//uart_putc(pulsewidths[0] & 0xff);
-			//uart_putc((pulsewidths[1] >> 8) & 0xff);
-			//uart_putc(pulsewidths[1] & 0xff);
-			//uart_putc((pulsewidths[2] >> 8) & 0xff);
-			//uart_putc(pulsewidths[2] & 0xff);
 
 			SendBuckets(pulsewidths, PROTOCOL_DATA[0].start.dat, start_size, PROTOCOL_DATA[0].bit0.dat, bit0_size, PROTOCOL_DATA[0].bit1.dat, bit1_size,PROTOCOL_DATA[0].end.dat, end_size, bitcount, tr_packet);
 			
@@ -385,7 +375,7 @@ void main (void)
 
 
 	// baud rate is 19200, 8 data bits, 1 stop bit, no parity
-	// polled version basicallys sets TI flag so putchar() does not get stuck in an infinite loop
+	// polled version basically sets TI flag so putchar() does not get stuck in an infinite loop
 	//UART0_initStdio();
 
 	// enable uart
