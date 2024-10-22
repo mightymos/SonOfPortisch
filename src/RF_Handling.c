@@ -114,11 +114,7 @@ bool CheckRFSyncBucket(uint16_t duration, uint16_t bucket)
 	return CheckRFBucket(duration, bucket, delta);
 }
 
-bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration,
-		uint16_t *pulses,
-		uint8_t* bit0, uint8_t bit0_size,
-		uint8_t* bit1, uint8_t bit1_size,
-		uint8_t bit_count)
+bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration, uint16_t *pulses, uint8_t* bit0, uint8_t bit0_size, uint8_t* bit1, uint8_t bit1_size, uint8_t bit_count)
 {
 	uint8_t last_bit = 0;
 
@@ -144,9 +140,9 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration,
 			status[i].bit0_status += 1;
 		}
 	}
-	// bucket does not match bit, reset status
 	else
-	{
+	{	
+		// bucket does not match bit, reset status
 		status[i].bit0_status = 0;
 	}
 
@@ -157,14 +153,16 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration,
 		if (((bit1[status[i].bit1_status] & 0x08) >> 3) == high_low)
 		{
 			if (status[i].bit1_status == 0)
+			{
 				BIT_HIGH = duration;
+			}
 
 			status[i].bit1_status += 1;
 		}
 	}
-	// bucket does not match bit, reset status
 	else
 	{
+		// bucket does not match bit, reset status
 		status[i].bit1_status = 0;
 	}
 
@@ -247,12 +245,14 @@ bool DecodeBucket(uint8_t i, bool high_low, uint16_t duration,
 		}
 
 		led_off();
+
 		status[i].sync_status = 0;
 		status[i].bit0_status = 0;
 		status[i].bit1_status = 0;
 		status[i].end_status  = 0;
 		status[i].bit_count = 0;
 		status[i].actual_bit_of_byte = 0;
+
 		return true;
 	}
 
@@ -408,6 +408,7 @@ void PCA0_channel0EventCb(void)
 
 	bool pin;
 
+	// FIXME: replace or move function to be abstracted from hardware
 	// clear counter
 	PCA0MD &= 0xBF;
 	PCA0H = 0x00;
@@ -455,7 +456,7 @@ uint8_t PCA0_DoSniffing(void)
 	SetTimer0Overflow(0x0B);
 
 	// enable interrupt for RF receiving
-	PCA0CPM0 |= ECCF__ENABLED;
+	enable_capture_interrupt();
 
 	// start PCA
 	PCA0_run();
@@ -482,7 +483,7 @@ void PCA0_StopSniffing(void)
 	PCA0CN0 &= ~(CF__BMASK | CCF0__BMASK | CCF1__BMASK | CCF2__BMASK);
 
 	// disable interrupt for RF receiving
-	PCA0CPM0 &= ~ECCF__ENABLED;
+	disable_capture_interrupt();
 
 	// be sure the timeout timer is stopped
 	StopTimer2();

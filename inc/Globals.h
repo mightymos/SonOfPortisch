@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <EFM8BB1.h>
 
-
+// used in timer functions
 #define SYSCLK	24500000
 
 #define FIRMWARE_VERSION		0x03
@@ -31,30 +31,28 @@
 #define HIGH(x) ((x) | 0x08)
 #define LOW(x) ((x) & 0x07)
 
-// USER PROTOTYPES
-//SI_SBIT(LED,    SFR_P1, 0);		// LED
-//SI_SBIT(T_DATA, SFR_P0, 0);		// T_DATA
-//SI_SBIT(R_DATA, SFR_P1, 3);		// R_DATA
-//SI_SBIT(BUZZER, SFR_P1, 6);		// BUZZER
-//__sbit __at (0x90) LED;
-//__sbit __at (0x80) T_DATA;
-//__sbit __at (0x93) R_DATA;
-//__sbit __at (0x96) BUZZER;
 
-// FIXME: handle pins that vary on different hardware
+
+// USER PROTOTYPES
+
+// FIXME: handle pins that vary on different hardware automatically
 #define TDATA  P0_0
+
 //(uncomment only one LED line)
 // Sonoff Bridge (i.e., black case)
 //#define LED    P1_0
+
 // EFM8BB1LCK development board
 #define LED    P1_4
 #define RDATA  P1_3
 #define BUZZER P1_6
 
-//
+// mainly helpful on the development board
 #define DEBUG_PIN0 P1_5
 #define DEBUG_PIN1 P1_6
 
+
+// a simple hardware abstraction layer
 inline void buzzer_on(void)
 {
     BUZZER = 1;
@@ -73,6 +71,7 @@ inline bool rdata_level(void)
 // setter prototypes
 inline void led_on(void)
 {
+	// FIXME: handle inverted output circuit hookup
 	// sonoff bridge
     //LED = 1;
 	// EFM8BB1LCK board
@@ -143,6 +142,18 @@ inline void enable_global_interrupts(void)
 inline void disable_global_interrupts(void)
 {
     EA = 0;
+}
+
+inline void enable_capture_interrupt(void)
+{
+    PCA0CPM0 |= ECCF__ENABLED;
+    EIE1     |= EPCA0__ENABLED;
+}
+
+inline void disable_capture_interrupt(void)
+{
+    PCA0CPM0 &= ~ECCF__ENABLED;
+    EIE1     &= ~EPCA0__ENABLED;
 }
 
 extern void InitTimer2_us(uint16_t interval, uint16_t timeout);

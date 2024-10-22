@@ -525,10 +525,12 @@ void main (void)
 					{
 						case RF_CODE_RFIN:
 							// we no longer share a buffer between radio and uart, however need to avoid writing to radio buffer while reading it
-							PCA0CPM0 &= ~ECCF__ENABLED;
+							disable_capture_interrupt();
+							
 							//we read RF_DATA[] so do not want decoding writing to it while trying to read it
 							uart_put_RF_Data_Standard(RF_CODE_RFIN);
-							PCA0CPM0 |= ECCF__ENABLED;
+							
+							enable_capture_interrupt();
 							break;
 
 						case RF_CODE_SNIFFING_ON:
@@ -540,15 +542,15 @@ void main (void)
 					RF_DATA_STATUS = 0;
 
 					// enable interrupt for RF receiving
-					PCA0CPM0 |= ECCF__ENABLED;
+					enable_capture_interrupt();
 				}
 				else
 				{
 					// disable interrupt for radio receiving while reading buffer
-					PCA0CPM0 &= ~ECCF__ENABLED;
+					disable_capture_interrupt();
 					result = buffer_out(&bucket);
 					// FIXME: reenable (should store previous and just restore that?)
-					PCA0CPM0 |= ECCF__ENABLED;
+					enable_capture_interrupt();
 
 					// handle new received buckets
 					if (result)
@@ -586,7 +588,7 @@ void main (void)
 				if ((RF_DATA_STATUS & RF_DATA_RECEIVED_MASK) != 0)
 				{
 					//
-					PCA0CPM0 &= ~ECCF__ENABLED;
+					disable_capture_interrupt();
 					
 					//
 					uart_put_RF_buckets(RF_CODE_SNIFFING_ON_BUCKET);
@@ -595,7 +597,7 @@ void main (void)
 					RF_DATA_STATUS = 0;
 
 					// enable interrupt for RF receiving
-					PCA0CPM0 |= ECCF__ENABLED;
+					enable_capture_interrupt();
 				}
 				else
 				{
