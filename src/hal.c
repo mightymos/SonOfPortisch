@@ -9,7 +9,7 @@
 #include <EFM8BB1.h>
 
 
-#include "globals.h"
+#include "hal.h"
 
 __xdata uint16_t Timer_2_Timeout  = 0x0000;
 __xdata uint16_t Timer_2_Interval = 0x0000;

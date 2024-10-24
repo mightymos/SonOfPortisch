@@ -8,8 +8,6 @@
 #ifndef INC_UART_H_
 #define INC_UART_H_
 
-#include "RF_Config.h"
-
 #include <stdbool.h>
 #include <stdint.h>
 #include <EFM8BB1.h>

@@ -14,8 +14,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "globals.h"
-#include "RF_Config.h"
+#include "hal.h"
+#include "portisch_config.h"
 
 /*
  * bucket sniffing constants

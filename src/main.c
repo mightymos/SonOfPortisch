@@ -14,10 +14,10 @@
 //#include <stdio.h>
 
 #include "delay.h"
-#include "globals.h"
-#include "InitDevice.h"
-#include "RF_Handling.h"
-#include "RF_Protocols.h"
+#include "hal.h"
+#include "initdevice.h"
+#include "portisch.h"
+#include "portisch_protocols.h"
 #include "serial.h"
 #include "uart.h"
 #include "util.h"

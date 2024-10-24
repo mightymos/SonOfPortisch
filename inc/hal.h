@@ -1,12 +1,12 @@
 /*
- * Globals.h
+ * hal.h
  *
  *  Created on: 27.11.2017
  *      Author:
  */
 
-#ifndef INC_GLOBALS_H_
-#define INC_GLOBALS_H_
+#ifndef HAL_H_
+#define HAL_H_
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -156,15 +156,4 @@ inline void disable_capture_interrupt(void)
     EIE1     &= ~EPCA0__ENABLED;
 }
 
-extern void InitTimer2_us(uint16_t interval, uint16_t timeout);
-extern void InitTimer3_us(uint16_t interval, uint16_t timeout);
-extern void InitTimer2_ms(uint16_t interval, uint16_t timeout);
-extern void InitTimer3_ms(uint16_t interval, uint16_t timeout);
-extern void WaitTimer2Finished(void);
-extern void WaitTimer3Finished(void);
-extern void StopTimer2(void);
-extern void StopTimer3(void);
-extern bool IsTimer2Finished(void);
-extern bool IsTimer3Finished(void);
-
-#endif // INC_GLOBALS_H_
+#endif // HAL_H_

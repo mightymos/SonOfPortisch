@@ -6,9 +6,9 @@
  */
 
 #include "delay.h"
-#include "globals.h"
-#include "RF_Handling.h"
-#include "RF_Protocols.h"
+#include "hal.h"
+#include "portisch.h"
+#include "portisch_protocols.h"
 #include "uart.h"
 
 #include <stdbool.h>

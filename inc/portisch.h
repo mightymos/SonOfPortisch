@@ -5,13 +5,13 @@
  *      Author:
  */
 
-#ifndef INC_RF_HANDLING_H_
-#define INC_RF_HANDLING_H_
+#ifndef PORTISCH_H_
+#define PORTISCH_H_
 
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "RF_Config.h"
+#include "portisch_config.h"
 
 // FIXME: not able to follow the math here
 // e.g., 101 is not divisible by 4, 11, 4+11, nor 4*11
@@ -73,4 +73,4 @@ extern void SendBuckets(uint16_t *pulses,uint8_t* start, uint8_t start_size,uint
 extern void SendBucketsByIndex(uint8_t index, uint8_t* rfdata);
 extern void Bucket_Received(uint16_t duration, bool high_low);
 
-#endif // INC_RF_HANDLING_H_
+#endif // PORTISCH_H_

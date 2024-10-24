@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <EFM8BB1.h>
 
-#include "InitDevice.h"
+#include "initdevice.h"
 
 //==============================================================================
 // enter_DefaultMode_from_RESET
