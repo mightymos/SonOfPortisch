@@ -5,11 +5,10 @@
  *      Author:
  */
 #include <stdint.h>
-#include <EFM8BB1.h>
-
 #include <string.h>
 //#include <stdlib.h>
 
+#include "capture_interrupt.h"
 #include "delay.h"
 #include "hal.h"
 #include "portisch.h"
@@ -404,18 +403,11 @@ bool buffer_out(uint16_t* bucket)
 void PCA0_channel0EventCb(void)
 {
     //FIXME: possible to eliminate multiplication to save code size?
-	uint16_t current_capture_value = PCA0CP0 * 10;
-	uint8_t flags = PCA0MD;
+	uint16_t current_capture_value = get_capture_value() * 10;
 
 	bool pin;
 
-	// FIXME: replace or move function to be abstracted from hardware
-	// clear counter
-	PCA0MD &= 0xBF;
-	PCA0H = 0x00;
-	PCA0L = 0x00;
-	PCA0MD = flags;
-
+    clear_pca_counter();
 
 	// FIXME: additional comments; if bucket is not noise add it to buffer
 	if (current_capture_value < 0x8000)
@@ -435,15 +427,6 @@ void PCA0_channel0EventCb(void)
 void PCA0_channel1EventCb(void) { }
 
 void PCA0_channel2EventCb(void) { }
-
-void SetTimer0Overflow(uint8_t T0_Overflow)
-{
-	// FIXME: add comment
-	// timer 0 high byte - overflow
-	 // shift was 0x00 anyway...
-	//TH0 = (T0_Overflow << TH0_TH0__SHIFT);
-	TH0 = T0_Overflow;
-}
 
 uint8_t PCA0_DoSniffing(void)
 {
@@ -481,7 +464,7 @@ void PCA0_StopSniffing(void)
 	PCA0_halt();
 
 	// clear all interrupt flags of PCA0
-	PCA0CN0 &= ~(CF__BMASK | CCF0__BMASK | CCF1__BMASK | CCF2__BMASK);
+    clear_interrupt_flags_pca();
 
 	// disable interrupt for RF receiving
 	disable_capture_interrupt();

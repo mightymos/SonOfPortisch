@@ -8,14 +8,12 @@
 //-----------------------------------------------------------------------------
 // SFR declarations
 #include <stdint.h>
-#include <EFM8BB1.h>
 
 // for printf_tiny()
 //#include <stdio.h>
 
 #include "delay.h"
 #include "hal.h"
-#include "initdevice.h"
 #include "portisch.h"
 #include "portisch_protocols.h"
 #include "serial.h"
