@@ -1,6 +1,6 @@
 #include "portisch.h"
 #include "portisch_protocols.h"
-#include "serial.h"
+#include "portisch_serial.h"
 #include "uart.h"
 
 void uart_put_command(uint8_t command)

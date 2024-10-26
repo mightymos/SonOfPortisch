@@ -403,7 +403,7 @@ bool buffer_out(uint16_t* bucket)
 void PCA0_channel0EventCb(void)
 {
     //FIXME: possible to eliminate multiplication to save code size?
-	uint16_t current_capture_value = get_capture_value() * 10;
+	uint16_t current_capture_value = get_capture_value();
 
 	bool pin;
 
@@ -449,7 +449,7 @@ uint8_t PCA0_DoSniffing(void)
 	//InitTimer3_ms(1, 10);
 	// wait until timer has finished
 	//WaitTimer3Finished();
-	efm8_delay_ms(10);
+	delay_ms(10);
 
 	// FIXME: add comment
 	RF_DATA_STATUS = 0;

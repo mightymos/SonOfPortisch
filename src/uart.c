@@ -212,9 +212,9 @@ void uart_putc(uint8_t txdata)
 		while (1)
 		{
 			led_on();
-			efm8_delay_ms(250);
+			delay_ms(250);
 			led_off();
-			efm8_delay_ms(250);
+			delay_ms(250);
 		}
 	}
 }

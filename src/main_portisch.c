@@ -16,7 +16,7 @@
 #include "hal.h"
 #include "portisch.h"
 #include "portisch_protocols.h"
-#include "serial.h"
+#include "portisch_serial.h"
 #include "uart.h"
 #include "util.h"
 
@@ -405,7 +405,7 @@ void main (void)
 	// use LED instead (for development)
 	//buzzer_on();
 	led_on();
-	efm8_delay_ms(startupDelay);
+	delay_ms(startupDelay);
 
 	//buzzer_off();
 	led_off();
@@ -619,7 +619,7 @@ void main (void)
 				buzzer_on();
 
 				// FIXME: need to check that MSB and LSB are swapped or not
-				efm8_delay_ms(*(uint16_t *)&uartPacket[1]);
+				delay_ms(*(uint16_t *)&uartPacket[1]);
 				buzzer_off();
 
 				// send acknowledge

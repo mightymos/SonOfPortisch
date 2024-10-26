@@ -226,7 +226,7 @@ void SetTimer2Reload(uint16_t reload)
 	TMR2RLL = (reload & 0xFF);
 }
 
-#if 0
+
 void SetTimer3Reload(uint16_t reload)
 {
 	/***********************************************************************
@@ -238,7 +238,7 @@ void SetTimer3Reload(uint16_t reload)
 	 ***********************************************************************/
 	TMR3RLL = (reload & 0xFF);
 }
-#endif
+
 
 /*
  * Init Timer 2 with microseconds interval, maximum is 65535µs.
@@ -255,13 +255,13 @@ void InitTimer2_us(uint16_t interval, uint16_t timeout)
 	TMR2CN0 |= TR2__RUN;
 }
 
-#if 0
+
 /*
  * Init Timer 3 with microseconds interval, maximum is 65535µs.
  */
 void InitTimer3_us(uint16_t interval, uint16_t timeout)
 {
-	SetTimerReload((uint16_t)(0x10000 - ((uint32_t)SYSCLK / (1000000 / (uint32_t)interval))));
+	SetTimer3Reload((uint16_t)(0x10000 - ((uint32_t)SYSCLK / (1000000 / (uint32_t)interval))));
 
 	// remove 65µs because of startup delay
 	Timer_3_Timeout = timeout - 65;
@@ -270,7 +270,7 @@ void InitTimer3_us(uint16_t interval, uint16_t timeout)
 	// start timer
 	TMR3CN0 |= TR3__RUN;
 }
-#endif
+
 
 /*
  * Init Timer 2 with milliseconds interval, maximum is ~2.5ms.
@@ -286,13 +286,13 @@ void InitTimer2_ms(uint16_t interval, uint16_t timeout)
 	TMR2CN0 |= TR2__RUN;
 }
 
-#if 0
+
 /*
  * Init Timer 3 with milliseconds interval, maximum is ~2.5ms.
  */
 void InitTimer3_ms(uint16_t interval, uint16_t timeout)
 {
-	SetTimerReload((uint16_t)(0x10000 - ((uint32_t)SYSCLK / (1000 / (uint32_t)interval))));
+	SetTimer3Reload((uint16_t)(0x10000 - ((uint32_t)SYSCLK / (1000 / (uint32_t)interval))));
 
 	Timer_3_Timeout = timeout;
 	Timer_3_Interval = interval;
@@ -300,7 +300,7 @@ void InitTimer3_ms(uint16_t interval, uint16_t timeout)
 	// start timer
 	TMR3CN0 |= TR3__RUN;
 }
-#endif
+
 
 void WaitTimer2Finished(void)
 {
@@ -308,15 +308,14 @@ void WaitTimer2Finished(void)
 	while((TMR2CN0 & TR2__BMASK) == TR2__RUN);
 }
 
-#if 0
+
 void WaitTimer3Finished(void)
 {
 	// wait until timer has finished
 	while((TMR3CN0 & TR3__BMASK) == TR3__RUN);
 }
-#endif
 
-#if 1
+
 void StopTimer2(void)
 {
 	// stop timer
@@ -324,9 +323,8 @@ void StopTimer2(void)
 	// Clear Timer 2 high overflow flag
 	TMR2CN0 &= ~TF2H__SET;
 }
-#endif
 
-#if 0
+
 void StopTimer3(void)
 {
 	// stop timer
@@ -334,19 +332,19 @@ void StopTimer3(void)
 	// Clear Timer 3 high overflow flag
 	TMR3CN0 &= ~TF3H__SET;
 }
-#endif
+
 
 bool IsTimer2Finished(void)
 {
 	return ((TMR2CN0 & TR2__BMASK) != TR2__RUN);
 }
 
-#if 0
+
 bool IsTimer3Finished(void)
 {
 	return ((TMR3CN0 & TR3__BMASK) != TR3__RUN);
 }
-#endif
+
 
 //-----------------------------------------------------------------------------
 // TIMER2_ISR
@@ -357,7 +355,7 @@ bool IsTimer3Finished(void)
 // TMR2CN0::TF2L (Timer # Low Byte Overflow Flag)
 //
 //-----------------------------------------------------------------------------
-void TIMER2_ISR(void) __interrupt (5)
+void TIMER2_ISR(void) __interrupt (TIMER2_VECTOR)
 {
 	// Clear Timer 2 high overflow flag
 	TMR2CN0 &= ~TF2H__SET;
@@ -375,7 +373,7 @@ void TIMER2_ISR(void) __interrupt (5)
 		Timer_2_Timeout -= Timer_2_Interval;
 }
 
-#if 0
+
 //-----------------------------------------------------------------------------
 // TIMER3_ISR
 //-----------------------------------------------------------------------------
@@ -385,7 +383,7 @@ void TIMER2_ISR(void) __interrupt (5)
 // TMR3CN0::TF3L (Timer # Low Byte Overflow Flag)
 //
 //-----------------------------------------------------------------------------
-void TIMER3_ISR(void) __interrupt (TIMER3_IRQn)
+void TIMER3_ISR(void) __interrupt (TIMER3_VECTOR)
 {
 	// Clear Timer 3 high overflow flag
 	TMR3CN0 &= ~TF3H__SET;
@@ -402,4 +400,4 @@ void TIMER3_ISR(void) __interrupt (TIMER3_IRQn)
 	else
 		Timer_3_Timeout -= Timer_3_Interval;
 }
-#endif
+

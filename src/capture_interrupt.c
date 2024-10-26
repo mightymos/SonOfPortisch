@@ -23,7 +23,7 @@ void clear_pca_counter(void)
 
 uint16_t get_capture_value(void)
 {
-    return PCA0CP0;
+    return PCA0CP0 * 10;
 }
 
 void SetTimer0Overflow(uint8_t T0_Overflow)

@@ -224,7 +224,7 @@ WindowName=
 ResourceID=0
 [WorkState_v1_1.DockState.Bar-4]
 BarID=59421
-Bars=125
+Bars=139
 Bar#0=0
 Bar#1=282
 Bar#2=281
@@ -310,46 +310,60 @@ Bar#81=0
 Bar#82=0
 Bar#83=0
 Bar#84=0
-Bar#85=62088
-Bar#86=62083
-Bar#87=62077
-Bar#88=62089
-Bar#89=62063
-Bar#90=62062
-Bar#91=62007
-Bar#92=61891
-Bar#93=61905
-Bar#94=62014
-Bar#95=61939
-Bar#96=61956
-Bar#97=61875
-Bar#98=61871
-Bar#99=33295
-Bar#100=33294
-Bar#101=268
-Bar#102=267
-Bar#103=33247
-Bar#104=33246
-Bar#105=266
-Bar#106=265
-Bar#107=264
-Bar#108=263
-Bar#109=262
-Bar#110=261
-Bar#111=260
-Bar#112=259
-Bar#113=258
-Bar#114=257
-Bar#115=256
-Bar#116=33239
-Bar#117=33240
-Bar#118=33238
-Bar#119=33241
-Bar#120=33237
-Bar#121=33236
-Bar#122=59403
-Bar#123=59141
-Bar#124=0
+Bar#85=0
+Bar#86=0
+Bar#87=0
+Bar#88=0
+Bar#89=0
+Bar#90=0
+Bar#91=0
+Bar#92=0
+Bar#93=0
+Bar#94=0
+Bar#95=0
+Bar#96=0
+Bar#97=0
+Bar#98=0
+Bar#99=62088
+Bar#100=62083
+Bar#101=62077
+Bar#102=62089
+Bar#103=62063
+Bar#104=62062
+Bar#105=62007
+Bar#106=61891
+Bar#107=61905
+Bar#108=62014
+Bar#109=61939
+Bar#110=61956
+Bar#111=61875
+Bar#112=61871
+Bar#113=33295
+Bar#114=33294
+Bar#115=268
+Bar#116=267
+Bar#117=33247
+Bar#118=33246
+Bar#119=266
+Bar#120=265
+Bar#121=264
+Bar#122=263
+Bar#123=262
+Bar#124=261
+Bar#125=260
+Bar#126=259
+Bar#127=258
+Bar#128=257
+Bar#129=256
+Bar#130=33239
+Bar#131=33240
+Bar#132=33238
+Bar#133=33241
+Bar#134=33237
+Bar#135=33236
+Bar#136=59403
+Bar#137=59141
+Bar#138=0
 Style=0
 ExStyle=0
 PrevFloating=False
@@ -1808,7 +1822,7 @@ Buttons=ILAIAAAAAAOBBIAAAAAAIKAIAAAAAAFFAIAAAAAADGBIAAAAAAKMAIAAAAAA
 BarID=59398
 XPos=329
 YPos=28
-MRUWidth=39138
+MRUWidth=39184
 Docking=True
 MRUDockID=0
 MRUDockLeftPos=329
@@ -1843,7 +1857,7 @@ Buttons=OBAIAAAAAAHJAIAAAAAACNAIAAAAAAJBAIAAAAAAGNAIAAAAAAMBAIAAAAAAAAAAAAAAAADH
 BarID=59399
 XPos=195
 YPos=28
-MRUWidth=33572
+MRUWidth=33618
 Docking=True
 MRUDockID=0
 MRUDockLeftPos=195
@@ -2011,11 +2025,11 @@ Docking=True
 MRUDockID=0
 MRUDockLeftPos=0
 MRUDockTopPos=0
-MRUDockRightPos=45609512
-MRUDockBottomPos=45754672
+MRUDockRightPos=774778414
+MRUDockBottomPos=774778414
 MRUFloatStyle=4
 MRUFloatXPos=-2147483648
-MRUFloatYPos=45579472
+MRUFloatYPos=774778414
 Style=20372
 ExStyle=3857
 PrevFloating=False
@@ -2073,11 +2087,11 @@ Docking=True
 MRUDockID=0
 MRUDockLeftPos=0
 MRUDockTopPos=0
-MRUDockRightPos=774778414
-MRUDockBottomPos=774778414
+MRUDockRightPos=0
+MRUDockBottomPos=0
 MRUFloatStyle=4
 MRUFloatXPos=-2147483648
-MRUFloatYPos=774778414
+MRUFloatYPos=0
 Style=20372
 ExStyle=3857
 PrevFloating=False
@@ -2228,11 +2242,11 @@ Docking=True
 MRUDockID=0
 MRUDockLeftPos=0
 MRUDockTopPos=0
-MRUDockRightPos=0
-MRUDockBottomPos=0
+MRUDockRightPos=774778414
+MRUDockBottomPos=774778414
 MRUFloatStyle=4
 MRUFloatXPos=-2147483648
-MRUFloatYPos=0
+MRUFloatYPos=774778414
 Style=20372
 ExStyle=3857
 PrevFloating=False
@@ -2259,11 +2273,11 @@ Docking=True
 MRUDockID=0
 MRUDockLeftPos=0
 MRUDockTopPos=0
-MRUDockRightPos=774778414
-MRUDockBottomPos=774778414
+MRUDockRightPos=45676224
+MRUDockBottomPos=45820336
 MRUFloatStyle=4
 MRUFloatXPos=-2147483648
-MRUFloatYPos=774778414
+MRUFloatYPos=45645136
 Style=20372
 ExStyle=3857
 PrevFloating=False
@@ -2290,11 +2304,11 @@ Docking=True
 MRUDockID=0
 MRUDockLeftPos=0
 MRUDockTopPos=0
-MRUDockRightPos=90006256
-MRUDockBottomPos=90006488
+MRUDockRightPos=774778414
+MRUDockBottomPos=774778414
 MRUFloatStyle=4
 MRUFloatXPos=-2147483648
-MRUFloatYPos=90008112
+MRUFloatYPos=774778414
 Style=20372
 ExStyle=3857
 PrevFloating=False
@@ -2352,7 +2366,7 @@ ptn_Child1=MainFrame
 ptn_Child2=ChildFrames
 [WorkState_v1_1.Frames.MainFrame]
 WindowPlacement=MCAAAAAACAAAAAAADAAAAAAAPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPLBBAAAAAPJAAAAAALLGAAAAAAJDAAAAA
-Title=Silicon Laboratories IDE - [hal.h]
+Title=Silicon Laboratories IDE - [main_portisch.c]
 [WorkState_v1_1.Frames.ChildFrames]
 ptn_Child1=Document-0
 ptn_Child2=Document-1
@@ -2360,14 +2374,15 @@ ptn_Child3=Document-2
 ptn_Child4=Document-3
 ptn_Child5=Document-4
 ptn_Child6=Document-5
+ptn_Child7=Document-6
 [WorkState_v1_1.Frames.ChildFrames.Document-0]
 ptn_Child1=ViewFrame-0
 [WorkState_v1_1.Frames.ChildFrames.Document-0.ViewFrame-0]
 DocPathName=src\main_portisch.c
 DocumentString=Source File
 DocTemplateIndex=0
-WindowPlacement=MCAAAAAAAAAAAAAABAAAAAAAPPPPPPPPPPPPPPPPIPPPPPPPBOPPPPPPKBAAAAAAKBAAAAAAFHEAAAAAMLBAAAAA
-IsActiveChildFrame=False
+WindowPlacement=MCAAAAAACAAAAAAADAAAAAAAPPPPPPPPPPPPPPPPIPPPPPPPBOPPPPPPKBAAAAAAKBAAAAAAFHEAAAAAMLBAAAAA
+IsActiveChildFrame=True
 [WorkState_v1_1.Frames.ChildFrames.Document-1]
 ptn_Child1=ViewFrame-0
 [WorkState_v1_1.Frames.ChildFrames.Document-1.ViewFrame-0]
@@ -2406,8 +2421,16 @@ ptn_Child1=ViewFrame-0
 DocPathName=inc\hal.h
 DocumentString=Source File
 DocTemplateIndex=0
-WindowPlacement=MCAAAAAACAAAAAAADAAAAAAAPPPPPPPPPPPPPPPPIPPPPPPPBOPPPPPPGLAAAAAAGLAAAAAAFBFAAAAAMFCAAAAA
-IsActiveChildFrame=True
+WindowPlacement=MCAAAAAAAAAAAAAABAAAAAAAPPPPPPPPPPPPPPPPIPPPPPPPBOPPPPPPGLAAAAAAGLAAAAAAFBFAAAAAMFCAAAAA
+IsActiveChildFrame=False
+[WorkState_v1_1.Frames.ChildFrames.Document-6]
+ptn_Child1=ViewFrame-0
+[WorkState_v1_1.Frames.ChildFrames.Document-6.ViewFrame-0]
+DocPathName=src\portisch_serial.c
+DocumentString=Source File
+DocTemplateIndex=0
+WindowPlacement=MCAAAAAAAAAAAAAABAAAAAAAPPPPPPPPPPPPPPPPIPPPPPPPBOPPPPPPMJAAAAAAMJAAAAAALPEAAAAACECAAAAA
+IsActiveChildFrame=False
 [WorkState_v1_1.ProjectTarget]
 ProjectTarget=EFM8BB10F8G-QSOP24
 [WorkState_v1_1.hardwareId]
@@ -2514,25 +2537,25 @@ ptn_Child1=FileName
 FileName=src\uart.c
 ptn_Child1=FileName
 [WorkState_v1_1.CFiles.FileName.FileName.FileName.FileName]
-FileName=src\serial.c
-ptn_Child1=FileName
-[WorkState_v1_1.CFiles.FileName.FileName.FileName.FileName.FileName]
 FileName=src\wdt_0.c
 ptn_Child1=FileName
-[WorkState_v1_1.CFiles.FileName.FileName.FileName.FileName.FileName.FileName]
+[WorkState_v1_1.CFiles.FileName.FileName.FileName.FileName.FileName]
 FileName=src\util.c
 ptn_Child1=FileName
-[WorkState_v1_1.CFiles.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
+[WorkState_v1_1.CFiles.FileName.FileName.FileName.FileName.FileName.FileName]
 FileName=src\hal.c
 ptn_Child1=FileName
-[WorkState_v1_1.CFiles.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
+[WorkState_v1_1.CFiles.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
 FileName=src\portisch.c
 ptn_Child1=FileName
-[WorkState_v1_1.CFiles.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
+[WorkState_v1_1.CFiles.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
 FileName=src\main_portisch.c
 ptn_Child1=FileName
-[WorkState_v1_1.CFiles.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
+[WorkState_v1_1.CFiles.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
 FileName=src\capture_interrupt.c
+ptn_Child1=FileName
+[WorkState_v1_1.CFiles.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
+FileName=src\portisch_serial.c
 [WorkState_v1_1.LFiles]
 ptn_Child1=FileName
 [WorkState_v1_1.LFiles.FileName]
@@ -2548,22 +2571,22 @@ ptn_Child1=FileName
 FileName=src\uart.rel
 ptn_Child1=FileName
 [WorkState_v1_1.LFiles.FileName.FileName.FileName.FileName.FileName]
-FileName=src\serial.rel
-ptn_Child1=FileName
-[WorkState_v1_1.LFiles.FileName.FileName.FileName.FileName.FileName.FileName]
 FileName=src\wdt_0.rel
 ptn_Child1=FileName
-[WorkState_v1_1.LFiles.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
+[WorkState_v1_1.LFiles.FileName.FileName.FileName.FileName.FileName.FileName]
 FileName=src\util.rel
 ptn_Child1=FileName
-[WorkState_v1_1.LFiles.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
+[WorkState_v1_1.LFiles.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
 FileName=src\hal.rel
 ptn_Child1=FileName
-[WorkState_v1_1.LFiles.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
+[WorkState_v1_1.LFiles.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
 FileName=src\portisch.rel
 ptn_Child1=FileName
-[WorkState_v1_1.LFiles.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
+[WorkState_v1_1.LFiles.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
 FileName=src\capture_interrupt.rel
+ptn_Child1=FileName
+[WorkState_v1_1.LFiles.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
+FileName=src\portisch_serial.rel
 [WorkState_v1_1.BankMap]
 [WorkState_v1_1.Folders]
 ptn_Child1=FolderName
@@ -2590,19 +2613,19 @@ ptn_Child1=FileName
 FileName=src\wdt_0.c
 ptn_Child1=FileName
 [WorkState_v1_1.Source Files.FileName.FileName.FileName.FileName.FileName]
-FileName=src\serial.c
-ptn_Child1=FileName
-[WorkState_v1_1.Source Files.FileName.FileName.FileName.FileName.FileName.FileName]
 FileName=src\util.c
 ptn_Child1=FileName
-[WorkState_v1_1.Source Files.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
+[WorkState_v1_1.Source Files.FileName.FileName.FileName.FileName.FileName.FileName]
 FileName=src\hal.c
 ptn_Child1=FileName
-[WorkState_v1_1.Source Files.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
+[WorkState_v1_1.Source Files.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
 FileName=src\portisch.c
 ptn_Child1=FileName
-[WorkState_v1_1.Source Files.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
+[WorkState_v1_1.Source Files.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
 FileName=src\capture_interrupt.c
+ptn_Child1=FileName
+[WorkState_v1_1.Source Files.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
+FileName=src\portisch_serial.c
 [WorkState_v1_1.Header Files]
 ptn_Child1=FolderFlags
 ptn_Child2=FileName
@@ -2621,25 +2644,25 @@ ptn_Child1=FileName
 FileName=inc\wdt_0.h
 ptn_Child1=FileName
 [WorkState_v1_1.Header Files.FileName.FileName.FileName.FileName.FileName]
-FileName=inc\serial.h
-ptn_Child1=FileName
-[WorkState_v1_1.Header Files.FileName.FileName.FileName.FileName.FileName.FileName]
 FileName=inc\util.h
 ptn_Child1=FileName
-[WorkState_v1_1.Header Files.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
+[WorkState_v1_1.Header Files.FileName.FileName.FileName.FileName.FileName.FileName]
 FileName=inc\hal.h
 ptn_Child1=FileName
-[WorkState_v1_1.Header Files.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
+[WorkState_v1_1.Header Files.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
 FileName=inc\portisch.h
 ptn_Child1=FileName
-[WorkState_v1_1.Header Files.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
+[WorkState_v1_1.Header Files.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
 FileName=inc\portisch_config.h
 ptn_Child1=FileName
-[WorkState_v1_1.Header Files.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
+[WorkState_v1_1.Header Files.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
 FileName=inc\portisch_protocols.h
 ptn_Child1=FileName
-[WorkState_v1_1.Header Files.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
+[WorkState_v1_1.Header Files.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
 FileName=inc\timers.h
 ptn_Child1=FileName
-[WorkState_v1_1.Header Files.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
+[WorkState_v1_1.Header Files.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
 FileName=inc\capture_interrupt.h
+ptn_Child1=FileName
+[WorkState_v1_1.Header Files.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName.FileName]
+FileName=inc\portisch_serial.h
